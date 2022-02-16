@@ -39,6 +39,11 @@ class Stock {
         console.log('\x1b[1;31mNot found stock.\x1b[0m')
       } else {
         res.msgArray.forEach((stock) => {
+          const upsAndDownsPercentage = (
+            ((parseFloat(stock.z) - parseFloat(stock.y)) /
+              parseFloat(stock.y)) *
+            100
+          ).toFixed(2)
           let stockData = {
             代號: stock.c,
             公司: stock.n,
@@ -58,6 +63,9 @@ class Stock {
               ? stock.v
               : strConvertToDecimalPoint(stock.v),
             最近成交時刻: stock.t,
+            漲跌幅: `\x1b[${
+              upsAndDownsPercentage > 0 ? '31' : '32'
+            }m${upsAndDownsPercentage}%\x1b[0m`,
           }
 
           if (stock.ex == 'otc') {
