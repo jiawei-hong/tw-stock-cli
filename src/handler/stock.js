@@ -13,9 +13,11 @@ class Stock {
     this.data = {}
     this.p = new Table({
       columns: [
+        { name: '代號', alignment: 'center' },
         { name: '公司', alignment: 'center' },
-        { name: '當前成交', color: 'yellow' },
+        { name: '當盤成交價', color: 'yellow' },
         { name: '當盤成交量' },
+        { name: '累積成交量' },
         { name: '昨收', color: 'cyan' },
         { name: '開盤' },
         { name: '最高' },
@@ -38,6 +40,7 @@ class Stock {
       } else {
         res.msgArray.forEach((stock) => {
           let stockData = {
+            代號: stock.c,
             公司: stock.n,
             昨收: isNaN(stock.y) ? stock.y : strConvertToDecimalPoint(stock.y),
             開盤: isNaN(stock.o) ? stock.o : strConvertToDecimalPoint(stock.o),
@@ -45,12 +48,15 @@ class Stock {
             最低: isNaN(stock.l) ? stock.l : strConvertToDecimalPoint(stock.l),
             漲停: strConvertToDecimalPoint(stock.u),
             跌停: strConvertToDecimalPoint(stock.w),
-            當前成交: isNaN(stock.z)
+            當盤成交價: isNaN(stock.z)
               ? stock.z
               : strConvertToDecimalPoint(stock.z),
             當盤成交量: isNaN(stock.tv)
               ? stock.tv
               : strConvertToDecimalPoint(stock.tv),
+            累積成交量: isNaN(stock.v)
+              ? stock.v
+              : strConvertToDecimalPoint(stock.v),
             最近成交時刻: stock.t,
           }
 
