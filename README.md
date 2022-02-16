@@ -1,5 +1,7 @@
 # tw-stock
 
+This command use in my daily qucikly search stock information.
+
 # How to install:
 
 ```js
@@ -17,3 +19,11 @@ tw-stock stock <stock_code>
 | Options     | Description                            |
 | ----------- | -------------------------------------- |
 | -l --listed | input this tw_stock_code is tse or otc |
+
+# Search Tse Stock
+
+![tse.png](./tse.png)
+
+# Search Otc Stock
+
+![otc.png](./otc.png)
