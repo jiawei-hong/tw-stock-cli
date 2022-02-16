@@ -1,6 +1,6 @@
 {
   "name": "tw-stock",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "This is a search tw stock price with command",
   "main": "bin/index.js",
   "bin": {
