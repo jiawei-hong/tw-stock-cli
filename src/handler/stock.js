@@ -48,7 +48,7 @@ class Stock {
             當前成交: isNaN(stock.z)
               ? stock.z
               : strConvertToDecimalPoint(stock.z),
-            當前成交量: isNaN(stock.tv)
+            當盤成交量: isNaN(stock.tv)
               ? stock.tv
               : strConvertToDecimalPoint(stock.tv),
             最近成交時刻: stock.t,
