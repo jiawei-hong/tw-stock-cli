@@ -8,7 +8,7 @@ This command use in my daily qucikly search stock information.
 npm install -g tw-stock
 ```
 
-# How to update:
+# How to update stock.json:
 
 ```sheel
 tw-stock update
