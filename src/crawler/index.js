@@ -10,10 +10,7 @@ class Crawler {
       otc: 'http://isin.twse.com.tw/isin/C_public.jsp?strMode=4',
     }
 
-    this.data = {
-      tse: [],
-      otc: [],
-    }
+    this.data = {}
   }
 
   async update() {
@@ -30,15 +27,17 @@ class Crawler {
           stockData.filter((str) => str.length === 0).length > 0
 
         if (!stockDataExistEmptyString) {
-          this.data[category].push({
+          this.data[stockData[0]] = {
             name: stockData[1],
-            code: stockData[0],
-          })
+            category,
+          }
         }
       })
     }
 
     fs.writeFileSync(`${__dirname}/../stock.json`, JSON.stringify(this.data))
+
+    console.log('\x1b[1;32mStock created successfully.\x1b[0m')
   }
 }
 
