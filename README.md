@@ -34,3 +34,7 @@ tw-stock stock <stock_code>
 # Search Otc Stock
 
 ![otc.png](./otc.png)
+
+# Search Multiple Stock
+
+![multiple.png](./multiple.png)
