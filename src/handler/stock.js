@@ -2,7 +2,7 @@ const { default: axios } = require('axios')
 const fs = require('fs')
 const path = require('path')
 const { Table } = require('console-table-printer')
-const { strConvertToDecimalPoint } = require('../lib/text')
+const Text = require('../lib/text')
 
 class Stock {
   constructor(params) {
@@ -48,7 +48,7 @@ class Stock {
           if (existTse || existOtc) {
             stock.push(`${existTse ? 'tse' : 'otc'}_${stockCode}.tw`)
           } else {
-            console.log(`\x1b[1;31mNot found ${stockCode} stock.\x1b[0m`)
+            console.log(Text.red(`Not found ${stockCode} stock.`))
           }
         }
 
@@ -56,7 +56,7 @@ class Stock {
           this.url = `${this.prefix}${stock.join('|')}`
         }
       } else {
-        console.log('\x1b[1;31mNot found stock.json file.\x1b[0m')
+        console.log(Text.red('Not found stock.json file.'))
       }
     } else {
       this.url = `${this.prefix}${
@@ -68,51 +68,32 @@ class Stock {
       axios.get(this.url).then((res) => {
         const data = res.data
         if (data.msgArray.length === 0) {
-          console.log('\x1b[1;31mNot found stock.\x1b[0m')
+          console.log(Text.red('Not Found Stock.'))
         } else {
           data.msgArray.forEach((stock) => {
-            const upsAndDownsPercentage = (
+            const upsAndDownsPercentage = Text.strIsNanHandle(
               ((parseFloat(stock.z) - parseFloat(stock.y)) /
                 parseFloat(stock.y)) *
-              100
-            ).toFixed(2)
+                100
+            )
             let stockData = {
               代號: stock.c,
               類別: stock.ex == 'tse' ? '上市' : '上櫃',
               公司: stock.n,
-              昨收: isNaN(stock.y)
-                ? stock.y
-                : strConvertToDecimalPoint(stock.y),
-              開盤: isNaN(stock.o)
-                ? stock.o
-                : strConvertToDecimalPoint(stock.o),
-              最高: isNaN(stock.h)
-                ? stock.h
-                : strConvertToDecimalPoint(stock.h),
-              最低: isNaN(stock.l)
-                ? stock.l
-                : strConvertToDecimalPoint(stock.l),
-              漲停: strConvertToDecimalPoint(stock.u),
-              跌停: strConvertToDecimalPoint(stock.w),
-              當盤成交價: isNaN(stock.z)
-                ? stock.z
-                : strConvertToDecimalPoint(stock.z),
-              當盤成交量: isNaN(stock.tv)
-                ? stock.tv
-                : strConvertToDecimalPoint(stock.tv),
-              累積成交量: isNaN(stock.v)
-                ? stock.v
-                : strConvertToDecimalPoint(stock.v),
+              昨收: Text.strIsNanHandle(stock.y),
+              開盤: Text.strIsNanHandle(stock.o),
+              最高: Text.strIsNanHandle(stock.h),
+              最低: Text.strIsNanHandle(stock.l),
+              漲停: Text.strConvertToDecimalPoint(stock.u),
+              跌停: Text.strConvertToDecimalPoint(stock.w),
+              當盤成交價: Text.strIsNanHandle(stock.z),
+              當盤成交量: Text.strIsNanHandle(stock.tv),
+              累積成交量: Text.strIsNanHandle(stock.v),
               最近成交時刻: stock.t,
-              漲跌幅: isNaN(upsAndDownsPercentage)
-                ? upsAndDownsPercentage
-                : `\x1b[${
-                    upsAndDownsPercentage == 0
-                      ? '0'
-                      : upsAndDownsPercentage > 0
-                      ? '31'
-                      : '32'
-                  }m${`${upsAndDownsPercentage}%`}\x1b[0m`,
+              漲跌幅:
+                upsAndDownsPercentage.length > 1
+                  ? Text.percentageHandle(upsAndDownsPercentage)
+                  : upsAndDownsPercentage,
             }
 
             if (stock.ex == 'otc') {
