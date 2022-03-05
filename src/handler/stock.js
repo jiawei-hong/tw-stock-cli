@@ -47,43 +47,43 @@ class Stock {
           'If you want search multiple stock, please run update command.'
         )
       )
-    }
+    } else {
+      this.url = this.getStockUrl()
 
-    this.url = this.getStockUrl()
+      if (this.url) {
+        axios.get(this.url).then((res) => {
+          const data = res.data
 
-    if (this.url) {
-      axios.get(this.url).then((res) => {
-        const data = res.data
+          if (data.msgArray.length === 0) {
+            console.log(Text.red('Not Found Stock.'))
+          } else {
+            data.msgArray.forEach((stock) => {
+              let stockField = {}
 
-        if (data.msgArray.length === 0) {
-          console.log(Text.red('Not Found Stock.'))
-        } else {
-          data.msgArray.forEach((stock) => {
-            let stockField = {}
+              this.field.forEach((field) => {
+                stockField[field.name] = this.notExecIsNanHandle.includes(
+                  field.code
+                )
+                  ? stock[field.code]
+                  : Text.strIsNanHandle(stock[field.code])
 
-            this.field.forEach((field) => {
-              stockField[field.name] = this.notExecIsNanHandle.includes(
-                field.code
-              )
-                ? stock[field.code]
-                : Text.strIsNanHandle(stock[field.code])
+                if (field.callback) {
+                  stockField[field.name] = field.callback(stock)
+                }
+              })
 
-              if (field.callback) {
-                stockField[field.name] = field.callback(stock)
+              if (stock.ex == 'otc') {
+                delete stockField.漲停
+                delete stockField.跌停
               }
+
+              this.p.addRow(stockField)
             })
 
-            if (stock.ex == 'otc') {
-              delete stockField.漲停
-              delete stockField.跌停
-            }
-
-            this.p.addRow(stockField)
-          })
-
-          this.p.printTable()
-        }
-      })
+            this.p.printTable()
+          }
+        })
+      }
     }
   }
 
