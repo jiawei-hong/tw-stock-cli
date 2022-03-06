@@ -24,7 +24,6 @@ function run() {
   program
     .command('favorite')
     .description('check yourself favorite stocks')
-    .option('-s --show', 'show favroite list')
     .option('-c --create', 'create favorite file')
     .option('-a --add <stockCode>', 'add stockCode in favorite list')
     .option('-d --delete <stockCode>', 'delete stockCode from favorite list')
