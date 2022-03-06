@@ -3,12 +3,14 @@ const fs = require('fs')
 const path = require('path')
 const { Table } = require('console-table-printer')
 const Text = require('../lib/text')
+const Favorite = require('./favroite')
 
 class Stock {
   constructor(params) {
     this.prefix = 'https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch='
     this.url = ''
     this.stocks = []
+    this.favorite = new Favorite()
     this.code = params.code
     this.options = params.options
     this.stockCategoryPath = path.resolve(`${__dirname}/../stock.json`)
