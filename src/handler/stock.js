@@ -50,6 +50,16 @@ class Stock {
         )
       )
     } else {
+      if (this.options.favorite && !this.favorite.checkExistFavoriteFile()) {
+        console.log(
+          Text.red(
+            'If you watnt useFavorite show stock,plz create favorite list.'
+          )
+        )
+
+        return
+      }
+
       this.url = this.getStockUrl()
 
       if (this.url) {
@@ -110,8 +120,11 @@ class Stock {
       if (stock.length > 0) {
         return `${this.prefix}${stock.join('|')}`
       }
-    }
+    } else if (this.options.favorite) {
+      const favoriteUrl = this.favorite.getFavoriteStocksUrl()
 
+      return `${this.prefix}${favoriteUrl}`
+    }
     return `${this.prefix}${this.options.listed}_${this.code.toUpperCase()}.tw`
   }
 

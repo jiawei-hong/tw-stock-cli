@@ -48,6 +48,18 @@ class Favorite {
     }
   }
 
+  getFavoriteStocksUrl() {
+    this.initialize()
+
+    return this.data
+      .map((stockCode) => {
+        let data = this.stockCategory[stockCode]
+
+        return `${data.category}_${stockCode}.tw`
+      })
+      .join('|')
+  }
+
   execute() {
     this.initialize()
 
