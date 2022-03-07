@@ -14,6 +14,7 @@ function run() {
     .argument('[stock_code]', 'stock code')
     .option('-l --listed <listed>', 'this trade is listed?', 'tse')
     .option('-m --multiple', 'search multiple stock', false)
+    .option('-f --favorite')
     .action((code, options) => new Stock({ code, options }).initialize())
 
   program
