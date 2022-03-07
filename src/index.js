@@ -11,7 +11,7 @@ function run() {
   program
     .command('stock')
     .description('get stock information')
-    .argument('<stock_code>', 'stock code')
+    .argument('[stock_code]', 'stock code')
     .option('-l --listed <listed>', 'this trade is listed?', 'tse')
     .option('-m --multiple', 'search multiple stock', false)
     .action((code, options) => new Stock({ code, options }).initialize())
