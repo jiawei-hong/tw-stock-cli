@@ -22,10 +22,11 @@ tw-stock stock <stock_code>
 
 `<stock_code>` input your search tw_stock_code
 
-| Options      | Description                            |
-| ------------ | -------------------------------------- |
-| -l --listed  | input this tw_stock_code is tse or otc |
-| -m --mutiple | search multiple stock_code             |
+| Options          | Description                            |
+| ---------------- | -------------------------------------- |
+| -l --listed      | input this tw_stock_code is tse or otc |
+| -m --mutiple     | search multiple stock_code             |
+| -f --useFavorite | show stocks in favorite list           |
 
 # How to use favorite:
 
