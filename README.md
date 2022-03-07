@@ -27,6 +27,18 @@ tw-stock stock <stock_code>
 | -l --listed  | input this tw_stock_code is tse or otc |
 | -m --mutiple | search multiple stock_code             |
 
+# How to use favorite:
+
+```sheel
+tw-stock favorite
+```
+
+| Options     | Description                        |
+| ----------- | ---------------------------------- |
+| -c --create | create favorite file.              |
+| -a --add    | add stockCode in favorite file.    |
+| -d --delete | delete stockCode in favorite file. |
+
 # Search Tse Stock
 
 ![tse.png](./tse.png)
