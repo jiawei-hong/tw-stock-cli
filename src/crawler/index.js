@@ -2,6 +2,7 @@ const { default: axios } = require('axios')
 const fs = require('fs')
 const Cheerio = require('cheerio')
 const iconv = require('iconv-lite')
+const Text = require('../lib/text')
 
 class Crawler {
   constructor() {
@@ -37,7 +38,7 @@ class Crawler {
 
     fs.writeFileSync(`${__dirname}/../stock.json`, JSON.stringify(this.data))
 
-    console.log('\x1b[1;32mStock created successfully.\x1b[0m')
+    console.log(Text.green('Stock list created successfully.'))
   }
 }
 
