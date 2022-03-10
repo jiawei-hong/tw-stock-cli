@@ -121,6 +121,12 @@ class Stock {
         return `${this.prefix}${stock.join('|')}`
       }
     } else if (this.options.favorite) {
+      if (this.favorite.checkFavoriteNotExistStock()) {
+        console.log(Text.red('Your favorite list not have any stock.'))
+
+        return
+      }
+
       const favoriteUrl = this.favorite.getFavoriteStocksUrl()
 
       return `${this.prefix}${favoriteUrl}`

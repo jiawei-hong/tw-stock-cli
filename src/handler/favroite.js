@@ -93,6 +93,12 @@ class Favorite {
     return fs.existsSync(this.stockCategoryPath)
   }
 
+  checkFavoriteNotExistStock() {
+    this.initialize()
+
+    return this.data.length === 0
+  }
+
   add(stockCode) {
     const stock = this.stockCategory[stockCode]
     const stockExistInFavorite = this.data.indexOf(stockCode) !== -1
