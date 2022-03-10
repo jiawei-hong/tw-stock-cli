@@ -100,7 +100,7 @@ class Stock {
   }
 
   getStockUrl() {
-    if (!this.code) {
+    if (!this.code && !this.options.favorite) {
       console.log(Text.red('Please enter stock code.'))
 
       return
