@@ -100,12 +100,22 @@ class Stock {
   }
 
   getStockUrl() {
+    if (!this.code) {
+      console.log(Text.red('Please enter stock code.'))
+
+      return
+    }
+
     if (this.options.multiple) {
       this.stocks = this.getAllStockCategory()
 
       let stock = []
 
       for (let stockCode of this.code.split('-')) {
+        if (!stockCode) {
+          return
+        }
+
         stockCode = stockCode.toUpperCase()
         let existTse = this.checkStockExistInCateogry(stockCode)
         let existOtc = this.checkStockExistInCateogry(stockCode, 'otc')
@@ -131,6 +141,7 @@ class Stock {
 
       return `${this.prefix}${favoriteUrl}`
     }
+
     return `${this.prefix}${this.options.listed}_${this.code.toUpperCase()}.tw`
   }
 
