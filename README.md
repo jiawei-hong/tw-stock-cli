@@ -51,3 +51,11 @@ tw-stock favorite
 # Search Multiple Stock
 
 ![multiple.png](./multiple.png)
+
+# Add Stock in Favorite List
+
+![addStockInFavorite.png](./addStockInFavorite.png)
+
+# Show Favorite List
+
+![showFavoriteList.png](./showFavoriteList.png)
