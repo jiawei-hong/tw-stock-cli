@@ -15,12 +15,12 @@ function run() {
     .option('-l --listed <listed>', 'this trade is listed?', 'tse')
     .option('-m --multiple', 'search multiple stock', false)
     .option('-f --favorite')
-    .action((code, options) => new Stock({ code, options }).initialize())
+    .action((code, options) => new Stock({ code, options }).execute())
 
   program
     .command('update')
     .description('update tse/otc json file')
-    .action(() => new Crawler().update())
+    .action(() => new Crawler().execute())
 
   program
     .command('favorite')

@@ -14,7 +14,7 @@ class Crawler {
     this.data = {}
   }
 
-  async update() {
+  async execute() {
     for (let category in this.urls) {
       const html = await axios.get(this.urls[category], {
         responseType: 'arraybuffer',

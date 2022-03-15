@@ -49,53 +49,59 @@ class Stock {
           'If you want search multiple stock, please run update command.'
         )
       )
-    } else {
-      if (this.options.favorite && !this.favorite.checkExistFavoriteFile()) {
-        console.log(
-          Text.red(
-            'If you watnt useFavorite show stock,plz create favorite list.'
-          )
+
+      return
+    }
+
+    if (this.options.favorite && !this.favorite.checkExistFavoriteFile()) {
+      console.log(
+        Text.red(
+          'If you watnt useFavorite show stock,plz create favorite list.'
         )
+      )
 
-        return
-      }
+      return
+    }
 
-      this.url = this.getStockUrl()
+    this.url = this.getStockUrl()
+  }
 
-      if (this.url) {
-        axios.get(this.url).then((res) => {
-          const data = res.data
+  execute() {
+    this.initialize()
 
-          if (data.msgArray.length === 0) {
-            console.log(Text.red('Not Found Stock.'))
-          } else {
-            data.msgArray.forEach((stock) => {
-              let stockField = {}
+    if (this.url) {
+      axios.get(this.url).then((res) => {
+        const data = res.data
 
-              this.field.forEach((field) => {
-                stockField[field.name] = this.notExecIsNanHandle.includes(
-                  field.code
-                )
-                  ? stock[field.code]
-                  : Text.strIsNanHandle(stock[field.code])
+        if (data.msgArray.length === 0) {
+          console.log(Text.red('Not Found Stock.'))
+        } else {
+          data.msgArray.forEach((stock) => {
+            let stockField = {}
 
-                if (field.callback) {
-                  stockField[field.name] = field.callback(stock)
-                }
-              })
+            this.field.forEach((field) => {
+              stockField[field.name] = this.notExecIsNanHandle.includes(
+                field.code
+              )
+                ? stock[field.code]
+                : Text.strIsNanHandle(stock[field.code])
 
-              if (stock.ex == 'otc') {
-                delete stockField.漲停
-                delete stockField.跌停
+              if (field.callback) {
+                stockField[field.name] = field.callback(stock)
               }
-
-              this.p.addRow(stockField)
             })
 
-            this.p.printTable()
-          }
-        })
-      }
+            if (stock.ex == 'otc') {
+              delete stockField.漲停
+              delete stockField.跌停
+            }
+
+            this.p.addRow(stockField)
+          })
+
+          this.p.printTable()
+        }
+      })
     }
   }
 
