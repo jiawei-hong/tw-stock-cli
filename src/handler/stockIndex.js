@@ -43,6 +43,10 @@ class StockIndex {
         stockIdx.push(this.twIndex[index])
       })
 
+      if (stockIdx.length == 0) {
+        return
+      }
+
       this.url += stockIdx.join('|')
     } else {
       this.url += this.twIndex[this.index]
