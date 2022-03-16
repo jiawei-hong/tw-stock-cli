@@ -28,6 +28,22 @@ tw-stock stock <stock_code>
 | -m --mutiple  | search multiple stock_code             |
 | -f --favorite | show stocks in favorite list           |
 
+# How to search tw-stock index:
+
+```sheel
+tw-stock index [index]
+```
+
+| Index | Description        |
+| ----- | ------------------ |
+| TAIEX | search taiex index |
+| TWO   | search two index   |
+| FRMSA | search frmsa index |
+
+| Options      | Description                 |
+| ------------ | --------------------------- |
+| -m --mutiple | search multiple stock index |
+
 # How to use favorite:
 
 ```sheel
