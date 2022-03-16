@@ -2,6 +2,7 @@ require('regenerator-runtime/runtime')
 
 const { program } = require('commander')
 const Stock = require('./handler/stock')
+const StockIndex = require('./handler/stockIndex')
 const Crawler = require('./crawler')
 const Favorite = require('./handler/favroite')
 
@@ -16,6 +17,13 @@ function run() {
     .option('-m --multiple', 'search multiple stock', false)
     .option('-f --favorite')
     .action((code, options) => new Stock({ code, options }).execute())
+
+  program
+    .command('index')
+    .description('get tw-stock index')
+    .argument('[index]', 'get tw-stock index', 'TAIEX')
+    .option('-m --multiple', 'search multiple index', false)
+    .action((index, options) => new StockIndex({ index, options }).execute())
 
   program
     .command('update')
