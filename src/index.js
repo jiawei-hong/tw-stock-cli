@@ -16,6 +16,7 @@ function run() {
     .option('-l --listed <listed>', 'this trade is listed?', 'tse')
     .option('-m --multiple', 'search multiple stock', false)
     .option('-f --favorite')
+    .option('-o --oddlot', 'search odd-lot', false)
     .action((code, options) => new Stock({ code, options }).execute())
 
   program

@@ -4,10 +4,11 @@ const path = require('path')
 const { Table } = require('console-table-printer')
 const Text = require('../lib/text')
 const Favorite = require('./favroite')
+const StockURL = require('../url/index')
 
 class Stock {
   constructor(params) {
-    this.prefix = 'https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch='
+    this.prefix = StockURL.getStockAPI(params.options.oddlot)
     this.url = ''
     this.stocks = []
     this.favorite = new Favorite()
@@ -24,7 +25,7 @@ class Stock {
       },
       { code: 'n', name: '公司', alignment: 'center' },
       { code: 'z', name: '當盤成交價', color: 'yellow' },
-      { code: 'tv', name: '當盤成交量' },
+      { code: this.options.oddlot ? 's' : 'tv', name: '當盤成交量' },
       { code: 'v', name: '累積成交量' },
       { code: 'y', name: '昨收', color: 'cyan' },
       { code: 'o', name: '開盤' },
