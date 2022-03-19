@@ -1,4 +1,3 @@
-const { default: axios } = require('axios')
 const { Table } = require('console-table-printer')
 const Text = require('../lib/text')
 const Stock = require('../handler/stock')
@@ -28,7 +27,7 @@ class StockIndex extends Stock {
   initialize() {
     const twIndexKeys = Object.keys(this.twIndex)
 
-    if (this.options) {
+    if (this.options.multiple) {
       let stockIdx = []
 
       this.code.split('-').forEach((index) => {
@@ -46,10 +45,9 @@ class StockIndex extends Stock {
       if (stockIdx.length == 0) {
         return
       }
-
       this.url = `${this.prefix}${stockIdx.join('|')}`
     } else {
-      this.url = `${this.prefix}${this.twIndex[this.index]}`
+      this.url = `${this.prefix}${this.twIndex[this.code.toUpperCase()]}`
     }
   }
 }
