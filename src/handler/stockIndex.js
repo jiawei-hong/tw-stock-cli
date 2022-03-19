@@ -47,7 +47,15 @@ class StockIndex extends Stock {
       }
       this.url = `${this.prefix}${stockIdx.join('|')}`
     } else {
-      this.url = `${this.prefix}${this.twIndex[this.code.toUpperCase()]}`
+      const code = this.code.toUpperCase()
+
+      if (!twIndexKeys.includes(code)) {
+        console.log(Text.red(`Not Found ${index} Index.`))
+
+        return
+      }
+
+      this.url = `${this.prefix}${this.twIndex[code]}`
     }
   }
 }
