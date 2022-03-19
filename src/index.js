@@ -22,9 +22,9 @@ function run() {
   program
     .command('index')
     .description('get tw-stock index')
-    .argument('[index]', 'get tw-stock index', 'TAIEX')
+    .argument('[code]', 'get tw-stock index', 'TAIEX')
     .option('-m --multiple', 'search multiple index', false)
-    .action((index, options) => new StockIndex({ index, options }).execute())
+    .action((code, options) => new StockIndex({ code, options }).execute())
 
   program
     .command('update')

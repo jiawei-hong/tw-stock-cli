@@ -1,12 +1,11 @@
 const { default: axios } = require('axios')
 const { Table } = require('console-table-printer')
 const Text = require('../lib/text')
+const Stock = require('../handler/stock')
 
-class StockIndex {
+class StockIndex extends Stock {
   constructor(params) {
-    this.url = 'https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch='
-    this.options = params.options
-    this.index = params.index.toUpperCase()
+    super(params)
     this.twIndex = {
       TAIEX: 'tse_t00.tw',
       TWO: 'otc_o00.tw',
@@ -23,17 +22,18 @@ class StockIndex {
       { code: 'l', name: '最低', color: 'green' },
       { code: 't', name: '最近成交時刻', alignment: 'center' },
     ]
-    this.notExecIsNanHandle = ['c', 'ex', 'n', 't']
     this.p = new Table({ columns: this.field })
   }
 
-  execute() {
+  initialize() {
     const twIndexKeys = Object.keys(this.twIndex)
 
     if (this.options) {
       let stockIdx = []
 
-      this.index.split('-').forEach((index) => {
+      this.code.split('-').forEach((index) => {
+        index = index.toUpperCase()
+
         if (!twIndexKeys.includes(index)) {
           console.log(Text.red(`Not Found ${index} Index.`))
 
@@ -47,30 +47,10 @@ class StockIndex {
         return
       }
 
-      this.url += stockIdx.join('|')
+      this.url = `${this.prefix}${stockIdx.join('|')}`
     } else {
-      this.url += this.twIndex[this.index]
+      this.url = `${this.prefix}${this.twIndex[this.index]}`
     }
-
-    axios.get(this.url).then((res) => {
-      const data = res.data
-
-      if (data.msgArray.length == 0) {
-        console.log(Text.red('Not found stock index'))
-      } else {
-        data.msgArray.forEach((stock) => {
-          let stockField = {}
-
-          this.field.forEach((field) => {
-            stockField[field.name] = stock[field.code]
-          })
-
-          this.p.addRow(stockField)
-        })
-      }
-
-      this.p.printTable()
-    })
   }
 }
 
