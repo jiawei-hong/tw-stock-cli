@@ -1,5 +1,5 @@
 class Field {
-  static basic() {
+  static basic(options) {
     return [
       { code: 'c', name: '代號', alignment: 'center' },
       {
@@ -10,7 +10,7 @@ class Field {
       },
       { code: 'n', name: '公司', alignment: 'center' },
       { code: 'z', name: '當盤成交價', color: 'yellow' },
-      { code: this.options.oddlot ? 's' : 'tv', name: '當盤成交量' },
+      { code: options.oddlot ? 's' : 'tv', name: '當盤成交量' },
       { code: 'v', name: '累積成交量' },
       { code: 'y', name: '昨收', color: 'cyan' },
       { code: 'o', name: '開盤' },

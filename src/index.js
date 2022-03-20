@@ -4,7 +4,7 @@ const { program } = require('commander')
 const Stock = require('./handler/stock')
 const StockIndex = require('./handler/stockIndex')
 const Crawler = require('./crawler')
-const Favorite = require('./handler/favroite')
+const Favorite = require('./handler/favorite')
 
 function run() {
   program.name('tw-stock').version('1.1.7')

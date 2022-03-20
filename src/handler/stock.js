@@ -104,7 +104,11 @@ class Stock {
       return Field.history()
     }
 
-    return Field.basic()
+    if (this.type === 'index') {
+      return Field.stockIndex()
+    }
+
+    return Field.basic(this.options)
   }
 
   getStockUrl() {
