@@ -1,6 +1,7 @@
 const { Table } = require('console-table-printer')
 const Text = require('../lib/text')
 const Stock = require('../handler/stock')
+const Field = require('../field')
 
 class StockIndex extends Stock {
   constructor(params) {
@@ -10,18 +11,7 @@ class StockIndex extends Stock {
       TWO: 'otc_o00.tw',
       FRMSA: 'tse_FRMSA.tw',
     }
-    this.field = [
-      { code: 'n', name: '指數名稱', alignment: 'center' },
-      { code: 'z', name: '當盤指數', color: 'yellow' },
-      { code: 'tv', name: '當盤成交量' },
-      { code: 'v', name: '累積成交量' },
-      { code: 'y', name: '昨收指數', color: 'cyan' },
-      { code: 'o', name: '開盤' },
-      { code: 'h', name: '最高', color: 'red' },
-      { code: 'l', name: '最低', color: 'green' },
-      { code: 't', name: '最近成交時刻', alignment: 'center' },
-    ]
-    this.p = new Table({ columns: this.field })
+    this.p = new Table({ columns: Field.stockIndex })
   }
 
   initialize() {

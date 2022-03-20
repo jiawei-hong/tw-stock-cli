@@ -1,10 +1,11 @@
-const { default: axios } = require('axios')
+const axios = require('axios').default
 const fs = require('fs')
 const path = require('path')
 const { Table } = require('console-table-printer')
 const Text = require('../lib/text')
-const Favorite = require('./favroite')
+const Favorite = require('./favorite')
 const StockURL = require('../url/index')
+const Field = require('../field')
 
 class Stock {
   constructor(params) {
@@ -15,32 +16,8 @@ class Stock {
     this.code = params.code
     this.options = params.options
     this.stockCategoryPath = path.resolve(`${__dirname}/../stock.json`)
-    this.field = [
-      { code: 'c', name: '代號', alignment: 'center' },
-      {
-        code: 'ex',
-        name: '類別',
-        alignment: 'center',
-        callback: (stock) => (stock.ex === 'tse' ? '上市' : '上櫃'),
-      },
-      { code: 'n', name: '公司', alignment: 'center' },
-      { code: 'z', name: '當盤成交價', color: 'yellow' },
-      { code: this.options.oddlot ? 's' : 'tv', name: '當盤成交量' },
-      { code: 'v', name: '累積成交量' },
-      { code: 'y', name: '昨收', color: 'cyan' },
-      { code: 'o', name: '開盤' },
-      { code: 'h', name: '最高' },
-      { code: 'l', name: '最低' },
-      { code: 'u', name: '漲停', color: 'red' },
-      { code: 'w', name: '跌停', color: 'green' },
-      { code: 't', name: '最近成交時刻', alignment: 'center' },
-      {
-        name: '漲跌幅',
-        callback: this.getStockUpsAndDownsPercentage,
-      },
-    ]
-    this.notExecIsNanHandle = ['c', 'ex', 'n', 't']
-    this.p = new Table({ columns: this.field })
+    this.notExecIsNanHandle = ['c', 'ex', 'n', 't', 0, 1, 2, 7, 8]
+    this.p = new Table({ columns: this.getField() })
   }
 
   initialize() {
@@ -72,15 +49,15 @@ class Stock {
 
     if (this.url) {
       axios.get(this.url).then((res) => {
-        const data = res.data
+        const data = this.processStockData(res.data)
 
-        if (data.msgArray.length === 0) {
+        if (data.length === 0) {
           console.log(Text.red('Not Found Stock.'))
         } else {
-          data.msgArray.forEach((stock) => {
+          data.forEach((stock) => {
             let stockField = {}
 
-            this.field.forEach((field) => {
+            this.getField().forEach((field) => {
               stockField[field.name] = this.notExecIsNanHandle.includes(
                 field.code
               )
@@ -100,14 +77,38 @@ class Stock {
             this.p.addRow(stockField)
           })
 
+          if (this.options.date) {
+            console.log(Text.green(`您搜尋的編號是:${this.code}`))
+          }
+
           this.p.printTable()
         }
       })
     }
   }
 
+  processStockData(data) {
+    if (this.options.date) {
+      if (this.options.listed == 'tse') {
+        return data.data
+      } else {
+        return data.aaData
+      }
+    }
+
+    return data.msgArray
+  }
+
+  getField() {
+    if (this.options.date) {
+      return Field.history()
+    }
+
+    return Field.basic()
+  }
+
   getStockUrl() {
-    if (!this.code && !this.options.favorite) {
+    if (!this.code && !this.options.favorite && !this.options.date) {
       console.log(Text.red('Please enter stock code.'))
 
       return
@@ -137,7 +138,9 @@ class Stock {
       if (stock.length > 0) {
         return `${this.prefix}${stock.join('|')}`
       }
-    } else if (this.options.favorite) {
+    }
+
+    if (this.options.favorite) {
       if (this.favorite.checkFavoriteNotExistStock()) {
         console.log(Text.red('Your favorite list not have any stock.'))
 
@@ -147,6 +150,14 @@ class Stock {
       const favoriteUrl = this.favorite.getFavoriteStocksUrl()
 
       return `${this.prefix}${favoriteUrl}`
+    }
+
+    if (this.options.date) {
+      return StockURL.getStockAPIWithDate(
+        this.code,
+        this.options.date,
+        this.options.listed
+      )
     }
 
     return `${this.prefix}${this.options.listed}_${this.code.toUpperCase()}.tw`

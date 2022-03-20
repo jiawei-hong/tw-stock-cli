@@ -17,6 +17,7 @@ function run() {
     .option('-m --multiple', 'search multiple stock', false)
     .option('-f --favorite')
     .option('-o --oddlot', 'search odd-lot', false)
+    .option('-d --date <date>', 'search stock history')
     .action((code, options) => new Stock({ code, options }).execute())
 
   program
