@@ -27,6 +27,13 @@ tw-stock stock <stock_code>
 | -l --listed   | input this tw_stock_code is tse or otc |
 | -m --mutiple  | search multiple stock_code             |
 | -f --favorite | show stocks in favorite list           |
+| -d --date     | search stock history trade             |
+
+> Tips: When you must use date options search stock history trade.
+
+> search tse stock date format is A.D. Example:20220301 -> get 2020 03 month all trade.
+
+> search otc stock date format is R.O.C Example:111/03 -> get 2020 03 month all trade.
 
 # How to search tw-stock index:
 
