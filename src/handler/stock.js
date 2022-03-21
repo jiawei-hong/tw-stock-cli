@@ -18,6 +18,8 @@ class Stock {
     this.stockCategoryPath = path.resolve(`${__dirname}/../stock.json`)
     this.notExecIsNanHandle = ['c', 'ex', 'n', 't', 0, 1, 2, 7, 8]
     this.p = new Table({ columns: this.getField() })
+    this.date = []
+    this.dateExistDay = false
   }
 
   initialize() {
@@ -49,13 +51,33 @@ class Stock {
 
     if (this.url) {
       axios.get(this.url).then((res) => {
-        const data = this.processStockData(res.data)
+        const data = this.getStockData(res.data)
 
-        if (data.length === 0) {
-          console.log(Text.red('Not Found Stock.'))
+        if (typeof data === 'string' || data.length === 0) {
+          console.log(
+            Text.red(
+              typeof data === 'string'
+                ? data
+                : 'Not found stock or input invalid date.'
+            )
+          )
         } else {
           data.forEach((stock) => {
             let stockField = {}
+
+            if (this.dateExistDay) {
+              let d = this.date.slice(0)
+
+              if (this.options.listed == 'tse') {
+                d[0] -= 1911
+              }
+
+              const searchDay = d.join('/')
+
+              if (searchDay != stock[0]) {
+                return
+              }
+            }
 
             this.getField().forEach((field) => {
               stockField[field.name] = this.notExecIsNanHandle.includes(
@@ -87,16 +109,15 @@ class Stock {
     }
   }
 
-  processStockData(data) {
-    if (this.options.date) {
-      if (this.options.listed == 'tse') {
-        return data.data
-      } else {
-        return data.aaData
-      }
+  getStockData(data) {
+    const dataField = ['data', 'aaData', 'msgArray']
+    const getDataKey = Object.keys(data).find((key) => dataField.includes(key))
+
+    if (!getDataKey) {
+      return '查詢日期大於今日，請重新查詢!'
     }
 
-    return data.msgArray
+    return data[getDataKey]
   }
 
   getField() {
@@ -157,9 +178,25 @@ class Stock {
     }
 
     if (this.options.date) {
+      const date = StockURL.getConversionDate(
+        this.options.date,
+        this.options.listed
+      )
+
+      if (typeof date == 'string') {
+        return
+      } else {
+        this.date = date
+        this.dateExistDay = this.date.length == 3
+
+        if (!this.dateExistDay) {
+          this.date.push('01')
+        }
+      }
+
       return StockURL.getStockAPIWithDate(
         this.code,
-        this.options.date,
+        this.date.join(this.options.listed == 'otc' ? '/' : ''),
         this.options.listed
       )
     }
