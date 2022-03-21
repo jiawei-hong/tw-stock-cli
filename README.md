@@ -31,9 +31,10 @@ tw-stock stock <stock_code>
 
 > Tips: When you must use date options search stock history trade.
 
-> search tse stock date format is A.D. Example:20220301 -> get 2020 03 month all trade.
-
-> search otc stock date format is R.O.C Example:111/03 -> get 2020 03 month all trade.
+| DateFormat | Description          |
+| ---------- | -------------------- |
+| YYYY-MM    | get month trade data |
+| YYYY-MM-DD | get day trade data   |
 
 # How to search tw-stock index:
 
