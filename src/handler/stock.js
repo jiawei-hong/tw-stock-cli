@@ -92,12 +92,14 @@ class Stock {
             this.p.addRow(stockField)
           }
 
-          if (this.options.date) {
-            console.log(Text.green(`您搜尋的編號是:${this.code}`))
-          }
-
           if (this.p.table.rows.length > 0) {
+            if (this.options.date) {
+              console.log(Text.green(`您搜尋的編號是:${this.code}`))
+            }
+
             this.p.printTable()
+          } else {
+            console.log(Text.red('Table not exist data.'))
           }
         }
       })
