@@ -43,6 +43,12 @@ class Stock {
       return
     }
 
+    if (!this.code && !this.options.favorite && !this.options.date) {
+      console.log(Text.red('Please enter stock code.'))
+
+      return
+    }
+
     this.url = this.getStockUrl()
   }
 
@@ -55,20 +61,15 @@ class Stock {
         const dataTypeIsString = typeof data === 'string'
 
         if (dataTypeIsString || data.length === 0) {
-          console.log(
-            Text.red(
-              dataTypeIsString ? data : 'Not found stock or input invalid date.'
-            )
-          )
+          console.log(Text.red(dataTypeIsString ? data : 'Not found stock'))
         } else {
-          data.forEach((stock) => {
+          for (let stock of data) {
             let stockField = {}
 
             if (this.dateExistDay) {
-              let d = this.date.slice(0)
-              const searchDay = StockURL.getTaiwanDateFormat(d)
+              const searchDay = StockURL.getTaiwanDateFormat(this.date.slice(0))
 
-              if (searchDay != stock[0]) return
+              if (searchDay != stock[0]) continue
             }
 
             this.getField().forEach((field) => {
@@ -89,7 +90,7 @@ class Stock {
             }
 
             this.p.addRow(stockField)
-          })
+          }
 
           if (this.options.date) {
             console.log(Text.green(`您搜尋的編號是:${this.code}`))
@@ -106,7 +107,7 @@ class Stock {
     const getDataKey = Object.keys(data).find((key) => dataField.includes(key))
 
     if (!getDataKey) {
-      return '查詢日期大於今日，請重新查詢!'
+      return 'Query date is greater than today,please check again!'
     }
 
     return data[getDataKey]
@@ -125,12 +126,6 @@ class Stock {
   }
 
   getStockUrl() {
-    if (!this.code && !this.options.favorite && !this.options.date) {
-      console.log(Text.red('Please enter stock code.'))
-
-      return
-    }
-
     if (this.options.multiple) {
       this.stocks = this.getAllStockCategory()
 
@@ -142,13 +137,12 @@ class Stock {
         }
 
         stockCode = stockCode.toUpperCase()
-        let existTse = this.checkStockExistInCateogry(stockCode)
-        let existOtc = this.checkStockExistInCateogry(stockCode, 'otc')
+        let stockCategory = this.getStockCategory(stockCode)
 
-        if (existTse || existOtc) {
-          stock.push(`${existTse ? 'tse' : 'otc'}_${stockCode}.tw`)
+        if (stockCategory != 'tse' || stockCategory != 'otc') {
+          console.log(Text.red(stockCategory))
         } else {
-          console.log(Text.red(`Not found ${stockCode} stock.`))
+          stock.push(`${stockCategory}_${stockCode}.tw`)
         }
       }
 
@@ -160,13 +154,11 @@ class Stock {
     if (this.options.favorite) {
       if (this.favorite.checkFavoriteNotExistStock()) {
         console.log(Text.red('Your favorite list not have any stock.'))
+      } else {
+        const favoriteUrl = this.favorite.getFavoriteStocksUrl()
 
-        return
+        return `${this.prefix}${favoriteUrl}`
       }
-
-      const favoriteUrl = this.favorite.getFavoriteStocksUrl()
-
-      return `${this.prefix}${favoriteUrl}`
     }
 
     if (this.options.date) {
@@ -175,22 +167,20 @@ class Stock {
         this.options.listed
       )
 
-      if (typeof date == 'string') {
-        return
-      } else {
+      if (typeof date != 'string') {
         this.date = date
         this.dateExistDay = this.date.length == 3
 
         if (!this.dateExistDay) {
           this.date.push('01')
         }
-      }
 
-      return StockURL.getStockAPIWithDate(
-        this.code,
-        this.date.join(this.options.listed == 'otc' ? '/' : ''),
-        this.options.listed
-      )
+        return StockURL.getStockAPIWithDate(
+          this.code,
+          this.date.join(this.options.listed == 'otc' ? '/' : ''),
+          this.options.listed
+        )
+      }
     }
 
     return `${this.prefix}${this.options.listed}_${this.code.toUpperCase()}.tw`
@@ -200,10 +190,10 @@ class Stock {
     return JSON.parse(fs.readFileSync(this.stockCategoryPath), 'utf8')
   }
 
-  checkStockExistInCateogry(stockCode, category = 'tse') {
-    const stock = this.stocks[stockCode]
+  getStockCategory(code) {
+    const stock = this.stocks[code]
 
-    return stock && stock.category == category
+    return stock?.category
   }
 
   checkStockFileExist() {
