@@ -20,6 +20,7 @@ class Stock {
     this.p = new Table({ columns: this.getField() })
     this.date = []
     this.dateExistDay = false
+    this.stockCategory = ['tse', 'otc']
   }
 
   initialize() {
@@ -143,10 +144,10 @@ class Stock {
         stockCode = stockCode.toUpperCase()
         let stockCategory = this.getStockCategory(stockCode)
 
-        if (stockCategory != 'tse' || stockCategory != 'otc') {
-          console.log(Text.red(stockCategory))
-        } else {
+        if (this.stockCategory.includes(stockCategory)) {
           stock.push(`${stockCategory}_${stockCode}.tw`)
+        } else {
+          console.log(Text.red(stockCategory))
         }
       }
 
