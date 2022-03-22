@@ -1,3 +1,5 @@
+const { getStockUpsAndDownsPercentage } = require('../lib/stock')
+
 class Field {
   static basic(options) {
     return [
@@ -21,7 +23,7 @@ class Field {
       { code: 't', name: '最近成交時刻', alignment: 'center' },
       {
         name: '漲跌幅',
-        callback: this.getStockUpsAndDownsPercentage,
+        callback: getStockUpsAndDownsPercentage,
       },
     ]
   }

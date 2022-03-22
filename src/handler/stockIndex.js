@@ -6,7 +6,7 @@ const Field = require('../field')
 class StockIndex extends Stock {
   constructor(params) {
     super(params)
-    this.type = 'index'
+    this.options.type = 'index'
     this.twIndex = {
       TAIEX: 'tse_t00.tw',
       TWO: 'otc_o00.tw',

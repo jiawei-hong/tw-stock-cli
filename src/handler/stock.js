@@ -14,7 +14,7 @@ class Stock {
     this.stocks = []
     this.favorite = new Favorite()
     this.code = params.code
-    this.options = params.options
+    this.options = Object.assign(params.options, { type: '' })
     this.stockCategoryPath = path.resolve(`${__dirname}/../stock.json`)
     this.notExecIsNanHandle = ['c', 'ex', 'n', 't', 0, 1, 2, 7, 8]
     this.p = new Table({ columns: this.getField() })
@@ -52,13 +52,12 @@ class Stock {
     if (this.url) {
       axios.get(this.url).then((res) => {
         const data = this.getStockData(res.data)
+        const dataTypeIsString = typeof data === 'string'
 
-        if (typeof data === 'string' || data.length === 0) {
+        if (dataTypeIsString || data.length === 0) {
           console.log(
             Text.red(
-              typeof data === 'string'
-                ? data
-                : 'Not found stock or input invalid date.'
+              dataTypeIsString ? data : 'Not found stock or input invalid date.'
             )
           )
         } else {
@@ -67,24 +66,17 @@ class Stock {
 
             if (this.dateExistDay) {
               let d = this.date.slice(0)
+              const searchDay = StockURL.getTaiwanDateFormat(d)
 
-              if (this.options.listed == 'tse') {
-                d[0] -= 1911
-              }
-
-              const searchDay = d.join('/')
-
-              if (searchDay != stock[0]) {
-                return
-              }
+              if (searchDay != stock[0]) return
             }
 
             this.getField().forEach((field) => {
-              stockField[field.name] = this.notExecIsNanHandle.includes(
-                field.code
-              )
-                ? stock[field.code]
-                : Text.strIsNanHandle(stock[field.code])
+              const code = field.code
+
+              stockField[field.name] = this.notExecIsNanHandle.includes(code)
+                ? stock[code]
+                : Text.strIsNanHandle(stock[code])
 
               if (field.callback) {
                 stockField[field.name] = field.callback(stock)
@@ -125,7 +117,7 @@ class Stock {
       return Field.history()
     }
 
-    if (this.type === 'index') {
+    if (this.options.type === 'index') {
       return Field.stockIndex()
     }
 
@@ -202,18 +194,6 @@ class Stock {
     }
 
     return `${this.prefix}${this.options.listed}_${this.code.toUpperCase()}.tw`
-  }
-
-  getStockUpsAndDownsPercentage(stock) {
-    let [yesterdayPrice, currentPrice] = [stock.y, stock.z]
-
-    const percenetage = Text.strIsNanHandle(
-      ((parseFloat(currentPrice) - parseFloat(yesterdayPrice)) /
-        yesterdayPrice) *
-        100
-    )
-
-    return isNaN(percenetage) ? '-' : Text.percentageHandle(percenetage)
   }
 
   getAllStockCategory() {
