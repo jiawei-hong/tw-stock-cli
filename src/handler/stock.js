@@ -96,7 +96,9 @@ class Stock {
             console.log(Text.green(`您搜尋的編號是:${this.code}`))
           }
 
-          this.p.printTable()
+          if (this.p.table.rows.length > 0) {
+            this.p.printTable()
+          }
         }
       })
     }
