@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
-const Text = require('../lib/text')
 const { Table } = require('console-table-printer')
+const { StockMessage, FavoriteMessage } = require('../message')
 
 class Favorite {
   constructor(params) {
@@ -16,25 +16,18 @@ class Favorite {
         { name: '股票代碼', alignment: 'left' },
       ],
     })
+    this.message = ''
   }
 
   initialize() {
     if (!this.checkExistFavoriteFile() && !this.options.create) {
-      console.log(
-        Text.red(
-          'If you want use favroite command, plz first create favorite file.'
-        )
-      )
-
-      return
+      this.message = FavoriteMessage.notFoundFavortieFile()
+    } else if (!this.checkExistStockCategoryFile()) {
+      this.message = StockMessage.notFoundStockFile()
     }
 
-    if (!this.checkExistStockCategoryFile()) {
-      console.log(
-        Text.red(
-          'If you want use favroite command, plz first run update command.'
-        )
-      )
+    if (this.message) {
+      console.log(this.message)
 
       return
     }
@@ -77,7 +70,7 @@ class Favorite {
     } else if (this.options.create) {
       fs.writeFileSync(this.path, JSON.stringify({ stockCodes: this.data }))
 
-      console.log(Text.green('Create favorite file successfully.'))
+      console.log(FavoriteMessage.createFileSuccessfully())
     } else if (this.options.add) {
       this.add(this.options.add.toUpperCase())
     } else if (this.options.delete) {
@@ -104,7 +97,7 @@ class Favorite {
     const stockExistInFavorite = this.data.indexOf(stockCode) !== -1
 
     if (stockExistInFavorite) {
-      console.log(Text.red(`${stockCode} code is exist in favorite list.`))
+      console.log(FavoriteMessage.stockCodeIsExistFavorite(stockCode))
 
       return
     }
@@ -113,9 +106,9 @@ class Favorite {
       this.data.push(stockCode)
       fs.writeFileSync(this.path, JSON.stringify({ stockCodes: this.data }))
 
-      console.log(Text.green(`${stockCode} add successfully.`))
+      console.log(FavoriteMessage.addCodeSuccssfuilly(stockCode))
     } else {
-      console.log(Text.red(`Not found ${stockCode} stock code.`))
+      console.log(StockMessage.notFoundStockCode(stockCode))
     }
   }
 
@@ -123,14 +116,12 @@ class Favorite {
     const idx = this.data.indexOf(stockCode)
 
     if (idx == -1) {
-      console.log(
-        Text.red(`Not fonud ${stockCode} stock in your favroite list.`)
-      )
+      console.log(FavoriteMessage.notFoundStockCodeInFavorite(stockCode))
     } else {
       this.data.splice(idx, 1)
       fs.writeFileSync(this.path, JSON.stringify({ stockCodes: this.data }))
 
-      console.log(Text.green(`${stockCode} delete successfully.`))
+      console.log(FavoriteMessage.deleteCodeSuccessfully(stockCode))
     }
   }
 }

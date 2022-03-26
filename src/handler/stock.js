@@ -6,6 +6,7 @@ const Text = require('../lib/text')
 const Favorite = require('./favorite')
 const StockURL = require('../url/index')
 const Field = require('../field')
+const { StockMessage, FavoriteMessage } = require('../message')
 
 class Stock {
   constructor(params) {
@@ -21,31 +22,23 @@ class Stock {
     this.date = []
     this.dateExistDay = false
     this.stockCategory = ['tse', 'otc']
+    this.message = ''
   }
 
   initialize() {
-    if (this.options.multiple && !this.checkStockFileExist()) {
-      console.log(
-        Text.red(
-          'If you want search multiple stock, please run update command.'
-        )
-      )
-
-      return
-    }
-
-    if (this.options.favorite && !this.favorite.checkExistFavoriteFile()) {
-      console.log(
-        Text.red(
-          'If you watnt useFavorite show stock,plz create favorite list.'
-        )
-      )
-
-      return
-    }
-
     if (!this.code && !this.options.favorite && !this.options.date) {
-      console.log(Text.red('Please enter stock code.'))
+      this.message = StockMessage.notInputCode()
+    } else if (this.options.multiple && !this.checkStockFileExist()) {
+      this.message = StockMessage.notFoundStockFile()
+    } else if (
+      this.options.favorite &&
+      !this.favorite.checkExistFavoriteFile()
+    ) {
+      this.message = FavoriteMessage.notFoundFavortieFile()
+    }
+
+    if (this.message) {
+      console.log(this.message)
 
       return
     }
@@ -59,10 +52,13 @@ class Stock {
     if (this.url) {
       axios.get(this.url).then((res) => {
         const data = this.getStockData(res.data)
-        const dataTypeIsString = typeof data === 'string'
 
-        if (dataTypeIsString || data.length === 0) {
-          console.log(Text.red(dataTypeIsString ? data : 'Not found stock'))
+        if (data.length === 0) {
+          if (Array.isArray(data)) {
+            console.log(StockMessage.notFound())
+          } else {
+            console.log(Text.red(data))
+          }
         } else {
           for (let stock of data) {
             let stockField = {}
@@ -76,9 +72,11 @@ class Stock {
             this.getField().forEach((field) => {
               const code = field.code
 
-              stockField[field.name] = this.notExecIsNanHandle.includes(code)
-                ? stock[code]
-                : Text.strIsNanHandle(stock[code])
+              if (this.notExecIsNanHandle.includes(code)) {
+                stockField[field.name] = stock[code]
+              } else {
+                stockField[field.name] = Text.strIsNanHandle(stock[code])
+              }
 
               if (field.callback) {
                 stockField[field.name] = field.callback(stock)
@@ -95,12 +93,12 @@ class Stock {
 
           if (this.p.table.rows.length > 0) {
             if (this.options.date) {
-              console.log(Text.green(`您搜尋的編號是:${this.code}`))
+              console.log(StockMessage.searchStock(this.code))
             }
 
             this.p.printTable()
           } else {
-            console.log(Text.red('Table not exist data.'))
+            console.log(StockMessage.notFound())
           }
         }
       })
@@ -112,7 +110,7 @@ class Stock {
     const getDataKey = Object.keys(data).find((key) => dataField.includes(key))
 
     if (!getDataKey) {
-      return 'Query date is greater than today,please check again!'
+      return StockMessage.dateGreaterToday()
     }
 
     return data[getDataKey]
@@ -146,8 +144,6 @@ class Stock {
 
         if (this.stockCategory.includes(stockCategory)) {
           stock.push(`${stockCategory}_${stockCode}.tw`)
-        } else {
-          console.log(Text.red(stockCategory))
         }
       }
 
@@ -158,7 +154,9 @@ class Stock {
 
     if (this.options.favorite) {
       if (this.favorite.checkFavoriteNotExistStock()) {
-        console.log(Text.red('Your favorite list not have any stock.'))
+        console.log(FavoriteMessage.notFound())
+
+        return
       } else {
         const favoriteUrl = this.favorite.getFavoriteStocksUrl()
 

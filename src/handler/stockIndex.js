@@ -1,7 +1,7 @@
 const { Table } = require('console-table-printer')
-const Text = require('../lib/text')
 const Stock = require('../handler/stock')
 const Field = require('../field')
+const { StockIndexMessage } = require('../message')
 
 class StockIndex extends Stock {
   constructor(params) {
@@ -25,7 +25,7 @@ class StockIndex extends Stock {
         index = index.toUpperCase()
 
         if (!twIndexKeys.includes(index)) {
-          console.log(Text.red(`Not Found ${index} Index.`))
+          console.log(StockIndexMessage.notFoundIndex(index))
 
           return
         }
@@ -41,7 +41,7 @@ class StockIndex extends Stock {
       const code = this.code.toUpperCase()
 
       if (!twIndexKeys.includes(code)) {
-        console.log(Text.red(`Not Found ${index} Index.`))
+        console.log(StockIndexMessage.notFoundIndex(index))
 
         return
       }

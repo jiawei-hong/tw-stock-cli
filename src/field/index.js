@@ -1,4 +1,7 @@
-const { getStockUpsAndDownsPercentage } = require('../lib/stock')
+const {
+  getStockUpsAndDownsPercentage,
+  category2Chinese,
+} = require('../lib/stock')
 
 class Field {
   static basic(options) {
@@ -8,7 +11,7 @@ class Field {
         code: 'ex',
         name: '類別',
         alignment: 'center',
-        callback: (stock) => (stock.ex === 'tse' ? '上市' : '上櫃'),
+        callback: (stock) => category2Chinese(stock.ex),
       },
       { code: 'n', name: '公司', alignment: 'center' },
       { code: 'z', name: '當盤成交價', color: 'yellow' },

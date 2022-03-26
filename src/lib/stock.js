@@ -11,4 +11,15 @@ function getStockUpsAndDownsPercentage(stock) {
   return isNaN(percenetage) ? '-' : Text.percentageHandle(percenetage)
 }
 
-export { getStockUpsAndDownsPercentage }
+function category2Chinese(category) {
+  const categories = ['tse', 'otc']
+  const categoryLowerCase = category.toLowerCase()
+
+  if (!categories.includes(categoryLowerCase)) {
+    return Text.red(`${category} not found chinese word.`)
+  }
+
+  return categoryLowerCase == 'tse' ? '上市' : '上櫃'
+}
+
+export { getStockUpsAndDownsPercentage, category2Chinese }
