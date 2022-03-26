@@ -53,7 +53,7 @@ class Stock {
       axios.get(this.url).then((res) => {
         const data = this.getStockData(res.data)
 
-        if (data.length === 0) {
+        if (data.length === 0 || typeof data === 'string') {
           if (Array.isArray(data)) {
             console.log(StockMessage.notFound())
           } else {
