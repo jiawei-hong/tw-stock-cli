@@ -21,6 +21,10 @@ class StockMessage {
     Text.red(`Not found ${code} stock code.`)
   }
 
+  static queryDateNotFoundTrade() {
+    return Text.red('Query date not found trade')
+  }
+
   static notFound() {
     return Text.red(`Not found stock`)
   }

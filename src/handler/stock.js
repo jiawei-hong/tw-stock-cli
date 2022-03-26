@@ -98,7 +98,7 @@ class Stock {
 
             this.p.printTable()
           } else {
-            console.log(StockMessage.notFound())
+            console.log(StockMessage.queryDateNotFoundTrade())
           }
         }
       })
