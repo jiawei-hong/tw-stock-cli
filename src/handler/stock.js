@@ -109,8 +109,12 @@ class Stock {
     const dataField = ['data', 'aaData', 'msgArray']
     const getDataKey = Object.keys(data).find((key) => dataField.includes(key))
 
+    if (Object.keys(data).includes('stat') && data['stat'] != 'OK') {
+      return data['stat']
+    }
+
     if (!getDataKey) {
-      return StockMessage.dateGreaterToday()
+      return StockMessage.notFound()
     }
 
     return data[getDataKey]
@@ -170,7 +174,7 @@ class Stock {
         this.options.listed
       )
 
-      if (typeof date != 'string') {
+      if (Array.isArray(date)) {
         this.date = date
         this.dateExistDay = this.date.length == 3
 
@@ -184,6 +188,8 @@ class Stock {
           this.options.listed
         )
       }
+
+      return date
     }
 
     return `${this.prefix}${this.options.listed}_${this.code.toUpperCase()}.tw`
