@@ -1,8 +1,16 @@
 class StockURL {
+  static prefix() {
+    return 'https://mis.twse.com.tw/stock/'
+  }
+
   static getStockAPI(isOddlot) {
-    return `https://mis.twse.com.tw/stock/api/get${
+    return `${this.prefix()}/api/get${
       isOddlot ? 'Odd' : 'Stock'
     }Info.jsp?ex_ch=`
+  }
+
+  static getOhlc(market = 'TSE') {
+    return `${this.prefix()}/data/mis_ohlc_${market.toUpperCase()}.txt`
   }
 
   static getConversionDate(date, category = 'tse') {

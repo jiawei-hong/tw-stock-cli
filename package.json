@@ -30,7 +30,9 @@
   },
   "homepage": "https://github.com/JiaWei-Hong/tw-stock#readme",
   "dependencies": {
-    "commander": "^9.0.0"
+    "asciichart": "^1.5.25",
+    "commander": "^9.0.0",
+    "enquirer": "^2.3.6"
   },
   "devDependencies": {
     "@babel/core": "^7.17.8",

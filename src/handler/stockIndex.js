@@ -1,6 +1,10 @@
 const { Table } = require('console-table-printer')
-const Stock = require('../handler/stock')
+const axios = require('axios').default
+const Stock = require('./stock')
 const Field = require('../field')
+const StockURL = require('../url')
+const Chart = require('../lib/chart')
+const Prompt = require('../lib/prompt')
 const { StockIndexMessage } = require('../message')
 
 class StockIndex extends Stock {
@@ -12,10 +16,27 @@ class StockIndex extends Stock {
       TWO: 'otc_o00.tw',
       FRMSA: 'tse_FRMSA.tw',
     }
+    this.ohlc = ['TSE', 'OTC', 'FRMSA']
     this.p = new Table({ columns: Field.stockIndex() })
   }
 
-  initialize() {
+  async initialize() {
+    if (this.options.draw) {
+      const result = await Prompt.select(
+        'Ohlc',
+        'Pick you want draw index',
+        this.ohlc
+      )
+
+      const data = await axios
+        .get(StockURL.getOhlc(result))
+        .then((res) => res.data.ohlcArray)
+
+      Chart.draw(data)
+
+      return
+    }
+
     const twIndexKeys = Object.keys(this.twIndex)
 
     if (this.options.multiple) {
