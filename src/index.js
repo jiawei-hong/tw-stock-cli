@@ -7,7 +7,7 @@ const Crawler = require('./crawler')
 const Favorite = require('./handler/favorite')
 
 function run() {
-  program.name('tw-stock').version('1.2.0')
+  program.name('tw-stock').version('1.2.1')
 
   program
     .command('stock')
