@@ -51,6 +51,7 @@ tw-stock index [index]
 | Options      | Description                 |
 | ------------ | --------------------------- |
 | -m --mutiple | search multiple stock index |
+| -d --draw    | draw index chart on today   |
 
 # How to use favorite:
 
