@@ -48,10 +48,11 @@ tw-stock index [index]
 | TWO   | search two index   |
 | FRMSA | search frmsa index |
 
-| Options      | Description                 |
-| ------------ | --------------------------- |
-| -m --mutiple | search multiple stock index |
-| -d --draw    | draw index chart on today   |
+| Options      | Description                                            |
+| ------------ | ------------------------------------------------------ |
+| -m --mutiple | search multiple stock index                            |
+| -d --date    | user can input startDate and endDate filter chart data |
+| -c --chart   | draw index chart on today                              |
 
 # How to use favorite:
 
