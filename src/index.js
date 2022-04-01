@@ -25,7 +25,8 @@ function run() {
     .description('get tw-stock index')
     .argument('[code]', 'get tw-stock index', 'TAIEX')
     .option('-m --multiple', 'search multiple index', false)
-    .option('-d --draw', 'draw index chart', false)
+    .option('-d --date <date...>', 'only use on 9:00AM to 13:30PM')
+    .option('-c --chart', 'draw index chart', false)
     .action((code, options) => new StockIndex({ code, options }).execute())
 
   program

@@ -21,18 +21,30 @@ class StockIndex extends Stock {
   }
 
   async initialize() {
-    if (this.options.draw) {
+    if (this.options.chart) {
       const result = await Prompt.select(
         'Ohlc',
         'Pick you want draw index',
         this.ohlc
       )
 
-      const data = await axios
+      let data = await axios
         .get(StockURL.getOhlc(result))
         .then((res) => res.data.ohlcArray)
 
-      Chart.draw(data)
+      if (this.options.date) {
+        if (this.options.date.length == 2) {
+          data = Chart.filterDrawChartDataWithTwoTime(data, this.options.date)
+        } else {
+          console.log(StockIndexMessage.useDateOptionsButNotGiveTwoTime())
+        }
+      }
+
+      if (typeof data === 'string') {
+        console.log(data)
+      } else {
+        Chart.draw(data)
+      }
 
       return
     }

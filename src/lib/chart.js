@@ -1,28 +1,57 @@
 const asciichart = require('asciichart')
-const { ChartMessage } = require('../message/chart')
+const moment = require('moment')
+const { ChartMessage } = require('../message')
 
 class Chart {
+  static filterDrawChartDataWithTwoTime(data, date) {
+    const startDate = this.getMomentParseZoneDate(date[0])
+    const endDate = this.getMomentParseZoneDate(date[1])
+
+    if (startDate.isAfter(endDate)) {
+      return ChartMessage.startDateIsAfterEndDate()
+    }
+
+    return data.filter((d) => {
+      if (Object.keys(d).includes('ts')) {
+        const date = moment(this.getHisWithDate(d.ts))
+
+        return startDate.isBefore(date) && endDate.isAfter(date)
+      }
+
+      return false
+    })
+  }
+
+  static getMomentParseZoneDate(date, timezone = 'Asia/Taipei') {
+    return moment().set(this.getHisWithDate(date)).parseZone(timezone)
+  }
+
+  static getHisWithDate(date) {
+    const conversionDate = [0, 2, 4].map((len) => date.substr(len, 2))
+
+    return {
+      hour: conversionDate[0],
+      minute: conversionDate[1],
+      second: conversionDate[2],
+    }
+  }
+
   static draw(
     data,
     config = {
-      showDatacount: 190,
-    },
-    chartConfig = {
       offset: 3,
-      height: 30,
+      height: 10,
       colors: [asciichart.green],
     }
   ) {
     if (data.length > 0) {
-      let chart = [parseFloat(data[0].c)]
+      let chart = []
 
-      for (let i = 1; i < data.length; i++) {
-        if (i < config.showDatacount) {
-          chart.push(parseFloat(data[i].c))
-        }
+      for (let i = 0; i < data.length; i++) {
+        chart.push(parseFloat(data[i].c))
       }
 
-      console.log(asciichart.plot(chart, chartConfig))
+      console.log(asciichart.plot(chart, config))
     } else {
       console.log(ChartMessage.notFoundData())
     }
