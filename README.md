@@ -17,10 +17,10 @@ tw-stock update
 # How to use:
 
 ```sheel
-tw-stock stock <stock_code>
+tw-stock stock [stock_code]
 ```
 
-`<stock_code>` input your search tw_stock_code
+`[stock_code]` input your search tw_stock_code
 
 | Options       | Description                            |
 | ------------- | -------------------------------------- |
@@ -57,8 +57,10 @@ tw-stock index [index]
 # How to use favorite:
 
 ```sheel
-tw-stock favorite
+tw-stock favorite [code]
 ```
+
+`[code]` input your add or delete stockCode
 
 | Options     | Description                        |
 | ----------- | ---------------------------------- |
