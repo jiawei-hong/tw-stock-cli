@@ -37,10 +37,11 @@ function run() {
   program
     .command('favorite')
     .description('check yourself favorite stocks')
+    .argument('[code]', 'add or delete stockCode')
     .option('-c --create', 'create favorite file')
-    .option('-a --add <stockCode>', 'add stockCode in favorite list')
-    .option('-d --delete <stockCode>', 'delete stockCode from favorite list')
-    .action((options) => new Favorite({ options }).execute())
+    .option('-a --add', 'add stockCode in favorite list')
+    .option('-d --delete', 'delete stockCode from favorite list')
+    .action((code, options) => new Favorite({ code, options }).execute())
 
   program.parse(process.argv)
 }

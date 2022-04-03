@@ -11,7 +11,7 @@ class Prompt {
     return await prompt
       .run()
       .then((res) => res)
-      .catch(console.error)
+      .catch((err) => console.error(err))
   }
 }
 

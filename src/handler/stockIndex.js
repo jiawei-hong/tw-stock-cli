@@ -49,38 +49,31 @@ class StockIndex extends Stock {
       return
     }
 
-    const twIndexKeys = Object.keys(this.twIndex)
-
     if (this.options.multiple) {
-      let stockIdx = []
+      let stockIdx = this.code
+        .split('-')
+        .filter((code) => this.indexExistInTwIndexkeys(code.toUpperCase()))
+        .map((code) => this.twIndex[code.toUpperCase()])
 
-      this.code.split('-').forEach((index) => {
-        index = index.toUpperCase()
-
-        if (!twIndexKeys.includes(index)) {
-          console.log(StockIndexMessage.notFoundIndex(index))
-
-          return
-        }
-
-        stockIdx.push(this.twIndex[index])
-      })
-
-      if (stockIdx.length == 0) {
-        return
+      if (stockIdx.length > 0) {
+        this.url = `${this.prefix}${stockIdx.join('|')}`
+        this.url = `${this.prefix}${stockIdx.join('|')}`
       }
-      this.url = `${this.prefix}${stockIdx.join('|')}`
     } else {
       const code = this.code.toUpperCase()
 
-      if (!twIndexKeys.includes(code)) {
-        console.log(StockIndexMessage.notFoundIndex(index))
-
-        return
+      if (!this.indexExistInTwIndexkeys(code)) {
+        console.log(StockIndexMessage.notFoundIndex(code))
+      } else {
+        this.url = `${this.prefix}${this.twIndex[code]}`
       }
-
-      this.url = `${this.prefix}${this.twIndex[code]}`
     }
+  }
+
+  indexExistInTwIndexkeys(index) {
+    const twIndexKeys = Object.keys(this.twIndex)
+
+    return twIndexKeys.includes(index)
   }
 }
 

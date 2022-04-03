@@ -6,6 +6,7 @@ const { StockMessage, FavoriteMessage } = require('../message')
 class Favorite {
   constructor(params) {
     this.data = []
+    this.code = params.code ?? ''
     this.options = params?.options || {}
     this.path = path.resolve(`${__dirname}/../favorite.json`)
     this.stockCategoryPath = path.resolve(`${__dirname}/../stock.json`)
@@ -72,9 +73,9 @@ class Favorite {
 
       console.log(FavoriteMessage.createFileSuccessfully())
     } else if (this.options.add) {
-      this.add(this.options.add.toUpperCase())
+      this.add(this.code.toUpperCase())
     } else if (this.options.delete) {
-      this.delete(this.options.delete.toUpperCase())
+      this.delete(this.code.toUpperCase())
     }
   }
 
