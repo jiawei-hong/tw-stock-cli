@@ -1,22 +1,20 @@
 const axios = require('axios').default
 const fs = require('fs')
-const path = require('path')
 const { Table } = require('console-table-printer')
 const Text = require('../lib/text')
-const Favorite = require('./favorite')
 const StockURL = require('../url/index')
 const Field = require('../field')
 const { StockMessage, FavoriteMessage } = require('../message')
+const FilePath = require('../lib/filePath')
+const { readFileSync } = require('../lib/file')
 
 class Stock {
   constructor(params) {
     this.prefix = StockURL.getStockAPI(params.options.oddlot)
     this.url = ''
     this.stocks = []
-    this.favorite = new Favorite()
     this.code = params.code
     this.options = Object.assign(params.options, { type: '' })
-    this.stockCategoryPath = path.resolve(`${__dirname}/../stock.json`)
     this.notExecIsNanHandle = ['c', 'ex', 'n', 't', 0, 1, 2, 7, 8]
     this.p = new Table({ columns: this.getField() })
     this.date = []
@@ -30,10 +28,7 @@ class Stock {
       this.message = StockMessage.notInputCode()
     } else if (this.options.multiple && !this.checkStockFileExist()) {
       this.message = StockMessage.notFoundStockFile()
-    } else if (
-      this.options.favorite &&
-      !this.favorite.checkExistFavoriteFile()
-    ) {
+    } else if (this.options.favorite && !this.chekckFavoriteFileExist()) {
       this.message = FavoriteMessage.notFoundFavortieFile()
     }
 
@@ -136,20 +131,7 @@ class Stock {
     if (this.options.multiple) {
       this.stocks = this.getAllStockCategory()
 
-      let stock = []
-
-      for (let stockCode of this.code.split('-')) {
-        if (!stockCode) {
-          return
-        }
-
-        stockCode = stockCode.toUpperCase()
-        let stockCategory = this.getStockCategory(stockCode)
-
-        if (this.stockCategory.includes(stockCategory)) {
-          stock.push(`${stockCategory}_${stockCode}.tw`)
-        }
-      }
+      let stock = this.getMultipleStock(this.code.split('-'))
 
       if (stock.length > 0) {
         return `${this.prefix}${stock.join('|')}`
@@ -157,14 +139,20 @@ class Stock {
     }
 
     if (this.options.favorite) {
-      if (this.favorite.checkFavoriteNotExistStock()) {
+      if (!this.chekckFavoriteFileExist()) {
         console.log(FavoriteMessage.notFound())
 
         return
       } else {
-        const favoriteUrl = this.favorite.getFavoriteStocksUrl()
+        const favoriteData = readFileSync(FilePath.favorite).stockCodes
 
-        return `${this.prefix}${favoriteUrl}`
+        this.stocks = this.getAllStockCategory()
+
+        let stock = this.getMultipleStock(favoriteData)
+
+        if (stock.length > 0) {
+          return `${this.prefix}${stock.join('|')}`
+        }
       }
     }
 
@@ -195,8 +183,22 @@ class Stock {
     return `${this.prefix}${this.options.listed}_${this.code.toUpperCase()}.tw`
   }
 
+  getMultipleStock(data) {
+    return data
+      .map((code) => {
+        code = code.toUpperCase()
+
+        const stockMarket = this.getStockCategory(code)
+
+        if (this.stockCategory.includes(stockMarket)) {
+          return `${stockMarket}_${code}.tw`
+        }
+      })
+      .filter((code) => code !== undefined)
+  }
+
   getAllStockCategory() {
-    return JSON.parse(fs.readFileSync(this.stockCategoryPath), 'utf8')
+    return JSON.parse(fs.readFileSync(FilePath.stock), 'utf8')
   }
 
   getStockCategory(code) {
@@ -206,7 +208,11 @@ class Stock {
   }
 
   checkStockFileExist() {
-    return fs.existsSync(this.stockCategoryPath)
+    return fs.existsSync(FilePath.stock)
+  }
+
+  chekckFavoriteFileExist() {
+    return fs.existsSync(FilePath.favorite)
   }
 }
 

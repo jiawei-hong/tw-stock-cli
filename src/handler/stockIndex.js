@@ -10,6 +10,7 @@ const { StockIndexMessage } = require('../message')
 class StockIndex extends Stock {
   constructor(params) {
     super(params)
+    this.data = []
     this.options.type = 'index'
     this.twIndex = {
       TAIEX: 'tse_t00.tw',
@@ -56,7 +57,6 @@ class StockIndex extends Stock {
         .map((code) => this.twIndex[code.toUpperCase()])
 
       if (stockIdx.length > 0) {
-        this.url = `${this.prefix}${stockIdx.join('|')}`
         this.url = `${this.prefix}${stockIdx.join('|')}`
       }
     } else {
