@@ -1,6 +1,5 @@
 const Stock = require('./stock')
 const FilePath = require('../lib/filePath')
-const { readFileSync, writeFileSync } = require('../lib/file')
 const { Table } = require('console-table-printer')
 const { StockMessage, FavoriteMessage } = require('../message')
 
@@ -17,9 +16,9 @@ class Favorite extends Stock {
   }
 
   initialize() {
-    if (!this.chekckFavoriteFileExist() && !this.options.create) {
+    if (!FilePath.favorite.exist() && !this.options.create) {
       this.message = FavoriteMessage.notFoundFavortieFile()
-    } else if (!this.checkStockFileExist()) {
+    } else if (!FilePath.stock.exist()) {
       this.message = StockMessage.notFoundStockFile()
     }
 
@@ -30,9 +29,8 @@ class Favorite extends Stock {
     }
 
     if (!this.options.create) {
-      this.data = readFileSync(FilePath.favorite).stockCodes
-
-      this.stocks = this.getAllStockCategory()
+      this.data = FilePath.favorite.read().stockCodes
+      this.stocks = FilePath.stock.read()
     }
   }
 
@@ -40,7 +38,7 @@ class Favorite extends Stock {
     this.initialize()
 
     if (this.options.create) {
-      writeFileSync(FilePath.favorite, { stockCodes: [] })
+      FilePath.favorite.write({ stockCodes: [] })
 
       console.log(FavoriteMessage.createFileSuccessfully())
     } else if (this.options.add) {
@@ -75,7 +73,7 @@ class Favorite extends Stock {
     if (stock) {
       this.data.push(stockCode)
 
-      writeFileSync(FilePath.favorite, { stockCodes: this.data })
+      FilePath.favorite.write({ stockCodes: this.data })
 
       console.log(FavoriteMessage.addCodeSuccssfuilly(stockCode))
     } else {
@@ -90,7 +88,7 @@ class Favorite extends Stock {
       console.log(FavoriteMessage.notFoundStockCodeInFavorite(stockCode))
     } else {
       this.data.splice(idx, 1)
-      writeFileSync(FilePath.favorite, { stockCodes: this.data })
+      FilePath.favorite.write({ stockCodes: this.data })
 
       console.log(FavoriteMessage.deleteCodeSuccessfully(stockCode))
     }

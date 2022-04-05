@@ -14,4 +14,8 @@ function writeFileSync(path, data) {
   return fs.writeFileSync(path, JSON.stringify(data))
 }
 
-export { readFileSync, writeFileSync }
+function existFileSync(path) {
+  return fs.existsSync(path)
+}
+
+export { readFileSync, writeFileSync, existFileSync }

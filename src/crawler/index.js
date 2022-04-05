@@ -1,8 +1,8 @@
 const axios = require('axios').default
-const fs = require('fs')
 const Cheerio = require('cheerio')
 const iconv = require('iconv-lite')
 const Text = require('../lib/text')
+const FilePath = require('../lib/filePath')
 
 class Crawler {
   constructor() {
@@ -36,7 +36,7 @@ class Crawler {
       })
     }
 
-    fs.writeFileSync(`${__dirname}/../stock.json`, JSON.stringify(this.data))
+    FilePath.stock.write(this.data)
 
     console.log(Text.green('Stock list created successfully.'))
   }

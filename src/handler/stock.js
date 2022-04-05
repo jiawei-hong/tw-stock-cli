@@ -6,7 +6,6 @@ const StockURL = require('../url/index')
 const Field = require('../field')
 const { StockMessage, FavoriteMessage } = require('../message')
 const FilePath = require('../lib/filePath')
-const { readFileSync } = require('../lib/file')
 
 class Stock {
   constructor(params) {
@@ -26,19 +25,17 @@ class Stock {
   initialize() {
     if (!this.code && !this.options.favorite && !this.options.date) {
       this.message = StockMessage.notInputCode()
-    } else if (this.options.multiple && !this.checkStockFileExist()) {
+    } else if (this.options.multiple && !FilePath.stock.exist()) {
       this.message = StockMessage.notFoundStockFile()
-    } else if (this.options.favorite && !this.chekckFavoriteFileExist()) {
+    } else if (this.options.favorite && !FilePath.favorite.exist()) {
       this.message = FavoriteMessage.notFoundFavortieFile()
     }
 
     if (this.message) {
       console.log(this.message)
-
-      return
+    } else {
+      this.url = this.getStockUrl()
     }
-
-    this.url = this.getStockUrl()
   }
 
   execute() {
@@ -128,32 +125,25 @@ class Stock {
   }
 
   getStockUrl() {
-    if (this.options.multiple) {
-      this.stocks = this.getAllStockCategory()
+    if (this.options.multiple || this.options.favorite) {
+      const data = this.options.multiple
+        ? this.code.split('-')
+        : FilePath.favorite.read().stockCodes
+      this.stocks = FilePath.stock.read()
 
-      let stock = this.getMultipleStock(this.code.split('-'))
+      let stock = this.getMultipleStock(data)
 
       if (stock.length > 0) {
         return `${this.prefix}${stock.join('|')}`
       }
-    }
 
-    if (this.options.favorite) {
-      if (!this.chekckFavoriteFileExist()) {
-        console.log(FavoriteMessage.notFound())
-
-        return
+      if (this.options.multiple) {
+        console.log(StockMessage.notFound())
       } else {
-        const favoriteData = readFileSync(FilePath.favorite).stockCodes
-
-        this.stocks = this.getAllStockCategory()
-
-        let stock = this.getMultipleStock(favoriteData)
-
-        if (stock.length > 0) {
-          return `${this.prefix}${stock.join('|')}`
-        }
+        console.log(FavoriteMessage.notFound())
       }
+
+      return
     }
 
     if (this.options.date) {
@@ -197,22 +187,10 @@ class Stock {
       .filter((code) => code !== undefined)
   }
 
-  getAllStockCategory() {
-    return JSON.parse(fs.readFileSync(FilePath.stock), 'utf8')
-  }
-
   getStockCategory(code) {
     const stock = this.stocks[code]
 
     return stock?.category
-  }
-
-  checkStockFileExist() {
-    return fs.existsSync(FilePath.stock)
-  }
-
-  chekckFavoriteFileExist() {
-    return fs.existsSync(FilePath.favorite)
   }
 }
 
