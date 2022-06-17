@@ -28,6 +28,10 @@ class FavoriteMessage {
   static notFound() {
     return Text.red(`Not found stock in your favorite list`)
   }
+
+  static isExist() {
+    return Text.red('Favorite file is exist !')
+  }
 }
 
 module.exports = FavoriteMessage

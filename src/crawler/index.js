@@ -38,7 +38,13 @@ class Crawler {
 
     FilePath.stock.write(this.data)
 
-    console.log(Text.green('Stock list created successfully.'))
+    if (FilePath.stock.exist()) {
+
+      console.log(Text.green('Stock list created successfully.'))
+    } else {
+      console.log(Text.red('Stock list created failed.'))
+    }
+
   }
 }
 

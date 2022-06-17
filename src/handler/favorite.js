@@ -20,15 +20,7 @@ class Favorite extends Stock {
       this.message = FavoriteMessage.notFoundFavortieFile()
     } else if (!FilePath.stock.exist()) {
       this.message = StockMessage.notFoundStockFile()
-    }
-
-    if (this.message) {
-      console.log(this.message)
-
-      return
-    }
-
-    if (!this.options.create) {
+    } else if (!this.options.create) {
       this.data = FilePath.favorite.read().stockCodes
       this.stocks = FilePath.stock.read()
     }
@@ -37,10 +29,20 @@ class Favorite extends Stock {
   execute() {
     this.initialize()
 
-    if (this.options.create) {
-      FilePath.favorite.write({ stockCodes: [] })
+    if (this.message) {
+      console.log(this.message);
 
-      console.log(FavoriteMessage.createFileSuccessfully())
+      return;
+    }
+
+    if (this.options.create) {
+      if (FilePath.favorite.exist()) {
+        console.log(FavoriteMessage.isExist())
+      } else {
+        FilePath.favorite.write({ stockCodes: [] })
+
+        console.log(FavoriteMessage.createFileSuccessfully())
+      }
     } else if (this.options.add) {
       this.add(this.code.toUpperCase())
     } else if (this.options.delete) {
