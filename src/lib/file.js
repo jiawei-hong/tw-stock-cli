@@ -1,4 +1,4 @@
-const fs = require('fs')
+import fs from 'fs'
 
 function readFileSync(path, toJson = true, encoding = 'utf-8') {
   const data = fs.readFileSync(path, encoding)

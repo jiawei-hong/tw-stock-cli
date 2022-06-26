@@ -4,4 +4,4 @@ const colors = {
   green: '\x1b[32m',
 }
 
-module.exports = colors
+export { colors }

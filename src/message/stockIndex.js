@@ -1,4 +1,4 @@
-const Text = require('../lib/text')
+import Text from '../lib/text'
 
 class StockIndexMessage {
   static useDateOptionsButNotGiveTwoTime() {
@@ -10,4 +10,4 @@ class StockIndexMessage {
   }
 }
 
-module.exports = StockIndexMessage
+export { StockIndexMessage }

@@ -1,4 +1,4 @@
-const { Select } = require('enquirer')
+import { Select } from 'enquirer'
 
 class Prompt {
   static select(name = '', message = '', choices = []) {
@@ -15,4 +15,4 @@ class Prompt {
   }
 }
 
-module.exports = Prompt
+export default Prompt

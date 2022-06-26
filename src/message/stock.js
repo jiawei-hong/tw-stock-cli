@@ -1,4 +1,4 @@
-const Text = require('../lib/text')
+import Text from '../lib/text'
 
 class StockMessage {
   static notInputCode() {
@@ -30,4 +30,4 @@ class StockMessage {
   }
 }
 
-module.exports = StockMessage
+export { StockMessage }

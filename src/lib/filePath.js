@@ -1,5 +1,5 @@
-const path = require('path')
-const { readFileSync, writeFileSync, existFileSync } = require('./file')
+import path from 'path'
+import { readFileSync, writeFileSync, existFileSync } from './file'
 
 const pathKeys = ['stock', 'favorite']
 const FilePath = {}
@@ -19,4 +19,4 @@ for (let key of pathKeys) {
   }
 }
 
-module.exports = FilePath
+export default FilePath

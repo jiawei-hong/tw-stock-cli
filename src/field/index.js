@@ -1,7 +1,4 @@
-const {
-  getStockUpsAndDownsPercentage,
-  category2Chinese,
-} = require('../lib/stock')
+import { getStockUpsAndDownsPercentage, category2Chinese } from '../lib/stock'
 
 class Field {
   static basic(options) {
@@ -67,4 +64,4 @@ class Field {
   }
 }
 
-module.exports = Field
+export default Field

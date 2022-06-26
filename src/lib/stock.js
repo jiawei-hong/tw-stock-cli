@@ -1,4 +1,4 @@
-const Text = require('./text')
+import Text from './text'
 
 function getStockUpsAndDownsPercentage(stock) {
   let [yesterdayPrice, currentPrice] = [stock.y, stock.z]

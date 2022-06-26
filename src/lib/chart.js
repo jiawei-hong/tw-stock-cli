@@ -1,6 +1,6 @@
-const asciichart = require('asciichart')
-const moment = require('moment')
-const { ChartMessage } = require('../message')
+import asciichart from 'asciichart'
+import moment from 'moment'
+import { ChartMessage } from '../message'
 
 class Chart {
   static filterDrawChartDataWithTwoTime(data, date) {
@@ -58,4 +58,4 @@ class Chart {
   }
 }
 
-module.exports = Chart
+export default Chart

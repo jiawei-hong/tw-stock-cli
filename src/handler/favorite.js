@@ -1,7 +1,7 @@
-const Stock = require('./stock')
-const FilePath = require('../lib/filePath')
-const { Table } = require('console-table-printer')
-const { StockMessage, FavoriteMessage } = require('../message')
+import Stock from './stock'
+import { Table } from 'console-table-printer'
+import FilePath from '../lib/filePath'
+import { StockMessage, FavoriteMessage } from '../message'
 
 class Favorite extends Stock {
   constructor(params) {
@@ -30,9 +30,9 @@ class Favorite extends Stock {
     this.initialize()
 
     if (this.message) {
-      console.log(this.message);
+      console.log(this.message)
 
-      return;
+      return
     }
 
     if (this.options.create) {
@@ -64,15 +64,11 @@ class Favorite extends Stock {
 
   add(stockCode) {
     const stock = this.stocks[stockCode]
-    const stockExistInFavorite = this.data.indexOf(stockCode) !== -1
+    const stockExistInFavorite = this.data.includes(stockCode)
 
     if (stockExistInFavorite) {
       console.log(FavoriteMessage.stockCodeIsExistFavorite(stockCode))
-
-      return
-    }
-
-    if (stock) {
+    } else if (stock) {
       this.data.push(stockCode)
 
       FilePath.favorite.write({ stockCodes: this.data })
@@ -84,11 +80,11 @@ class Favorite extends Stock {
   }
 
   delete(stockCode) {
-    const idx = this.data.indexOf(stockCode)
-
-    if (idx == -1) {
+    if (!this.data.includes(stockCode)) {
       console.log(FavoriteMessage.notFoundStockCodeInFavorite(stockCode))
     } else {
+      const idx = this.data.indexOf(stockCode)
+
       this.data.splice(idx, 1)
       FilePath.favorite.write({ stockCodes: this.data })
 
@@ -97,4 +93,4 @@ class Favorite extends Stock {
   }
 }
 
-module.exports = Favorite
+export default Favorite

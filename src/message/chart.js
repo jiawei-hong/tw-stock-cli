@@ -1,4 +1,4 @@
-const Text = require('../lib/text')
+import Text from '../lib/text'
 
 class ChartMessage {
   static startDateIsAfterEndDate() {
@@ -14,4 +14,4 @@ class ChartMessage {
   }
 }
 
-module.exports = ChartMessage
+export { ChartMessage }

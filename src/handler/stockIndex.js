@@ -1,10 +1,10 @@
-const { Table } = require('console-table-printer')
-const axios = require('axios').default
-const Stock = require('./stock')
-const Field = require('../field')
-const StockURL = require('../url')
-const Chart = require('../lib/chart')
-const Prompt = require('../lib/prompt')
+import Stock from './stock'
+import axios from 'axios'
+import { Table } from 'console-table-printer'
+import Field from '../field'
+import StockURL from '../url'
+import Chart from '../lib/chart'
+import Prompt from '../lib/prompt'
 const { StockIndexMessage } = require('../message')
 
 class StockIndex extends Stock {
@@ -77,4 +77,4 @@ class StockIndex extends Stock {
   }
 }
 
-module.exports = StockIndex
+export default StockIndex

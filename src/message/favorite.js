@@ -1,4 +1,4 @@
-const Text = require('../lib/text')
+import Text from '../lib/text'
 
 class FavoriteMessage {
   static createFileSuccessfully() {
@@ -34,4 +34,4 @@ class FavoriteMessage {
   }
 }
 
-module.exports = FavoriteMessage
+export default FavoriteMessage

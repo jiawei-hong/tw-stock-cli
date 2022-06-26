@@ -44,4 +44,4 @@ class StockURL {
   }
 }
 
-module.exports = StockURL
+export default StockURL

@@ -1,4 +1,4 @@
-const colors = require('../color')
+import { colors } from '../color'
 
 class Text {
   static white(text) {
@@ -35,4 +35,4 @@ class Text {
   }
 }
 
-module.exports = Text
+export default Text

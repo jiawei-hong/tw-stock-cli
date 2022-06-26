@@ -1,8 +1,8 @@
-const axios = require('axios').default
-const Cheerio = require('cheerio')
-const iconv = require('iconv-lite')
-const Text = require('../lib/text')
-const FilePath = require('../lib/filePath')
+import axios from 'axios'
+import Cheerio from 'cheerio'
+import iconv from 'iconv-lite'
+import Text from '../lib/text'
+import FilePath from '../lib/filePath'
 
 class Crawler {
   constructor() {
@@ -39,13 +39,11 @@ class Crawler {
     FilePath.stock.write(this.data)
 
     if (FilePath.stock.exist()) {
-
       console.log(Text.green('Stock list created successfully.'))
     } else {
-      console.log(Text.red('Stock list created failed.'))
+      console.log(Text.red('Stock list is existed.'))
     }
-
   }
 }
 
-module.exports = Crawler
+export default Crawler

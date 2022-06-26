@@ -1,10 +1,29 @@
-require('regenerator-runtime/runtime')
+import { program } from 'commander'
 
-const { program } = require('commander')
-const Stock = require('./handler/stock')
-const StockIndex = require('./handler/stockIndex')
-const Crawler = require('./crawler')
-const Favorite = require('./handler/favorite')
+import Stock from './handler/stock'
+import StockIndex from './handler/stockIndex'
+import Favorite from './handler/favorite'
+import Crawler from './crawler'
+
+type StockOptionProps = {
+  listed?: string
+  multiple?: boolean
+  favorite?: boolean
+  oddLot?: boolean
+  date?: string
+}
+
+type IndexOptionProps = {
+  multiple?: boolean
+  date?: string
+  chart: boolean
+}
+
+type FavoriteOptionProps = {
+  create?: boolean
+  add?: boolean
+  delete?: boolean
+}
 
 function run() {
   program.name('tw-stock').version('1.2.4')
@@ -16,9 +35,11 @@ function run() {
     .option('-l --listed <listed>', 'this trade is listed?', 'tse')
     .option('-m --multiple', 'search multiple stock', false)
     .option('-f --favorite')
-    .option('-o --oddlot', 'search odd-lot', false)
+    .option('-o --oddLot', 'search odd-lot', false)
     .option('-d --date <date>', 'search stock history')
-    .action((code, options) => new Stock({ code, options }).execute())
+    .action((code: string | undefined, options: StockOptionProps) =>
+      new Stock({ code, options }).execute()
+    )
 
   program
     .command('index')
@@ -27,23 +48,27 @@ function run() {
     .option('-m --multiple', 'search multiple index', false)
     .option('-d --date <date...>', 'only use on 9:00AM to 13:30PM')
     .option('-c --chart', 'draw index chart', false)
-    .action((code, options) => new StockIndex({ code, options }).execute())
+    .action((code: string | undefined, options: IndexOptionProps) =>
+      new StockIndex({ code, options }).execute()
+    )
 
   program
     .command('update')
     .description('update tse/otc json file')
     .action(() => new Crawler().execute())
 
-  program
+    // program
     .command('favorite')
     .description('check yourself favorite stocks')
     .argument('[code]', 'add or delete stockCode')
     .option('-c --create', 'create favorite file')
     .option('-a --add', 'add stockCode in favorite list')
     .option('-d --delete', 'delete stockCode from favorite list')
-    .action((code, options) => new Favorite({ code, options }).execute())
+    .action((code: string | undefined, options: FavoriteOptionProps) =>
+      new Favorite({ code, options }).execute()
+    )
 
   program.parse(process.argv)
 }
 
-module.exports = { run }
+export { run }
