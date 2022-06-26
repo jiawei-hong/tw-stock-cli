@@ -1,10 +1,12 @@
 const path = require('path')
 
 module.exports = {
+  target: 'node',
   entry: './src/index.ts',
   output: {
     path: path.resolve(__dirname, 'build'),
     filename: 'index.js',
+    libraryTarget: 'umd',
   },
   module: {
     rules: [
