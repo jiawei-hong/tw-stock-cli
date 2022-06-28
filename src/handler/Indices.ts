@@ -1,4 +1,4 @@
-import Stock from './stock'
+import Stock from './Stock'
 import axios from 'axios'
 import { Table } from 'console-table-printer'
 import Field from '../field'
@@ -7,7 +7,7 @@ import { filterDrawChartDataWithTwoTime, draw } from '../lib/Chart'
 import { execute } from '../lib/Prompt'
 import { IndexOptionProps } from '..'
 import { displayFailed } from '../lib/Text'
-import { INDEX_NOT_FOUND, INDEX_USE_DATE_OPTIONS } from '../message/StockIndex'
+import { INDEX_USE_DATE_OPTIONS } from '../message/StockIndex'
 
 type TIndices = {
   TAIEX: string
@@ -25,7 +25,7 @@ interface Indices {
 
 class Indices extends Stock {
   constructor(code: string | undefined, options: IndexOptionProps) {
-    super({ code, options })
+    super(code, options)
     this.code = code
     this.options = options
     this.indices = {

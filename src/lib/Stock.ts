@@ -1,9 +1,9 @@
-import { TStock } from '../types/stock'
 import { displayFailed } from './Text'
 
-function getStockUpsAndDownsPercentage(stock: TStock) {
-  let [yesterdayPrice, currentPrice] = [stock.y, stock.z]
-
+function getStockUpsAndDownsPercentage(
+  yesterdayPrice: string,
+  currentPrice: string
+): string {
   return getDecimalString(
     strIsNanHandle(
       ((parseFloat(currentPrice) - parseFloat(yesterdayPrice)) /
@@ -18,7 +18,7 @@ function category2Chinese(category: 'tse' | 'otc') {
   const categoryLowerCase = category.toLowerCase()
 
   if (!categories.includes(categoryLowerCase)) {
-    return displayFailed(`${category} not found chinese word.`)
+    displayFailed(`${category} not found chinese word.`)
   }
 
   return categoryLowerCase == 'tse' ? '上市' : '上櫃'

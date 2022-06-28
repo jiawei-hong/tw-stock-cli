@@ -1,18 +1,28 @@
+import { StockOptionProps } from '..'
 import { getStockUpsAndDownsPercentage, category2Chinese } from '../lib/Stock'
+import { TStock } from '../types/stock'
+
+type FieldProps = {
+  code?: string
+  name: string
+  alignment?: string
+  color?: string
+  callback?: (stock: TStock) => string
+}
 
 class Field {
-  static basic(options) {
+  static basic(options: StockOptionProps): FieldProps[] {
     return [
       { code: 'c', name: '代號', alignment: 'center' },
       {
         code: 'ex',
         name: '類別',
         alignment: 'center',
-        callback: (stock) => category2Chinese(stock.ex),
+        callback: (stock: TStock): string => category2Chinese(stock.ex),
       },
       { code: 'n', name: '公司', alignment: 'center' },
       { code: 'z', name: '當盤成交價', color: 'yellow' },
-      { code: options.oddlot ? 's' : 'tv', name: '當盤成交量' },
+      { code: options.oddLot ? 's' : 'tv', name: '當盤成交量' },
       { code: 'v', name: '累積成交量' },
       { code: 'y', name: '昨收', color: 'cyan' },
       { code: 'o', name: '開盤' },
@@ -23,12 +33,13 @@ class Field {
       { code: 't', name: '最近成交時刻', alignment: 'center' },
       {
         name: '漲跌幅',
-        callback: getStockUpsAndDownsPercentage,
+        callback: (stock: TStock): string =>
+          getStockUpsAndDownsPercentage(stock.y, stock.z),
       },
     ]
   }
 
-  static stockIndex() {
+  static stockIndex(): FieldProps[] {
     return [
       { code: 'n', name: '指數名稱', alignment: 'center' },
       { code: 'z', name: '當盤指數', color: 'yellow' },
@@ -42,7 +53,7 @@ class Field {
     ]
   }
 
-  static history() {
+  static history(): FieldProps[] {
     const historyFieldName = [
       '日期',
       '成交股數',
@@ -57,7 +68,7 @@ class Field {
 
     return historyFieldName.map((name, i) => {
       return {
-        code: i,
+        code: i.toString(),
         name,
       }
     })

@@ -26,7 +26,7 @@ export type TStock = {
   n: string
   o: string
   p: string
-  ex: string
+  ex: 'tse' | 'otc'
   s: string
   t: string
   u: string
@@ -49,16 +49,35 @@ export type QueryTime = {
   sysTime: string
 }
 
-export interface Stock {
-  cachedAlive: number
-  exKey: string
-  msgArray: TStock[]
-  queryTime: QueryTime
-  referer: string
-  rtcode: string
-  rtmessage: string
-  userDelay: number
-}
+export type StockResponse =
+  | {
+      cachedAlive: number
+      exKey: string
+      msgArray: TStock[]
+      queryTime: QueryTime
+      referer: string
+      rtcode: string
+      rtmessage: string
+      userDelay: number
+      stat?: string
+    }
+  | {
+      stkNo: string
+      stkName: string
+      showListPriceNote: boolean
+      showListPriceLink: boolean
+      reportDate: string
+      iTotalRecords: number
+      aaData: Array<string[]>[]
+    }
+  | {
+      stat: string
+      date: string
+      title: string
+      fields: string[]
+      data: Array<string[]>[]
+      notes: string[]
+    }
 
 export type StockPayload = {
   [key: string]: {

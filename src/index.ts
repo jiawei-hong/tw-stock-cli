@@ -1,6 +1,6 @@
 import { program } from 'commander'
 
-import Stock from './handler/stock'
+import Stock from './handler/Stock'
 import Favorite from './handler/Favorite'
 import Crawler from './crawler'
 import Indices from './handler/Indices'
@@ -11,6 +11,7 @@ export type StockOptionProps = {
   favorite?: boolean
   oddLot?: boolean
   date?: string
+  type?: string
 }
 
 export type IndexOptionProps = {
@@ -38,9 +39,12 @@ function run() {
     .option('-f --favorite')
     .option('-o --oddLot', 'search odd-lot', false)
     .option('-d --date <date>', 'search stock history')
-    .action((code: string | undefined, options: StockOptionProps) =>
-      new Stock({ code, options }).execute()
-    )
+    .action((code: string | undefined, options: StockOptionProps) => {
+      const stock = new Stock(code, options)
+
+      stock.initialize()
+      stock.execute()
+    })
 
   program
     .command('index')
@@ -53,7 +57,10 @@ function run() {
       const indices = new Indices(code, options)
 
       indices.initialize()
-      indices.execute()
+
+      if (indices.code) {
+        indices.execute()
+      }
     })
 
   program

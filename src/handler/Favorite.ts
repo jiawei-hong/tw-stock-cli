@@ -1,4 +1,3 @@
-import Stock from './stock'
 import { Table } from 'console-table-printer'
 import FilePath from '../lib/FilePath'
 import { FavoriteOptionProps } from '..'
