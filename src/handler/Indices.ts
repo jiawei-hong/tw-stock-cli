@@ -38,6 +38,8 @@ class Indices extends Stock {
   }
 
   async initialize() {
+    this.options.type = 'index'
+
     if (this.options.chart) {
       const result = await execute(this.ohlc)
 
