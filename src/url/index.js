@@ -3,9 +3,9 @@ class StockURL {
     return 'https://mis.twse.com.tw/stock/'
   }
 
-  static getStockAPI(isOddlot) {
+  static getStockAPI(isOddLot) {
     return `${this.prefix()}/api/get${
-      isOddlot ? 'Odd' : 'Stock'
+      isOddLot ? 'Odd' : 'Stock'
     }Info.jsp?ex_ch=`
   }
 
