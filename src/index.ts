@@ -28,7 +28,7 @@ export type FavoriteOptionProps = {
 }
 
 function run() {
-  program.name('tw-stock').version('1.2.6')
+  program.name('tw-stock').version('1.2.7')
 
   program
     .command('stock')
