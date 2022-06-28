@@ -4,7 +4,7 @@ import {
   CHART_NOT_FOUND,
   CHART_START_DATE_IS_AFTER_END_DATE,
 } from '../message/Chart'
-import { displayActionText } from './Text'
+import { displayFailed } from './Text'
 
 function getHisWithDate(date: string): moment.Moment {
   const [hour, minute, seconds] = [0, 2, 4].map((len) =>
@@ -25,7 +25,7 @@ function filterDrawChartDataWithTwoTime(data: any, date: any) {
   const endDate = getHisWithDate(date[1])
 
   if (startDate.isAfter(endDate)) {
-    return displayActionText(CHART_START_DATE_IS_AFTER_END_DATE)
+    return displayFailed(CHART_START_DATE_IS_AFTER_END_DATE)
   }
 
   return data.filter((d: any) => {
@@ -54,7 +54,7 @@ function draw(
 
     console.log(asciichart.plot(chart, config))
   } else {
-    console.log(displayActionText(CHART_NOT_FOUND))
+    displayFailed(CHART_NOT_FOUND)
   }
 }
 
