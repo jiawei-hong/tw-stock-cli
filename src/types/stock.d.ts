@@ -59,3 +59,10 @@ export interface Stock {
   rtmessage: string
   userDelay: number
 }
+
+export type StockPayload = {
+  [key: string]: {
+    name: string
+    category: string
+  }
+}

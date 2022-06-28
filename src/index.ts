@@ -2,10 +2,10 @@ import { program } from 'commander'
 
 import Stock from './handler/stock'
 import StockIndex from './handler/stockIndex'
-import Favorite from './handler/favorite'
+import Favorite from './handler/Favorite'
 import Crawler from './crawler'
 
-type StockOptionProps = {
+export type StockOptionProps = {
   listed?: string
   multiple?: boolean
   favorite?: boolean
@@ -13,13 +13,13 @@ type StockOptionProps = {
   date?: string
 }
 
-type IndexOptionProps = {
+export type IndexOptionProps = {
   multiple?: boolean
   date?: string
   chart: boolean
 }
 
-type FavoriteOptionProps = {
+export type FavoriteOptionProps = {
   create?: boolean
   add?: boolean
   delete?: boolean
@@ -57,16 +57,19 @@ function run() {
     .description('update tse/otc json file')
     .action(() => new Crawler().execute())
 
-    // program
+  program
     .command('favorite')
     .description('check yourself favorite stocks')
     .argument('[code]', 'add or delete stockCode')
     .option('-c --create', 'create favorite file')
     .option('-a --add', 'add stockCode in favorite list')
     .option('-d --delete', 'delete stockCode from favorite list')
-    .action((code: string | undefined, options: FavoriteOptionProps) =>
-      new Favorite({ code, options }).execute()
-    )
+    .action((code: string | undefined, options: FavoriteOptionProps) => {
+      const favorite = new Favorite({ code, options })
+
+      favorite.initialize()
+      favorite.execute()
+    })
 
   program.parse(process.argv)
 }
