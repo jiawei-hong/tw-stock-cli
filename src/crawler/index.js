@@ -1,8 +1,9 @@
 import axios from 'axios'
 import Cheerio from 'cheerio'
 import iconv from 'iconv-lite'
-import Text from '../lib/text'
-import FilePath from '../lib/filePath'
+import { displaySuccess } from '../lib/Text'
+import FilePath from '../lib/FilePath'
+import { CRAWLER_STOCK_FILE_CREATED } from '../message/Crawler'
 
 class Crawler {
   constructor() {
@@ -38,11 +39,7 @@ class Crawler {
 
     FilePath.stock.write(this.data)
 
-    if (FilePath.stock.exist()) {
-      console.log(Text.green('Stock list created successfully.'))
-    } else {
-      console.log(Text.red('Stock list is existed.'))
-    }
+    displaySuccess(CRAWLER_STOCK_FILE_CREATED)
   }
 }
 

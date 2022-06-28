@@ -1,4 +1,4 @@
-import { getStockUpsAndDownsPercentage, category2Chinese } from '../lib/stock'
+import { getStockUpsAndDownsPercentage, category2Chinese } from '../lib/Stock'
 
 class Field {
   static basic(options) {
@@ -43,7 +43,7 @@ class Field {
   }
 
   static history() {
-    const historyFiedlName = [
+    const historyFieldName = [
       '日期',
       '成交股數',
       '成交金額',
@@ -55,7 +55,7 @@ class Field {
       '成交筆數',
     ]
 
-    return historyFiedlName.map((name, i) => {
+    return historyFieldName.map((name, i) => {
       return {
         code: i,
         name,
