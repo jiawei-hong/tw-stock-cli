@@ -1,9 +1,9 @@
 import { program } from 'commander'
 
 import Stock from './handler/stock'
-import StockIndex from './handler/stockIndex'
 import Favorite from './handler/Favorite'
 import Crawler from './crawler'
+import Indices from './handler/Indices'
 
 export type StockOptionProps = {
   listed?: string
@@ -17,6 +17,7 @@ export type IndexOptionProps = {
   multiple?: boolean
   date?: string
   chart: boolean
+  type?: string
 }
 
 export type FavoriteOptionProps = {
@@ -48,9 +49,12 @@ function run() {
     .option('-m --multiple', 'search multiple index', false)
     .option('-d --date <date...>', 'only use on 9:00AM to 13:30PM')
     .option('-c --chart', 'draw index chart', false)
-    .action((code: string | undefined, options: IndexOptionProps) =>
-      new StockIndex({ code, options }).execute()
-    )
+    .action((code: string | undefined, options: IndexOptionProps) => {
+      const indices = new Indices(code, options)
+
+      indices.initialize()
+      indices.execute()
+    })
 
   program
     .command('update')
