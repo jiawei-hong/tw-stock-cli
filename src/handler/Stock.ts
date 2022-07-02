@@ -1,9 +1,9 @@
 import axios from 'axios'
 import { Table } from 'console-table-printer'
-import StockURL from '../url/index'
+import { getStock, getStockWithDate } from '../url/index'
 import Field from '../field'
 import FilePath from '../lib/FilePath'
-import { displaySuccess, displayFailed } from '../lib/Text'
+import { displayFailed } from '../lib/Text'
 import { strIsNanHandle } from '../lib/Stock'
 import { StockOptionProps } from '..'
 import { StockPayload, StockResponse, TStock } from '../types/stock'
@@ -14,6 +14,7 @@ import {
   STOCK_SEARCH_BUT_NOT_GIVE_CODE,
 } from '../message/Stock'
 import { FAVORITE_NOT_FOUND } from '../message/Favorite'
+import { getTaiwanDateFormat, getConversionDate } from '../utils/stock'
 
 interface Stock {
   code: string | undefined
@@ -30,7 +31,7 @@ interface Stock {
 
 class Stock {
   constructor(code: string | undefined, options: StockOptionProps) {
-    this.prefix = StockURL.getStockAPI(options.oddLot ?? false)
+    this.prefix = getStock(options.oddLot ?? false)
     this.url = ''
     this.code = code
     this.options = options
@@ -71,10 +72,7 @@ class Stock {
               let stockField: { [key: string]: string } = {}
 
               if (this.dateExistDay) {
-                const searchDay = StockURL.getTaiwanDateFormat(
-                  this.date.slice(0)
-                )
-
+                const searchDay = getTaiwanDateFormat(this.date.slice(0))
                 if (typeof stock === 'string') {
                   if (searchDay != stock[0]) continue
                 }
@@ -148,7 +146,7 @@ class Stock {
     return Field.basic(this.options)
   }
 
-  getStockUrl() {
+  getStockUrl(): string {
     if (this.options.multiple || this.options.favorite) {
       const data = this.options.multiple
         ? this.code?.split('-')
@@ -166,15 +164,8 @@ class Stock {
       } else {
         displayFailed(FAVORITE_NOT_FOUND)
       }
-
-      return
-    }
-
-    if (this.options.date) {
-      const date = StockURL.getConversionDate(
-        this.options.date,
-        this.options.listed
-      )
+    } else if (this.options.date) {
+      const date = getConversionDate(this.options.date, this.options.listed)
 
       if (Array.isArray(date)) {
         this.date = date
@@ -184,10 +175,10 @@ class Stock {
           this.date.push('01')
         }
 
-        return StockURL.getStockAPIWithDate(
+        return getStockWithDate(
           this.code,
           this.date.join(this.options.listed == 'otc' ? '/' : ''),
-          this.options.listed
+          this.options.listed ?? 'tse'
         )
       }
 

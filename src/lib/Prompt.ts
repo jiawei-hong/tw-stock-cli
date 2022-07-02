@@ -1,14 +1,11 @@
 import cliSelect from 'cli-select'
+import { IndicesStatus } from '../handler/Indices'
 import { displayFailed } from './Text'
 
-function execute(choices: string[] = []) {
-  if (choices.length === 0) {
-    displayFailed('You should give options!')
-  } else {
-    return cliSelect({ values: choices })
-      .then((res) => res.value)
-      .catch(() => displayFailed('Cancelled!'))
-  }
+function execute() {
+  return cliSelect({ values: Object.values(IndicesStatus) })
+    .then((res) => IndicesStatus[res.value])
+    .catch(() => displayFailed('Cancelled!'))
 }
 
 export { execute }

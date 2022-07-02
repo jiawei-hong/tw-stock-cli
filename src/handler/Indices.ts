@@ -2,12 +2,18 @@ import Stock from './Stock'
 import axios from 'axios'
 import { Table } from 'console-table-printer'
 import Field from '../field'
-import StockURL from '../url'
+import { getOhlc } from '../url'
 import { filterDrawChartDataWithTwoTime, draw } from '../lib/Chart'
 import { execute } from '../lib/Prompt'
 import { IndexOptionProps } from '..'
 import { displayFailed } from '../lib/Text'
 import { INDEX_USE_DATE_OPTIONS } from '../message/StockIndex'
+
+export enum IndicesStatus {
+  TSE = 'TSE',
+  OTC = 'OTC',
+  FRMSA = 'FRMSA',
+}
 
 type TIndices = {
   TAIEX: string
@@ -33,7 +39,6 @@ class Indices extends Stock {
       TWO: 'otc_o00.tw',
       FRMSA: 'tse_FRMSA.tw',
     }
-    this.ohlc = ['TSE', 'OTC', 'FRMSA']
     this.table = new Table({ columns: Field.stockIndex() })
   }
 
@@ -41,24 +46,25 @@ class Indices extends Stock {
     this.options.type = 'index'
 
     if (this.options.chart) {
-      const result = await execute(this.ohlc)
+      const type = await execute()
 
-      let data = await axios
-        .get(StockURL.getOhlc(result ?? 'TSE'))
-        .then((res) => res.data.ohlcArray)
+      if (type) {
+        let data = await axios
+          .get(getOhlc(type))
+          .then((res) => res.data.ohlcArray)
 
-      if (this.options.date) {
-        if (this.options.date.length == 2) {
-          data = filterDrawChartDataWithTwoTime(data, this.options.date)
-        } else {
-          displayFailed(INDEX_USE_DATE_OPTIONS)
+        if (this.options.date) {
+          if (this.options.date.length == 2) {
+            data = filterDrawChartDataWithTwoTime(data, this.options.date)
+          } else {
+            displayFailed(INDEX_USE_DATE_OPTIONS)
+          }
         }
-      }
-
-      if (typeof data === 'string') {
-        displayFailed(data)
-      } else {
-        draw(data)
+        if (typeof data === 'string') {
+          displayFailed(data)
+        } else {
+          draw(data)
+        }
       }
 
       return
