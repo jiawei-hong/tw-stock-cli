@@ -1,5 +1,3 @@
-import { IndicesStatus } from '../handler/Indices'
-
 const STOCK_BASE_URL: string = 'https://mis.twse.com.tw/stock/'
 
 function getStock(isOddLot: boolean): string {
@@ -7,8 +5,6 @@ function getStock(isOddLot: boolean): string {
 }
 
 function getOhlc(type: string): string {
-  console.log(type)
-
   return `${STOCK_BASE_URL}/data/mis_ohlc_${type.toUpperCase()}.txt`
 }
 
