@@ -6,6 +6,8 @@
     "strict": true,
     "outDir": "./bin",
     "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true ,
     "moduleResolution": "node",
     "typeRoots": ["./node_modules/@types"]
   },
