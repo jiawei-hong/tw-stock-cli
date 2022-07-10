@@ -74,24 +74,11 @@ class Indices extends Stock {
       let stockIdx = this.code
         .split('-')
         .filter((code) => code.toUpperCase() in this.indices)
-        .map((code) => this.getIndices(code))
+        .map((code) => IndicesStatus[code as keyof typeof IndicesStatus])
 
       if (stockIdx.length > 0) {
         this.url = `${this.prefix}${stockIdx.join('|')}`
       }
-    }
-  }
-
-  getIndices(code: string) {
-    const upperCaseCode = code.toUpperCase()
-
-    switch (upperCaseCode) {
-      case 'TAIEX':
-        return this.indices.TAIEX
-      case 'TWO':
-        return this.indices.TWO
-      default:
-        return this.indices.FRMSA
     }
   }
 }
