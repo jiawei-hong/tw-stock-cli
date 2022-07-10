@@ -89,10 +89,10 @@ class Stock {
                       stock[code as keyof typeof stock]
                     )
                   }
+                }
 
-                  if (typeof stock !== 'string' && field.callback) {
-                    stockField[field.name] = field.callback(stock)
-                  }
+                if (typeof stock !== 'string' && field.callback) {
+                  stockField[field.name] = field.callback(stock)
                 }
               })
 

@@ -5,6 +5,17 @@ export enum Status {
   success,
 }
 
+function getDisplayActionText(
+  text: string,
+  isSuccess: Status = Status.success
+) {
+  if (isSuccess === Status.success) {
+    return color.green + text + color.red
+  }
+
+  return color.red + text + color.red
+}
+
 function displayActionText(text: string, isSuccess: Status = Status.success) {
   if (isSuccess === Status.success) {
     return color.green + 'Success: ' + text + color.red
@@ -21,4 +32,9 @@ function displayFailed(text: string): void {
   console.log(color.red + 'Failure: ' + text + color.red)
 }
 
-export { displayActionText, displaySuccess, displayFailed }
+export {
+  displayActionText,
+  displaySuccess,
+  displayFailed,
+  getDisplayActionText,
+}

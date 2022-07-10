@@ -1,15 +1,20 @@
-import { displayFailed } from './Text'
+import { displayFailed, getDisplayActionText, Status } from './Text'
 
 function getStockUpsAndDownsPercentage(
   yesterdayPrice: string,
   currentPrice: string
 ): string {
-  return getDecimalString(
+  const dec = getDecimalString(
     strIsNanHandle(
       ((parseFloat(currentPrice) - parseFloat(yesterdayPrice)) /
         parseFloat(yesterdayPrice)) *
         100
     )
+  )
+
+  return getDisplayActionText(
+    percentageHandle(dec),
+    parseInt(dec) > 0 ? Status.success : Status.failed
   )
 }
 
