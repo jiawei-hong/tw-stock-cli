@@ -48,11 +48,11 @@ tw-stock index [index]
 | TWO   | search two index   |
 | FRMSA | search frmsa index |
 
-| Options      | Description                                            |
-| ------------ | ------------------------------------------------------ |
-| -m --mutiple | search multiple stock index                            |
-| -d --date    | user can input startDate and endDate filter chart data |
-| -c --chart   | draw index chart on today                              |
+| Options       | Description                                            |
+| ------------- | ------------------------------------------------------ |
+| -m --multiple | search multiple stock index                            |
+| -d --date     | user can input startDate and endDate filter chart data |
+| -c --chart    | draw index chart on today                              |
 
 # How to use favorite:
 
@@ -70,20 +70,12 @@ tw-stock favorite [code]
 
 # Search Tse Stock
 
-![tse.png](./tse.png)
+![Search_TSE_Stock](/images/TSE.png)
 
 # Search Otc Stock
 
-![otc.png](./otc.png)
+![Search_OTC_Stock](/images/OTC.png)
 
 # Search Multiple Stock
 
-![multiple.png](./multiple.png)
-
-# Add Stock in Favorite List
-
-![addStockInFavorite.png](./addStockInFavorite.png)
-
-# Show Favorite List
-
-![showFavoriteList.png](./showFavoriteList.png)
+![Search_MULTIPLE_Stock](/images/MULTIPLE.png)
