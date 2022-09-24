@@ -1,8 +1,14 @@
 import cliSelect from 'cli-select'
-import { IndicesStatus } from '../handler/Indices'
+
 import { displayFailed } from './Text'
 
 function execute() {
+  enum IndicesStatus {
+    TSE = 'TSE',
+    OTC = 'OTC',
+    FRMSA = 'FRMSA',
+  }
+
   return cliSelect({ values: Object.values(IndicesStatus) })
     .then((res) => IndicesStatus[res.value])
     .catch(() => displayFailed('Cancelled!'))

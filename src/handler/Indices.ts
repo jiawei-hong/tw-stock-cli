@@ -1,19 +1,14 @@
-import Stock from './Stock'
 import axios from 'axios'
 import { Table } from 'console-table-printer'
-import Field from '../field'
-import { getOhlc } from '../url'
-import { filterDrawChartDataWithTwoTime, draw } from '../lib/Chart'
-import { execute } from '../lib/Prompt'
+
 import { IndexOptionProps } from '..'
+import Field from '../field'
+import { draw, filterDrawChartDataWithTwoTime } from '../lib/Chart'
+import { execute } from '../lib/Prompt'
 import { displayFailed } from '../lib/Text'
 import { INDEX_USE_DATE_OPTIONS } from '../message/StockIndex'
-
-export enum IndicesStatus {
-  TSE = 'TSE',
-  OTC = 'OTC',
-  FRMSA = 'FRMSA',
-}
+import { getOhlc } from '../url'
+import Stock from './Stock'
 
 type TIndices = {
   TAIEX: string
@@ -74,7 +69,7 @@ class Indices extends Stock {
       let stockIdx = this.code
         .split('-')
         .filter((code) => code.toUpperCase() in this.indices)
-        .map((code) => IndicesStatus[code as keyof typeof IndicesStatus])
+        .map((code) => this.indices[code as keyof typeof this.indices])
 
       if (stockIdx.length > 0) {
         this.url = `${this.prefix}${stockIdx.join('|')}`
