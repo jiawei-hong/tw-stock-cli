@@ -33,8 +33,7 @@
     "asciichart": "^1.5.25",
     "commander": "^9.3.0",
     "date-fns": "^2.29.3",
-    "enquirer": "^2.3.6",
-    "moment": "^2.29.1"
+    "enquirer": "^2.3.6"
   },
   "devDependencies": {
     "@babel/core": "^7.18.5",
