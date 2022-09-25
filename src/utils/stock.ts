@@ -8,7 +8,7 @@ function getConversionDate(date: string, category = 'tse') {
     .find((d) => d.length > 0)
 
   if (data && category == 'otc') {
-    data[0][1] = (parseInt(date[0][1]) - 1911).toString()
+    data[0][1] = (parseInt(data[0][1]) - 1911).toString()
   }
 
   return !data ? 'Invalid Date' : data[0].splice(1, data[0].length - 1)

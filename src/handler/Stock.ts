@@ -1,20 +1,22 @@
 import axios from 'axios'
 import { Table } from 'console-table-printer'
-import { getStock, getStockWithDate } from '../url/index'
+
+import { StockOptionProps } from '..'
+import { color } from '../color'
 import Field from '../field'
 import FilePath from '../lib/FilePath'
-import { displayFailed } from '../lib/Text'
 import { strIsNanHandle } from '../lib/Stock'
-import { StockOptionProps } from '..'
-import { StockPayload, StockResponse, TStock } from '../types/stock'
+import { displayFailed } from '../lib/Text'
+import { FAVORITE_NOT_FOUND } from '../message/Favorite'
 import {
   STOCK_NOT_FOUND,
   STOCK_NOT_FOUND_FILE,
   STOCK_QUERY_DATE_NOT_FOUND_TRADE,
   STOCK_SEARCH_BUT_NOT_GIVE_CODE,
 } from '../message/Stock'
-import { FAVORITE_NOT_FOUND } from '../message/Favorite'
-import { getTaiwanDateFormat, getConversionDate } from '../utils/stock'
+import { StockPayload, StockResponse, TStock } from '../types/stock'
+import { getStock, getStockWithDate } from '../url/index'
+import { getConversionDate, getTaiwanDateFormat } from '../utils/stock'
 
 interface Stock {
   code: string | undefined
@@ -54,68 +56,72 @@ class Stock {
     }
   }
 
-  execute() {
+  getStock() {
     if (this.url) {
-      axios
+      return axios
         .get(this.url)
-        .then((res) => {
-          const data = this.getStockData(res.data)
+        .then((res) => res.data)
+        .catch((err) => displayFailed(err))
+    }
+    return null
+  }
 
-          if (typeof data === 'string') {
-            if (Array.isArray(data)) {
-              displayFailed(STOCK_NOT_FOUND)
-            } else {
-              displayFailed(data)
-            }
-          } else {
-            for (let stock of data) {
-              let stockField: { [key: string]: string } = {}
+  async execute() {
+    const stocks = this.getStockData(await this.getStock())
 
-              if (this.dateExistDay) {
-                const searchDay = getTaiwanDateFormat(this.date.slice(0))
-                if (typeof stock === 'string') {
-                  if (searchDay != stock[0]) continue
-                }
-              }
+    if (typeof stocks === 'string') {
+      displayFailed(Array.isArray(stocks) ? STOCK_NOT_FOUND : stocks)
+      return
+    }
 
-              this.getField().forEach((field) => {
-                const code = field.code
+    for (let stock of stocks) {
+      if (this.dateExistDay) {
+        const searchDay = getTaiwanDateFormat(this.date.slice(0))
+        if (typeof stock === 'string') {
+          if (searchDay != stock[0]) continue
+        }
+      }
 
-                if (code) {
-                  if (this.notExecIsNanHandle.includes(code)) {
-                    stockField[field.name] = stock[code as keyof typeof stock]
-                  } else {
-                    stockField[field.name] = strIsNanHandle(
-                      stock[code as keyof typeof stock]
-                    )
-                  }
-                }
+      let stockField: { [key: string]: string } = this.getField()
+        .map((field) => {
+          const stockCode = field.code
+          const isExistNotInExecIsNanHandle = this.notExecIsNanHandle.includes(
+            stockCode ?? ''
+          )
+          const stockInformation = stock[stockCode as keyof typeof stockCode]
+          let stockTrade = isExistNotInExecIsNanHandle
+            ? stockInformation
+            : strIsNanHandle(stockInformation)
 
-                if (typeof stock !== 'string' && field.callback) {
-                  stockField[field.name] = field.callback(stock)
-                }
-              })
+          if (typeof stock !== 'string' && field.callback) {
+            stockTrade = field.callback(stock)
+          }
 
-              if (
-                typeof stock !== 'string' &&
-                'ex' in stock &&
-                stock.ex == 'otc'
-              ) {
-                delete stockField.漲停
-                delete stockField.跌停
-              }
+          if (
+            typeof stock !== 'string' &&
+            'ex' in stock &&
+            stock.ex == 'otc' &&
+            ['漲停', '跌停'].includes(field.name)
+          ) {
+            return { [field.name]: `${color.rest}-` }
+          }
 
-              this.table.addRow(stockField)
-            }
-
-            if (this.table.table.rows.length > 0) {
-              this.table.printTable()
-            } else {
-              displayFailed(STOCK_QUERY_DATE_NOT_FOUND_TRADE)
-            }
+          return {
+            [field.name]: stockTrade,
           }
         })
-        .catch((err) => displayFailed(err))
+        .reduce((acc, cur) => Object.assign(acc, cur), {})
+
+      this.table.addRow(stockField)
+    }
+    this.printTable()
+  }
+
+  printTable() {
+    if (this.table.table.rows.length > 0) {
+      this.table.printTable()
+    } else {
+      displayFailed(STOCK_QUERY_DATE_NOT_FOUND_TRADE)
     }
   }
 
@@ -176,7 +182,7 @@ class Stock {
         }
 
         return getStockWithDate(
-          this.code,
+          this.code?.toUpperCase(),
           this.date.join(this.options.listed == 'otc' ? '/' : ''),
           this.options.listed ?? 'tse'
         )
