@@ -1,9 +1,9 @@
 import { program } from 'commander'
 
-import Stock from './handler/Stock'
-import Favorite from './handler/Favorite'
 import Crawler from './crawler'
+import Favorite from './handler/Favorite'
 import Indices from './handler/Indices'
+import Stock from './handler/Stock'
 
 export type StockOptionProps = {
   listed?: string
@@ -28,7 +28,7 @@ export type FavoriteOptionProps = {
 }
 
 function run() {
-  program.name('tw-stock').version('1.2.8')
+  program.name('tw-stock').version('1.2.9')
 
   program
     .command('stock')
