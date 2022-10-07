@@ -58,7 +58,7 @@ function run() {
 
       indices.initialize()
 
-      if (indices.code) {
+      if (indices.code && !options.chart) {
         indices.execute()
       }
     })
