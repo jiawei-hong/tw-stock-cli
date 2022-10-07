@@ -27,7 +27,6 @@ interface Indices {
 class Indices extends Stock {
   constructor(code: string | undefined, options: IndexOptionProps) {
     super(code, options)
-    this.code = code
     this.options = options
     this.indices = {
       TAIEX: 'tse_t00.tw',
