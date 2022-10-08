@@ -4,7 +4,7 @@ import { Table } from 'console-table-printer'
 import { IndexOptionProps } from '..'
 import Field from '../field'
 import { draw, filterDrawChartDataWithTwoTime } from '../lib/Chart'
-import { execute } from '../lib/Prompt'
+import { getSelectedIndex } from '../lib/Prompt'
 import { displayFailed } from '../lib/Text'
 import { INDEX_USE_DATE_OPTIONS } from '../message/StockIndex'
 import { getOhlc } from '../url'
@@ -27,6 +27,7 @@ interface Indices {
 class Indices extends Stock {
   constructor(code: string | undefined, options: IndexOptionProps) {
     super(code, options)
+    this.options.type = 'index'
     this.options = options
     this.indices = {
       TAIEX: 'tse_t00.tw',
@@ -37,30 +38,28 @@ class Indices extends Stock {
   }
 
   async initialize() {
-    this.options.type = 'index'
-
     if (this.options.chart) {
-      const type = await execute()
+      const type = await getSelectedIndex()
 
       if (type) {
         let data = await axios
           .get(getOhlc(type))
           .then((res) => res.data.ohlcArray)
 
-        if (this.options.date) {
-          if (this.options.date.length == 2) {
-            data = filterDrawChartDataWithTwoTime(data, this.options.date)
+        if (this.options.time) {
+          if (this.options.time.length == 2) {
+            data = filterDrawChartDataWithTwoTime(data, this.options.time)
+
+            if (typeof data === 'string') {
+              displayFailed(data)
+            } else {
+              draw(data)
+            }
           } else {
             displayFailed(INDEX_USE_DATE_OPTIONS)
           }
         }
-        if (typeof data === 'string') {
-          displayFailed(data)
-        } else {
-          draw(data)
-        }
       }
-
       return
     }
 

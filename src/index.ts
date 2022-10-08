@@ -16,7 +16,7 @@ export type StockOptionProps = {
 
 export type IndexOptionProps = {
   multiple?: boolean
-  date?: string
+  time?: string
   chart: boolean
   type?: string
 }
@@ -51,7 +51,7 @@ function run() {
     .description('get tw-stock index')
     .argument('[code]', 'get tw-stock index', 'TAIEX')
     .option('-m --multiple', 'search multiple index', false)
-    .option('-d --date <date...>', 'only use on 9:00AM to 13:30PM')
+    .option('-t --time <time...>', 'only use on 9:00AM to 13:30PM')
     .option('-c --chart', 'draw index chart', false)
     .action((code: string | undefined, options: IndexOptionProps) => {
       const indices = new Indices(code, options)
