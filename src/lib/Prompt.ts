@@ -2,7 +2,7 @@ import cliSelect from 'cli-select'
 
 import { displayFailed } from './Text'
 
-function execute() {
+function getSelectedIndex() {
   enum IndicesStatus {
     TSE = 'TSE',
     OTC = 'OTC',
@@ -14,4 +14,4 @@ function execute() {
     .catch(() => displayFailed('Cancelled!'))
 }
 
-export { execute }
+export { getSelectedIndex }
