@@ -10,13 +10,13 @@ npm install -g tw-stock
 
 # How to update stock.json:
 
-```sheel
+```shell
 tw-stock update
 ```
 
 # How to use:
 
-```sheel
+```shell
 tw-stock stock [stock_code]
 ```
 
@@ -25,7 +25,7 @@ tw-stock stock [stock_code]
 | Options       | Description                            |
 | ------------- | -------------------------------------- |
 | -l --listed   | input this tw_stock_code is tse or otc |
-| -m --mutiple  | search multiple stock_code             |
+| -m --multiple  | search multiple stock_code             |
 | -f --favorite | show stocks in favorite list           |
 | -d --date     | search stock history trade             |
 
@@ -38,7 +38,7 @@ tw-stock stock [stock_code]
 
 # How to search tw-stock index:
 
-```sheel
+```shell
 tw-stock index [index]
 ```
 
@@ -51,12 +51,12 @@ tw-stock index [index]
 | Options       | Description                                            |
 | ------------- | ------------------------------------------------------ |
 | -m --multiple | search multiple stock index                            |
-| -d --date     | user can input startDate and endDate filter chart data |
+| -t --time     | user can input startDate and endDate filter chart data |
 | -c --chart    | draw index chart on today                              |
 
 # How to use favorite:
 
-```sheel
+```shell
 tw-stock favorite [code]
 ```
 
