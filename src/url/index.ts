@@ -20,4 +20,4 @@ function getStockWithDate(
   return `https://www.twse.com.tw/exchangeReport/STOCK_DAY?date=${date}&stockNo=${code}`
 }
 
-export { getStock, getOhlc, getStockWithDate }
+export { getOhlc, getStock, getStockWithDate }

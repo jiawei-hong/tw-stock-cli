@@ -1,12 +1,12 @@
 import axios from 'axios'
 import { Table } from 'console-table-printer'
 
-import { IndexOptionProps } from '..'
 import Field from '../field'
 import { draw, filterDrawChartDataWithTwoTime } from '../lib/Chart'
 import { getSelectedIndex } from '../lib/Prompt'
 import { displayFailed } from '../lib/Text'
 import { INDEX_USE_DATE_OPTIONS } from '../message/StockIndex'
+import { IndexOptionProps } from '../types/indices'
 import { getOhlc } from '../url'
 import Stock from './Stock'
 
@@ -17,7 +17,7 @@ type TIndices = {
 }
 
 interface Indices {
-  code: string | undefined
+  code: string
   indices: TIndices
   options: IndexOptionProps
   ohlc: string[]
@@ -25,7 +25,7 @@ interface Indices {
 }
 
 class Indices extends Stock {
-  constructor(code: string | undefined, options: IndexOptionProps) {
+  constructor(code: string, options: IndexOptionProps) {
     super(code, options)
     this.options.type = 'index'
     this.options = options

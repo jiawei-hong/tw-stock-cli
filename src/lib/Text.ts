@@ -25,16 +25,16 @@ function displayActionText(text: string, isSuccess: Status = Status.success) {
 }
 
 function displaySuccess(text: string): void {
-  console.log(color.green + 'Success: ' + text + color.red)
+  console.log(color.green + 'Success: ' + text + color.rest)
 }
 
 function displayFailed(text: string): void {
-  console.log(color.red + 'Failure: ' + text + color.red)
+  console.log(color.red + 'Failure: ' + text + color.rest)
 }
 
 export {
   displayActionText,
-  displaySuccess,
   displayFailed,
+  displaySuccess,
   getDisplayActionText,
 }

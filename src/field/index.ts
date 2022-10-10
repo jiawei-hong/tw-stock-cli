@@ -1,5 +1,5 @@
-import { StockOptionProps } from '..'
-import { getStockUpsAndDownsPercentage, category2Chinese } from '../lib/Stock'
+import { category2Chinese, getStockUpsAndDownsPercentage } from '../lib/Stock'
+import { StockOptionProps } from '../types/stock'
 import { TStock } from '../types/stock'
 
 type FieldProps = {

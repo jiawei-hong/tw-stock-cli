@@ -1,6 +1,6 @@
 import { Table } from 'console-table-printer'
+
 import FilePath from '../lib/FilePath'
-import { FavoriteOptionProps } from '..'
 import { displayFailed, displaySuccess } from '../lib/Text'
 import {
   FAVORITE_ADD_STOCK,
@@ -12,6 +12,7 @@ import {
   FAVORITE_STOCK_IS_EXIST,
 } from '../message/Favorite'
 import { STOCK_NOT_FOUND_FILE } from '../message/Stock'
+import { FavoriteOptionProps } from '../types/favorite'
 import { StockPayload } from '../types/stock'
 
 type FavoriteProps = {
