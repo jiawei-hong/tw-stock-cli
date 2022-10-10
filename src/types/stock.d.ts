@@ -85,3 +85,12 @@ export type StockPayload = {
     category: string
   }
 }
+
+export type StockOptionProps = {
+  listed?: string
+  multiple?: boolean
+  favorite?: boolean
+  oddLot?: boolean
+  date?: string
+  type?: string
+}

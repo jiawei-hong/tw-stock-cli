@@ -4,28 +4,9 @@ import Crawler from './crawler'
 import Favorite from './handler/Favorite'
 import Indices from './handler/Indices'
 import Stock from './handler/Stock'
-
-export type StockOptionProps = {
-  listed?: string
-  multiple?: boolean
-  favorite?: boolean
-  oddLot?: boolean
-  date?: string
-  type?: string
-}
-
-export type IndexOptionProps = {
-  multiple?: boolean
-  time?: string
-  chart: boolean
-  type?: string
-}
-
-export type FavoriteOptionProps = {
-  create?: boolean
-  add?: boolean
-  delete?: boolean
-}
+import { FavoriteOptionProps } from './types/favorite'
+import { IndexOptionProps } from './types/indices'
+import { StockOptionProps } from './types/stock'
 
 function run() {
   program.name('tw-stock').version('1.2.9')
@@ -39,12 +20,9 @@ function run() {
     .option('-f --favorite')
     .option('-o --oddLot', 'search odd-lot', false)
     .option('-d --date <date>', 'search stock history')
-    .action((code: string | undefined, options: StockOptionProps) => {
-      const stock = new Stock(code, options)
-
-      stock.initialize()
-      stock.execute()
-    })
+    .action((code: string, options: StockOptionProps) =>
+      new Stock(code, options).initialize()
+    )
 
   program
     .command('index')
@@ -53,7 +31,7 @@ function run() {
     .option('-m --multiple', 'search multiple index', false)
     .option('-t --time <time...>', 'only use on 9:00AM to 13:30PM')
     .option('-c --chart', 'draw index chart', false)
-    .action((code: string | undefined, options: IndexOptionProps) => {
+    .action((code: string, options: IndexOptionProps) => {
       const indices = new Indices(code, options)
 
       indices.initialize()

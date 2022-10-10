@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { Table } from 'console-table-printer'
 
-import { StockOptionProps } from '..'
 import { color } from '../color'
 import Field from '../field'
 import FilePath from '../lib/FilePath'
@@ -14,12 +13,14 @@ import {
   STOCK_QUERY_DATE_NOT_FOUND_TRADE,
   STOCK_SEARCH_BUT_NOT_GIVE_CODE,
 } from '../message/Stock'
+import { StockOptionProps } from '../types/stock'
 import { StockPayload, StockResponse, TStock } from '../types/stock'
 import { getStock, getStockWithDate } from '../url/index'
+import { toUppercase } from '../utils'
 import { getConversionDate, getTaiwanDateFormat } from '../utils/stock'
 
 interface Stock {
-  code: string | undefined
+  code: string
   url: string
   prefix: string
   stocks: StockPayload
@@ -32,7 +33,7 @@ interface Stock {
 }
 
 class Stock {
-  constructor(code: string | undefined, options: StockOptionProps) {
+  constructor(code: string, options: StockOptionProps) {
     this.prefix = getStock(options.oddLot ?? false)
     this.url = ''
     this.code = code
@@ -42,18 +43,22 @@ class Stock {
     this.date = []
     this.dateExistDay = false
     this.stockCategory = ['tse', 'otc']
+    this.stocks = FilePath.stock.read()
   }
 
   initialize() {
     if (!this.code && !this.options.favorite && !this.options.date) {
-      displayFailed(STOCK_SEARCH_BUT_NOT_GIVE_CODE)
-    } else if (this.options.multiple && !FilePath.stock.exist()) {
-      displayFailed(STOCK_NOT_FOUND_FILE)
-    } else if (this.options.favorite && !FilePath.favorite.exist()) {
-      displayFailed(FAVORITE_NOT_FOUND)
-    } else {
-      this.url = this.getStockUrl()
+      return displayFailed(STOCK_SEARCH_BUT_NOT_GIVE_CODE)
     }
+    if (this.options.multiple && !FilePath.stock.exist()) {
+      return displayFailed(STOCK_NOT_FOUND_FILE)
+    }
+    if (this.options.favorite && !FilePath.favorite.exist()) {
+      return displayFailed(FAVORITE_NOT_FOUND)
+    }
+
+    this.url = this.getStockUrl()
+    this.execute()
   }
 
   getStock() {
@@ -154,11 +159,10 @@ class Stock {
 
   getStockUrl(): string {
     if (this.options.multiple || this.options.favorite) {
-      const data = this.options.multiple
-        ? this.code?.split('-')
-        : FilePath.favorite.read().stockCodes
-      this.stocks = FilePath.stock.read()
-
+      const isFavoriteMode = this.options.favorite
+      const data = isFavoriteMode
+        ? FilePath.favorite.read().stockCodes
+        : this.code?.split('-').map(toUppercase)
       let stock = this.getMultipleStock(data)
 
       if (stock.length > 0) {
@@ -182,7 +186,7 @@ class Stock {
         }
 
         return getStockWithDate(
-          this.code?.toUpperCase(),
+          toUppercase(this.code),
           this.date.join(this.options.listed == 'otc' ? '/' : ''),
           this.options.listed ?? 'tse'
         )
@@ -191,27 +195,41 @@ class Stock {
       return date
     }
 
-    return `${this.prefix}${this.options.listed}_${this.code?.toUpperCase()}.tw`
+    return `${this.prefix}${this.options.listed}_${toUppercase(this.code)}.tw`
   }
 
   getMultipleStock(data: string[]) {
     return data
       .map((code: string) => {
-        code = code.toUpperCase()
+        const category = this.getCategory(code)
 
-        const stockMarket = this.getStockCategory(code)
-
-        if (this.stockCategory.includes(stockMarket)) {
-          return `${stockMarket}_${code}.tw`
-        }
+        return this.formatMultipleStock({
+          isExistInCategory: this.checkExistCategory(category),
+          category,
+          code,
+        })
       })
-      .filter((code: string | undefined) => code !== undefined)
+      .filter(Boolean)
   }
 
-  getStockCategory(code: string) {
-    const stock = this.stocks[code]
+  checkExistCategory(category: string): boolean {
+    return this.stockCategory.includes(category)
+  }
 
-    return stock?.category
+  getCategory(code: string) {
+    return this.stocks[code]?.category
+  }
+
+  formatMultipleStock({
+    isExistInCategory,
+    category,
+    code,
+  }: {
+    isExistInCategory: boolean
+    category: string
+    code: string
+  }) {
+    return isExistInCategory ? `${category}_${code}.tw` : ''
   }
 }
 
