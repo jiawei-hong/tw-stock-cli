@@ -8,6 +8,7 @@ import { displayFailed } from '../lib/Text'
 import { INDEX_USE_DATE_OPTIONS } from '../message/StockIndex'
 import { IndexOptionProps } from '../types/indices'
 import { getOhlc } from '../url'
+import { toUppercase } from '../utils'
 import Stock from './Stock'
 
 type TIndices = {
@@ -51,14 +52,13 @@ class Indices extends Stock {
             data = filterDrawChartDataWithTwoTime(data, this.options.time)
 
             if (typeof data === 'string') {
-              displayFailed(data)
-            } else {
-              draw(data)
+              return displayFailed(data)
             }
           } else {
-            displayFailed(INDEX_USE_DATE_OPTIONS)
+            return displayFailed(INDEX_USE_DATE_OPTIONS)
           }
         }
+        draw(data)
       }
       return
     }
@@ -66,12 +66,13 @@ class Indices extends Stock {
     if (this.code) {
       let stockIdx = this.code
         .split('-')
-        .filter((code) => code.toUpperCase() in this.indices)
+        .filter((code) => Object.keys(this.indices).includes(toUppercase(code)))
         .map((code) => this.indices[code as keyof typeof this.indices])
 
-      if (stockIdx.length > 0) {
+      if (!!stockIdx) {
         this.url = `${this.prefix}${stockIdx.join('|')}`
       }
+      this.execute()
     }
   }
 }
