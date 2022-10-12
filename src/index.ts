@@ -31,15 +31,9 @@ function run() {
     .option('-m --multiple', 'search multiple index', false)
     .option('-t --time <time...>', 'only use on 9:00AM to 13:30PM')
     .option('-c --chart', 'draw index chart', false)
-    .action((code: string, options: IndexOptionProps) => {
-      const indices = new Indices(code, options)
-
-      indices.initialize()
-
-      if (indices.code && !options.chart) {
-        indices.execute()
-      }
-    })
+    .action((code: string, options: IndexOptionProps) =>
+      new Indices(code, options).initialize()
+    )
 
   program
     .command('update')
@@ -53,12 +47,9 @@ function run() {
     .option('-c --create', 'create favorite file')
     .option('-a --add', 'add stockCode in favorite list')
     .option('-d --delete', 'delete stockCode from favorite list')
-    .action((code: string | undefined, options: FavoriteOptionProps) => {
-      const favorite = new Favorite({ code, options })
-
-      favorite.initialize()
-      favorite.execute()
-    })
+    .action((code: string | undefined, options: FavoriteOptionProps) =>
+      new Favorite({ code, options }).initialize()
+    )
 
   program.parse(process.argv)
 }

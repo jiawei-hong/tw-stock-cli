@@ -52,6 +52,7 @@ class Favorite {
         this.data = FilePath.favorite.read()?.stockCodes
       }
     }
+    this.execute()
   }
 
   execute() {
