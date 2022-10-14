@@ -36,8 +36,8 @@ function run() {
     )
 
   program
-    .command('update')
-    .description('update tse/otc json file')
+    .command('crawler')
+    .description('crawler tse/otc json file')
     .action(() => new Crawler().execute())
 
   program
