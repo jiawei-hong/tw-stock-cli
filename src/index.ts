@@ -9,7 +9,7 @@ import { IndexOptionProps } from './types/indices'
 import { StockOptionProps } from './types/stock'
 
 function run() {
-  program.name('tw-stock').version('1.2.9')
+  program.name('tw-stock').version('1.2.11')
 
   program
     .command('stock')
