@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { Table } from 'console-table-printer'
 
 import { getOHLC } from '../api/Indices'
