@@ -1,13 +1,13 @@
 import axios from 'axios'
 import { Table } from 'console-table-printer'
 
+import { getOHLC } from '../api/Indices'
 import Field from '../field'
 import { draw, filterDrawChartDataWithTwoTime } from '../lib/Chart'
 import { getSelectedIndex } from '../lib/Prompt'
 import { displayFailed } from '../lib/Text'
 import { INDEX_USE_DATE_OPTIONS } from '../message/StockIndex'
 import { IndexOptionProps } from '../types/indices'
-import { getOhlc } from '../url'
 import { toUppercase } from '../utils'
 import Stock from './Stock'
 
@@ -43,9 +43,7 @@ class Indices extends Stock {
       const type = await getSelectedIndex()
 
       if (type) {
-        let data = await axios
-          .get(getOhlc(type))
-          .then((res) => res.data.ohlcArray)
+        let data = await getOHLC(type)
 
         if (this.options.time) {
           if (this.options.time.length == 2) {

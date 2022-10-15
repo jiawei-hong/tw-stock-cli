@@ -4,7 +4,7 @@ function getStock(isOddLot: boolean): string {
   return `${STOCK_BASE_URL}/api/get${isOddLot ? 'Odd' : 'Stock'}Info.jsp?ex_ch=`
 }
 
-function getOhlc(type: string): string {
+function generateOHLCURL(type: string): string {
   return `${STOCK_BASE_URL}/data/mis_ohlc_${type.toUpperCase()}.txt`
 }
 
@@ -20,4 +20,4 @@ function getStockWithDate(
   return `https://www.twse.com.tw/exchangeReport/STOCK_DAY?date=${date}&stockNo=${code}`
 }
 
-export { getOhlc, getStock, getStockWithDate }
+export { generateOHLCURL, getStock, getStockWithDate }
