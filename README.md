@@ -42,8 +42,8 @@ tw-stock index [index] // TAIEX, TWO, FRMSA
 
 | Options       | Description                                            |
 | ------------- | ------------------------------------------------------ |
-| -m --multiple | search multiple index                            |
-| -d --date     | user can input startDate and endDate filter chart data |
+| -m --multiple | search multiple index                                  |
+| -t --time     | user can specify time to draw indices e.g. 0900 1000   |
 | -c --chart    | draw index chart on today                              |
 
 ## How to use favorite
