@@ -1,3 +1,3 @@
-const toUppercase = (value: string) => value.toUpperCase()
+const toUppercase = (value: string) => value?.toUpperCase()
 
 export { toUppercase }
