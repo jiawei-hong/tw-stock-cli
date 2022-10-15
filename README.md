@@ -1,26 +1,24 @@
 # tw-stock
 
-This command use in my daily qucikly search stock information.
+This command use in my daily quickly search stock information.
 
-# How to install:
+## How to install
 
 ```js
 npm install -g tw-stock
 ```
 
-# How to update stock.json:
+## How to crawler stock.json
 
 ```shell
-tw-stock update
+tw-stock crawler
 ```
 
-# How to use:
+## How to use
 
 ```shell
 tw-stock stock [stock_code]
 ```
-
-`[stock_code]` input your search tw_stock_code
 
 | Options       | Description                            |
 | ------------- | -------------------------------------- |
@@ -36,25 +34,19 @@ tw-stock stock [stock_code]
 | YYYY-MM    | get month trade data |
 | YYYY-MM-DD | get day trade data   |
 
-# How to search tw-stock index:
+## How to search tw-stock index
 
 ```shell
-tw-stock index [index]
+tw-stock index [index] // TAIEX, TWO, FRMSA
 ```
-
-| Index | Description        |
-| ----- | ------------------ |
-| TAIEX | search taiex index |
-| TWO   | search two index   |
-| FRMSA | search frmsa index |
 
 | Options       | Description                                            |
 | ------------- | ------------------------------------------------------ |
-| -m --multiple | search multiple stock index                            |
-| -t --time     | user can input startDate and endDate filter chart data |
+| -m --multiple | search multiple index                            |
+| -d --date     | user can input startDate and endDate filter chart data |
 | -c --chart    | draw index chart on today                              |
 
-# How to use favorite:
+## How to use favorite
 
 ```shell
 tw-stock favorite [code]
@@ -68,14 +60,14 @@ tw-stock favorite [code]
 | -a --add    | add stockCode in favorite file.    |
 | -d --delete | delete stockCode in favorite file. |
 
-# Search Tse Stock
+## Search Tse Stock
 
 ![Search_TSE_Stock](/images/TSE.png)
 
-# Search Otc Stock
+## Search Otc Stock
 
 ![Search_OTC_Stock](/images/OTC.png)
 
-# Search Multiple Stock
+## Search Multiple Stock
 
 ![Search_MULTIPLE_Stock](/images/MULTIPLE.png)
