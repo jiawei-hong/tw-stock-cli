@@ -5,7 +5,7 @@ function getStockUpsAndDownsPercentage(
   currentPrice: string
 ): string {
   const dec = getDecimalString(
-    strIsNanHandle(
+    convertToPercentage(
       ((parseFloat(currentPrice) - parseFloat(yesterdayPrice)) /
         parseFloat(yesterdayPrice)) *
         100
@@ -37,7 +37,7 @@ function getDecimalString(text: string | number, point = 2) {
   return parseFloat(text).toFixed(point).toString()
 }
 
-function strIsNanHandle(text: string | number): string {
+function convertToPercentage(text: string | number): string {
   return isNaN(Number(text)) ? '-' : getDecimalString(text)
 }
 
@@ -46,9 +46,9 @@ function percentageHandle(num: string) {
 }
 
 export {
-  getStockUpsAndDownsPercentage,
   category2Chinese,
+  convertToPercentage,
   getDecimalString,
-  strIsNanHandle,
+  getStockUpsAndDownsPercentage,
   percentageHandle,
 }

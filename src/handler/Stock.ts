@@ -4,7 +4,7 @@ import { Table } from 'console-table-printer'
 import { color } from '../color'
 import Field from '../field'
 import FilePath from '../lib/FilePath'
-import { strIsNanHandle } from '../lib/Stock'
+import { convertToPercentage } from '../lib/Stock'
 import { displayFailed } from '../lib/Text'
 import { FAVORITE_NOT_FOUND } from '../message/Favorite'
 import {
@@ -25,7 +25,7 @@ interface Stock {
   prefix: string
   stocks: StockPayload
   options: StockOptionProps
-  notExecIsNanHandle: (string | number)[]
+  notConversionToPercentage: (string | number)[]
   table: Table
   date: string[]
   dateExistDay: boolean
@@ -38,7 +38,17 @@ class Stock {
     this.url = ''
     this.code = code
     this.options = options
-    this.notExecIsNanHandle = ['c', 'ex', 'n', 't', '0', '1', '2', '7', '8']
+    this.notConversionToPercentage = [
+      'c',
+      'ex',
+      'n',
+      't',
+      '0',
+      '1',
+      '2',
+      '7',
+      '8',
+    ]
     this.table = new Table({ columns: this.getField() })
     this.date = []
     this.dateExistDay = false
@@ -57,7 +67,12 @@ class Stock {
       return displayFailed(FAVORITE_NOT_FOUND)
     }
 
-    this.url = this.getStockUrl()
+    const url = this.getStockUrl()
+
+    if (url) {
+      this.url = url
+    }
+
     this.execute()
   }
 
@@ -87,32 +102,22 @@ class Stock {
         }
       }
 
-      let stockField: { [key: string]: string } = this.getField()
+      const stockField: { [key: string]: string } = this.getField()
         .map((field) => {
-          const stockCode = field.code
-          const isExistNotInExecIsNanHandle = this.notExecIsNanHandle.includes(
-            stockCode ?? ''
-          )
-          const stockInformation = stock[stockCode as keyof typeof stockCode]
-          let stockTrade = isExistNotInExecIsNanHandle
-            ? stockInformation
-            : strIsNanHandle(stockInformation)
+          const { code, name, callback } = field
+          let trade = this.getTrade(stock, code ?? '')
 
-          if (typeof stock !== 'string' && field.callback) {
-            stockTrade = field.callback(stock)
-          }
-
-          if (
-            typeof stock !== 'string' &&
-            'ex' in stock &&
-            stock.ex == 'otc' &&
-            ['漲停', '跌停'].includes(field.name)
-          ) {
-            return { [field.name]: `${color.rest}-` }
+          if (typeof stock !== 'string') {
+            if (typeof callback === 'function') {
+              trade = callback(stock)
+            }
+            if (stock.ex === 'otc' && ['漲停', '跌停'].includes(name)) {
+              return { [name]: `${color.rest}-` }
+            }
           }
 
           return {
-            [field.name]: stockTrade,
+            [name]: trade,
           }
         })
         .reduce((acc, cur) => Object.assign(acc, cur), {})
@@ -201,8 +206,7 @@ class Stock {
   getMultipleStock(data: string[]) {
     return data
       .map((code: string) => {
-        const category = this.getCategory(code)
-
+        const category = this.getCategory(toUppercase(code))
         return this.formatMultipleStock({
           isExistInCategory: this.checkExistCategory(category),
           category,
@@ -230,6 +234,17 @@ class Stock {
     code: string
   }) {
     return isExistInCategory ? `${category}_${code}.tw` : ''
+  }
+
+  shouldConversionToPercentage(fieldCode: string) {
+    return this.notConversionToPercentage.includes(fieldCode)
+  }
+
+  getTrade(stock: TStock | string, fieldCode: string) {
+    const fieldValue = stock[fieldCode as keyof typeof stock]
+    return this.shouldConversionToPercentage(fieldValue)
+      ? convertToPercentage(fieldValue)
+      : fieldValue
   }
 }
 
