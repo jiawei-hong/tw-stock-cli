@@ -97,7 +97,7 @@ class Stock {
     for (let stock of stocks) {
       if (this.dateExistDay) {
         const searchDay = getTaiwanDateFormat(this.date.slice(0))
-        if (typeof stock === 'string') {
+        if (Array.isArray(stock)) {
           if (searchDay != stock[0]) continue
         }
       }
