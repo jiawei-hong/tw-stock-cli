@@ -26,7 +26,7 @@ export type TStock = {
   n: string
   o: string
   p: string
-  ex: 'tse' | 'otc'
+  ex: Category
   s: string
   t: string
   u: string
@@ -36,6 +36,32 @@ export type TStock = {
   y: string
   z: string
   ts: string
+}
+
+export enum Category {
+  TSE = 'tse',
+  OTC = 'otc',
+}
+
+export type Stock = {
+  cachedAlive: number
+  exKey: string
+  msgArray: TStock[]
+  queryTime: QueryTime
+  referer: string
+  rtcode: string
+  rtmessage: string
+  userDelay: number
+  stat: string
+}
+
+export type Histroy = {
+  stat: string
+  date: string
+  title: string
+  fields: string[]
+  data: Array<string[]>[]
+  notes: string[]
 }
 
 export type QueryTime = {
@@ -50,17 +76,8 @@ export type QueryTime = {
 }
 
 export type StockResponse =
-  | {
-      cachedAlive: number
-      exKey: string
-      msgArray: TStock[]
-      queryTime: QueryTime
-      referer: string
-      rtcode: string
-      rtmessage: string
-      userDelay: number
-      stat?: string
-    }
+  | Stock
+  | History
   | {
       stkNo: string
       stkName: string
@@ -70,27 +87,28 @@ export type StockResponse =
       iTotalRecords: number
       aaData: Array<string[]>[]
     }
-  | {
-      stat: string
-      date: string
-      title: string
-      fields: string[]
-      data: Array<string[]>[]
-      notes: string[]
-    }
 
-export type StockPayload = {
-  [key: string]: {
+export type StockPayload = Record<
+  string,
+  {
     name: string
     category: string
   }
-}
+>
 
 export type StockOptionProps = {
-  listed?: string
+  listed?: Category
   multiple?: boolean
   favorite?: boolean
   oddLot?: boolean
   date?: string
   type?: string
+  mode: StockMode
+}
+
+export enum StockMode {
+  SINGLE = 'SINGLE',
+  MULTIPLE = 'MULTIPLE',
+  FAVORITE = 'FAVORITE',
+  DATE = 'DATE',
 }
