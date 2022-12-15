@@ -103,7 +103,6 @@ export type StockOptionProps = {
   oddLot?: boolean
   date?: string
   type?: string
-  mode: StockMode
 }
 
 export enum StockMode {
