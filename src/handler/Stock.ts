@@ -1,6 +1,6 @@
-import axios from 'axios'
 import { Table } from 'console-table-printer'
 
+import { getStock as testGetStock } from '../api/stocks'
 import { color } from '../color'
 import Field from '../field'
 import FilePath from '../lib/FilePath'
@@ -13,32 +13,33 @@ import {
   STOCK_QUERY_DATE_NOT_FOUND_TRADE,
   STOCK_SEARCH_BUT_NOT_GIVE_CODE,
 } from '../message/Stock'
-import { StockOptionProps } from '../types/stock'
-import { StockPayload, StockResponse, TStock } from '../types/stock'
-import { getStock, getStockWithDate } from '../url/index'
-import { toUppercase } from '../utils'
-import { getConversionDate, getTaiwanDateFormat } from '../utils/stock'
+import {
+  Category,
+  StockOptionProps,
+  StockResponse,
+  TStock,
+} from '../types/stock'
+import { getStock } from '../url/index'
+import { generateGetStockURL, getTaiwanDateFormat } from '../utils/stock'
 
 interface Stock {
   code: string
   url: string
   prefix: string
-  stocks: StockPayload
   options: StockOptionProps
-  notConversionToPercentage: (string | number)[]
+  inexecutionToPercentage: (string | number)[]
   table: Table
   date: string[]
   dateExistDay: boolean
-  stockCategory: string[]
 }
 
 class Stock {
   constructor(code: string, options: StockOptionProps) {
-    this.prefix = getStock(options.oddLot ?? false)
+    this.prefix = getStock(options.oddLot || false)
     this.url = ''
     this.code = code
     this.options = options
-    this.notConversionToPercentage = [
+    this.inexecutionToPercentage = [
       'c',
       'ex',
       'n',
@@ -52,8 +53,6 @@ class Stock {
     this.table = new Table({ columns: this.getField() })
     this.date = []
     this.dateExistDay = false
-    this.stockCategory = ['tse', 'otc']
-    this.stocks = FilePath.stock.read()
   }
 
   initialize() {
@@ -67,27 +66,35 @@ class Stock {
       return displayFailed(FAVORITE_NOT_FOUND)
     }
 
-    const url = this.getStockUrl()
-
-    if (url) {
-      this.url = url
-    }
-
     this.execute()
   }
 
-  getStock() {
-    if (this.url) {
-      return axios
-        .get(this.url)
-        .then((res) => res.data)
-        .catch((err) => displayFailed(err))
+  getStocks(): {
+    stocks: string | string[]
+    listed?: Category
+  } {
+    if (this.options.multiple) {
+      return {
+        stocks: this.code?.split('-'),
+      }
     }
-    return null
+
+    if (this.options.favorite) {
+      return {
+        stocks: FilePath.favorite.read().stockCodes,
+      }
+    }
+
+    return {
+      stocks: this.code,
+      listed: this.options.listed,
+    }
   }
 
   async execute() {
-    const stocks = this.getStockData(await this.getStock())
+    const stockURL = `${this.prefix}${generateGetStockURL(this.getStocks())}`
+    const datasets = await testGetStock(stockURL)
+    const stocks = this.getStockData(datasets)
 
     if (typeof stocks === 'string') {
       displayFailed(Array.isArray(stocks) ? STOCK_NOT_FOUND : stocks)
@@ -102,7 +109,7 @@ class Stock {
         }
       }
 
-      const stockField: { [key: string]: string } = this.getField()
+      const stockField: Record<string, string> = this.getField()
         .map((field) => {
           const { code, name, callback } = field
           let trade = this.getTrade(stock, code ?? '')
@@ -162,82 +169,34 @@ class Stock {
     return Field.basic(this.options)
   }
 
-  getStockUrl(): string {
-    if (this.options.multiple || this.options.favorite) {
-      const isFavoriteMode = this.options.favorite
-      const data = isFavoriteMode
-        ? FilePath.favorite.read().stockCodes
-        : this.code?.split('-').map(toUppercase)
-      let stock = this.getMultipleStock(data)
+  // TODO: should resolve date logic
+  // getStockUrl(): string {
+  //   if (this.options.date) {
+  //     const date = getConversionDate(this.options.date, this.options.listed)
+  //     if (Array.isArray(date)) {
+  //       this.date = date
+  //       this.dateExistDay = this.date.length == 3
 
-      if (stock.length > 0) {
-        return `${this.prefix}${stock.join('|')}`
-      }
+  //       if (!this.dateExistDay) {
+  //         this.date.push('01')
+  //       }
 
-      if (this.options.multiple) {
-        displayFailed(STOCK_NOT_FOUND)
-      } else {
-        displayFailed(FAVORITE_NOT_FOUND)
-      }
-    } else if (this.options.date) {
-      const date = getConversionDate(this.options.date, this.options.listed)
+  //       return getStockWithDate(
+  //         toUppercase(this.code),
+  //         this.date.join(this.options.listed == Category.OTC ? '/' : ''),
+  //         this.options.listed ?? Category.TSE
+  //       )
+  //     }
 
-      if (Array.isArray(date)) {
-        this.date = date
-        this.dateExistDay = this.date.length == 3
+  //     return date
+  //   }
 
-        if (!this.dateExistDay) {
-          this.date.push('01')
-        }
-
-        return getStockWithDate(
-          toUppercase(this.code),
-          this.date.join(this.options.listed == 'otc' ? '/' : ''),
-          this.options.listed ?? 'tse'
-        )
-      }
-
-      return date
-    }
-
-    return `${this.prefix}${this.options.listed}_${toUppercase(this.code)}.tw`
-  }
-
-  getMultipleStock(data: string[]) {
-    return data
-      .map((code: string) => {
-        const category = this.getCategory(toUppercase(code))
-        return this.formatMultipleStock({
-          isExistInCategory: this.checkExistCategory(category),
-          category,
-          code,
-        })
-      })
-      .filter(Boolean)
-  }
-
-  checkExistCategory(category: string): boolean {
-    return this.stockCategory.includes(category)
-  }
-
-  getCategory(code: string) {
-    return this.stocks[code]?.category
-  }
-
-  formatMultipleStock({
-    isExistInCategory,
-    category,
-    code,
-  }: {
-    isExistInCategory: boolean
-    category: string
-    code: string
-  }) {
-    return isExistInCategory ? `${category}_${code}.tw` : ''
-  }
+  //   const stocks = this.getStockDataTest()
+  //   return this.getStockUrlTest(stocks)
+  // }
 
   shouldConversionToPercentage(fieldCode: string) {
-    return this.notConversionToPercentage.includes(fieldCode)
+    return this.inexecutionToPercentage.includes(fieldCode)
   }
 
   getTrade(stock: TStock | string, fieldCode: string) {
