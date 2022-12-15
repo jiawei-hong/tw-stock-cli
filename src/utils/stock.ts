@@ -1,3 +1,7 @@
+import FilePath from '../lib/FilePath'
+import { Category } from '../types/stock'
+import { toUppercase } from '.'
+
 function getConversionDate(date: string, category = 'tse') {
   const dateRegex = {
     day: /(\d{4})(\d{2})(\d{2})/g,
@@ -19,4 +23,44 @@ function getTaiwanDateFormat(date: string[], separator = '/') {
   return date.join(separator)
 }
 
-export { getConversionDate, getTaiwanDateFormat }
+function getStockCategory(code: string): Category {
+  const stocks = FilePath.stock.read()
+  return stocks?.[code]?.category
+}
+
+function combineStockAndCategory(code: string) {
+  const category = getStockCategory(code)
+  return `${category}_${toUppercase(code)}.tw`
+}
+
+function transformStockToIncludeCategory({
+  stocks,
+  listed,
+}: {
+  stocks: string | string[]
+  listed?: Category
+}): string {
+  if (Array.isArray(stocks)) {
+    return stocks
+      .filter((code) => getStockCategory(code))
+      .map((code) => combineStockAndCategory(code))
+      .join('|')
+  }
+
+  return `${listed}_${toUppercase(stocks)}.tw`
+}
+
+function generateGetStockURL({
+  stocks,
+  listed,
+}: {
+  stocks: string | string[]
+  listed?: Category
+}): string {
+  return transformStockToIncludeCategory({
+    stocks,
+    listed,
+  })
+}
+
+export { generateGetStockURL, getConversionDate, getTaiwanDateFormat }

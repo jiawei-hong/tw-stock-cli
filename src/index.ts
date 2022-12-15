@@ -6,7 +6,7 @@ import Indices from './handler/Indices'
 import Stock from './handler/Stock'
 import { FavoriteOptionProps } from './types/favorite'
 import { IndexOptionProps } from './types/indices'
-import { StockOptionProps } from './types/stock'
+import { Category, StockOptionProps } from './types/stock'
 
 function run() {
   program.name('tw-stock').version('1.2.11')
@@ -15,7 +15,7 @@ function run() {
     .command('stock')
     .description('get stock information')
     .argument('[stock_code]', 'stock code')
-    .option('-l --listed <listed>', 'this trade is listed?', 'tse')
+    .option('-l --listed <listed>', 'this trade is listed?', Category.TSE)
     .option('-m --multiple', 'search multiple stock', false)
     .option('-f --favorite')
     .option('-o --oddLot', 'search odd-lot', false)
