@@ -3,4 +3,4 @@ fix :boom:: fix/*
 bug :bug:: bug/*
 chore :hammer:: chore/*
 refactor :hammer:: refactor/*
-releas :rocket:: release/*
+release :rocket:: release/*
