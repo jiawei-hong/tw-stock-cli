@@ -1,6 +1,6 @@
 import { Table } from 'console-table-printer'
 
-import { getStock as testGetStock } from '../api/stocks'
+import { getStock as getStockData } from '../api/stocks'
 import { color } from '../color'
 import Field from '../field'
 import FilePath from '../lib/FilePath'
@@ -8,6 +8,7 @@ import { convertToPercentage } from '../lib/Stock'
 import { displayFailed } from '../lib/Text'
 import { FAVORITE_NOT_FOUND } from '../message/Favorite'
 import {
+  SOMETHING_WRONG,
   STOCK_NOT_FOUND,
   STOCK_NOT_FOUND_FILE,
   STOCK_QUERY_DATE_NOT_FOUND_TRADE,
@@ -19,8 +20,13 @@ import {
   StockResponse,
   TStock,
 } from '../types/stock'
-import { getStock } from '../url/index'
-import { generateGetStockURL, getTaiwanDateFormat } from '../utils/stock'
+import { getStock, getStockWithDate } from '../url/index'
+import { toUppercase } from '../utils'
+import {
+  generateGetStockURL,
+  getConversionDate,
+  getTaiwanDateFormat,
+} from '../utils/stock'
 
 interface Stock {
   code: string
@@ -65,8 +71,12 @@ class Stock {
     if (this.options.favorite && !FilePath.favorite.exist()) {
       return displayFailed(FAVORITE_NOT_FOUND)
     }
-
     this.execute()
+  }
+
+  shouldFilterSpecificDateStock(stocks: string[]) {
+    const getDateWithTWForamt = getTaiwanDateFormat(this.date.slice(0))
+    return stocks.filter((stock) => stock[0] === getDateWithTWForamt)
   }
 
   getStocks(): {
@@ -91,24 +101,48 @@ class Stock {
     }
   }
 
-  async execute() {
-    const stockURL = `${this.prefix}${generateGetStockURL(this.getStocks())}`
-    const datasets = await testGetStock(stockURL)
-    const stocks = this.getStockData(datasets)
+  getStockURLWithSearchDate() {
+    const specificDate = getConversionDate(
+      this.options.date ?? '',
+      this.options.listed
+    )
+    if (Array.isArray(specificDate)) {
+      this.date = specificDate
+      const shouldRepairLostDay = this.date.length === 3
+      this.dateExistDay = shouldRepairLostDay
 
+      if (!shouldRepairLostDay) {
+        this.date.push('01')
+      }
+
+      return getStockWithDate(
+        toUppercase(this.code),
+        this.date.join(this.options.listed == Category.OTC ? '/' : ''),
+        this.options.listed ?? Category.TSE
+      )
+    }
+    return ''
+  }
+
+  async execute() {
+    const stockURL = this.options.date
+      ? this.getStockURLWithSearchDate()
+      : `${this.prefix}${generateGetStockURL(this.getStocks())}`
+    if (!stockURL) {
+      return displayFailed(SOMETHING_WRONG)
+    }
+    const datasets = await getStockData(stockURL)
+    let stocks = this.getStockData(datasets)
     if (typeof stocks === 'string') {
       displayFailed(Array.isArray(stocks) ? STOCK_NOT_FOUND : stocks)
       return
     }
 
-    for (let stock of stocks) {
-      if (this.dateExistDay) {
-        const searchDay = getTaiwanDateFormat(this.date.slice(0))
-        if (Array.isArray(stock)) {
-          if (searchDay != stock[0]) continue
-        }
-      }
+    if (this.options.date && this.dateExistDay) {
+      stocks = this.shouldFilterSpecificDateStock(stocks as string[])
+    }
 
+    for (let stock of stocks) {
       const stockField: Record<string, string> = this.getField()
         .map((field) => {
           const { code, name, callback } = field
@@ -168,32 +202,6 @@ class Stock {
 
     return Field.basic(this.options)
   }
-
-  // TODO: should resolve date logic
-  // getStockUrl(): string {
-  //   if (this.options.date) {
-  //     const date = getConversionDate(this.options.date, this.options.listed)
-  //     if (Array.isArray(date)) {
-  //       this.date = date
-  //       this.dateExistDay = this.date.length == 3
-
-  //       if (!this.dateExistDay) {
-  //         this.date.push('01')
-  //       }
-
-  //       return getStockWithDate(
-  //         toUppercase(this.code),
-  //         this.date.join(this.options.listed == Category.OTC ? '/' : ''),
-  //         this.options.listed ?? Category.TSE
-  //       )
-  //     }
-
-  //     return date
-  //   }
-
-  //   const stocks = this.getStockDataTest()
-  //   return this.getStockUrlTest(stocks)
-  // }
 
   shouldConversionToPercentage(fieldCode: string) {
     return this.inexecutionToPercentage.includes(fieldCode)
