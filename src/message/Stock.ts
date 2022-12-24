@@ -6,8 +6,11 @@ const STOCK_DATE_GREATER_TODAY: string =
 const STOCK_QUERY_DATE_NOT_FOUND_TRADE: string =
   'Sorry, the date you entered has no transaction information!'
 const STOCK_NOT_FOUND: string = "Can't find you entered stock!"
+const SOMETHING_WRONG: string =
+  'Oops! something is wrong, please tell contributors'
 
 export {
+  SOMETHING_WRONG,
   STOCK_DATE_GREATER_TODAY,
   STOCK_NOT_FOUND,
   STOCK_NOT_FOUND_FILE,
