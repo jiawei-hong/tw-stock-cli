@@ -75,8 +75,8 @@ class Stock {
   }
 
   shouldFilterSpecificDateStock(stocks: string[]) {
-    const getDateWithTWForamt = getTaiwanDateFormat(this.date.slice(0))
-    return stocks.filter((stock) => stock[0] === getDateWithTWForamt)
+    const getDateWithTWFormat = getTaiwanDateFormat(this.date.slice(0))
+    return stocks.filter((stock) => stock[0] === getDateWithTWFormat)
   }
 
   getStocks(): {
