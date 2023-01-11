@@ -124,10 +124,20 @@ class Stock {
     return ''
   }
 
+  getStockUrl() {
+    if (this.options.type === 'index') {
+      return this.url
+    }
+
+    if (this.options.date) {
+      this.getStockURLWithSearchDate()
+    }
+
+    return `${this.prefix}${generateGetStockURL(this.getStocks())}`
+  }
+
   async execute() {
-    const stockURL = this.options.date
-      ? this.getStockURLWithSearchDate()
-      : `${this.prefix}${generateGetStockURL(this.getStocks())}`
+    const stockURL = this.getStockUrl()
     if (!stockURL) {
       return displayFailed(SOMETHING_WRONG)
     }

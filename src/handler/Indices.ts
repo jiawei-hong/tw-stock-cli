@@ -63,6 +63,7 @@ class Indices extends Stock {
     if (this.code) {
       let stockIdx = this.code
         .split('-')
+        .map((code) => toUppercase(code))
         .filter((code) => Object.keys(this.indices).includes(toUppercase(code)))
         .map((code) => this.indices[code as keyof typeof this.indices])
 
