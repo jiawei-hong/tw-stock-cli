@@ -1,36 +1,50 @@
 import { category2Chinese, getStockUpsAndDownsPercentage } from '../lib/Stock'
 import { StockOptionProps } from '../types/stock'
 import { TStock } from '../types/stock'
+import { isTerminalWidthSmall } from '../utils/index'
 
 export type FieldProps = {
   code?: string
   name: string
-  alignment?: string
   color?: string
   callback?: (stock: TStock) => string
 }
 
 class Field {
   static basic(options: StockOptionProps): FieldProps[] {
+    if (!options.details || isTerminalWidthSmall()) {
+      return [
+        { code: 'c', name: '代號' },
+        { code: 'n', name: '公司' },
+        { code: 'z', name: '當盤成交價' },
+        { code: options.oddLot ? 's' : 'tv', name: '當盤成交量' },
+        { code: 'v', name: '累積成交量' },
+        {
+          name: '漲跌幅',
+          callback: (stock: TStock): string =>
+            getStockUpsAndDownsPercentage(stock.y, stock.z),
+        },
+      ]
+    }
+
     return [
-      { code: 'c', name: '代號', alignment: 'center' },
+      { code: 'c', name: '代號' },
       {
         code: 'ex',
         name: '類別',
-        alignment: 'center',
         callback: (stock: TStock): string => category2Chinese(stock.ex),
       },
-      { code: 'n', name: '公司', alignment: 'center' },
-      { code: 'z', name: '當盤成交價', color: 'yellow' },
+      { code: 'n', name: '公司' },
+      { code: 'z', name: '當盤成交價' },
       { code: options.oddLot ? 's' : 'tv', name: '當盤成交量' },
       { code: 'v', name: '累積成交量' },
-      { code: 'y', name: '昨收', color: 'cyan' },
+      { code: 'y', name: '昨收' },
       { code: 'o', name: '開盤' },
       { code: 'h', name: '最高' },
       { code: 'l', name: '最低' },
-      { code: 'u', name: '漲停', color: 'red' },
-      { code: 'w', name: '跌停', color: 'green' },
-      { code: 't', name: '最近成交時刻', alignment: 'center' },
+      { code: 'u', name: '漲停' },
+      { code: 'w', name: '跌停' },
+      { code: 't', name: '最近成交時刻' },
       {
         name: '漲跌幅',
         callback: (stock: TStock): string =>
@@ -41,15 +55,15 @@ class Field {
 
   static stockIndex(): FieldProps[] {
     return [
-      { code: 'n', name: '指數名稱', alignment: 'center' },
-      { code: 'z', name: '當盤指數', color: 'yellow' },
+      { code: 'n', name: '指數名稱' },
+      { code: 'z', name: '當盤指數' },
       { code: 'tv', name: '當盤成交量' },
       { code: 'v', name: '累積成交量' },
-      { code: 'y', name: '昨收指數', color: 'cyan' },
+      { code: 'y', name: '昨收指數' },
       { code: 'o', name: '開盤' },
-      { code: 'h', name: '最高', color: 'red' },
-      { code: 'l', name: '最低', color: 'green' },
-      { code: 't', name: '最近成交時刻', alignment: 'center' },
+      { code: 'h', name: '最高' },
+      { code: 'l', name: '最低' },
+      { code: 't', name: '最近成交時刻' },
     ]
   }
 
