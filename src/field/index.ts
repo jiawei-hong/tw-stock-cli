@@ -2,7 +2,7 @@ import { category2Chinese, getStockUpsAndDownsPercentage } from '../lib/Stock'
 import { StockOptionProps } from '../types/stock'
 import { TStock } from '../types/stock'
 
-type FieldProps = {
+export type FieldProps = {
   code?: string
   name: string
   alignment?: string

@@ -1,7 +1,4 @@
-import { Table } from 'console-table-printer'
-
 import { getOHLC } from '../api/Indices'
-import Field from '../field'
 import { draw, filterDrawChartDataWithTwoTime } from '../lib/Chart'
 import { getSelectedIndex } from '../lib/Prompt'
 import { displayFailed } from '../lib/Text'
@@ -21,7 +18,6 @@ interface Indices {
   indices: TIndices
   options: IndexOptionProps
   ohlc: string[]
-  table: Table
 }
 
 class Indices extends Stock {
@@ -34,7 +30,6 @@ class Indices extends Stock {
       TWO: 'otc_o00.tw',
       FRMSA: 'tse_FRMSA.tw',
     }
-    this.table = new Table({ columns: Field.stockIndex() })
   }
 
   async initialize() {

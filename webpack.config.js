@@ -1,4 +1,5 @@
 const path = require('path')
+const WebpackBuildNotifierPlugin = require('webpack-build-notifier')
 
 module.exports = {
   target: 'node',
@@ -23,6 +24,12 @@ module.exports = {
       },
     ],
   },
+  plugins: [
+    new WebpackBuildNotifierPlugin({
+      title: 'tw-stock',
+      suppressSuccess: true,
+    }),
+  ],
   resolve: {
     extensions: ['.ts', '.js'],
   },

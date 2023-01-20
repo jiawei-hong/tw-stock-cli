@@ -1,4 +1,4 @@
-import { Table } from 'console-table-printer'
+import { table } from 'table'
 
 import FilePath from '../lib/FilePath'
 import { displayFailed, displaySuccess } from '../lib/Text'
@@ -14,6 +14,7 @@ import {
 import { STOCK_NOT_FOUND_FILE } from '../message/Stock'
 import { FavoriteOptionProps } from '../types/favorite'
 import { StockPayload } from '../types/stock'
+import { tableConfig } from '../utils/table'
 
 type FavoriteProps = {
   code: string | undefined
@@ -23,7 +24,6 @@ type FavoriteProps = {
 interface Favorite {
   code: string | undefined
   data: string[]
-  table: Table
   message: string
   options: FavoriteOptionProps
   stocks: StockPayload
@@ -34,12 +34,6 @@ class Favorite {
     this.code = params.code
     this.options = params.options
     this.data = []
-    this.table = new Table({
-      columns: [
-        { name: '公司簡稱', alignment: 'left' },
-        { name: '股票代碼', alignment: 'left' },
-      ],
-    })
   }
 
   initialize() {
@@ -80,14 +74,10 @@ class Favorite {
       const dataRows = this.data.map((stockCode) => {
         const stock = this.stocks[stockCode]
 
-        return {
-          公司簡稱: stock.name,
-          股票代碼: stockCode,
-        }
+        return [stock.name, stockCode]
       })
-
-      this.table.addRows(dataRows)
-      this.table.printTable()
+      let stockInformation = [['公司簡稱', '股票代碼'], ...dataRows]
+      console.log(table(stockInformation, tableConfig))
     }
   }
 

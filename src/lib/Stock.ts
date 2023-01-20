@@ -1,6 +1,6 @@
 import { displayFailed, getDisplayActionText, Status } from './Text'
 
-function getStockUpsAndDownsPercentage(
+export function getStockUpsAndDownsPercentage(
   yesterdayPrice: string,
   currentPrice: string
 ): string {
@@ -14,11 +14,11 @@ function getStockUpsAndDownsPercentage(
 
   return getDisplayActionText(
     percentageHandle(dec),
-    parseInt(dec) > 0 ? Status.success : Status.failed
+    parseInt(dec) > 0 ? Status.failed : Status.success
   )
 }
 
-function category2Chinese(category: 'tse' | 'otc') {
+export function category2Chinese(category: 'tse' | 'otc') {
   const categories = ['tse', 'otc']
   const categoryLowerCase = category.toLowerCase()
 
@@ -29,7 +29,7 @@ function category2Chinese(category: 'tse' | 'otc') {
   return categoryLowerCase == 'tse' ? '上市' : '上櫃'
 }
 
-function getDecimalString(text: string | number, point = 2) {
+export function getDecimalString(text: string | number, point = 2) {
   if (typeof text === 'number') {
     return text.toFixed(point).toString()
   }
@@ -37,18 +37,19 @@ function getDecimalString(text: string | number, point = 2) {
   return parseFloat(text).toFixed(point).toString()
 }
 
-function convertToPercentage(text: string | number): string {
+/**
+ * check text or number should convert to percentage
+ * @param {string} text
+ * @returns {boolean}
+ */
+export function shouldConvertToPercentage(text: string): boolean {
+  return text?.includes('.')
+}
+
+export function convertToPercentage(text: string | number): string {
   return isNaN(Number(text)) ? '-' : getDecimalString(text)
 }
 
-function percentageHandle(num: string) {
+export function percentageHandle(num: string) {
   return `${parseFloat(num)}%`
-}
-
-export {
-  category2Chinese,
-  convertToPercentage,
-  getDecimalString,
-  getStockUpsAndDownsPercentage,
-  percentageHandle,
 }
