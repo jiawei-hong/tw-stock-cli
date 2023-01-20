@@ -20,6 +20,7 @@ function run() {
     .option('-f --favorite')
     .option('-o --oddLot', 'search odd-lot', false)
     .option('-d --date <date>', 'search stock history')
+    .option('--details', 'show stock details data', true)
     .action((code: string, options: StockOptionProps) =>
       new Stock(code, options).initialize()
     )

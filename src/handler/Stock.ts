@@ -139,10 +139,11 @@ class Stock {
       stocks = this.shouldFilterSpecificDateStock(stocks as string[])
     }
 
-    let tableInformation = [getTableHeader(this.getField())]
+    const stockField = this.getField()
+    let tableInformation = [getTableHeader(stockField)]
 
     for (let stock of stocks) {
-      const stockField: string[] = this.getField().map((field) => {
+      const stockInformation: string[] = stockField.map((field) => {
         const { code, name, callback } = field
         let trade = this.getTrade(stock, code ?? '')
 
@@ -156,7 +157,7 @@ class Stock {
         }
         return trade
       })
-      tableInformation.push(stockField)
+      tableInformation.push(stockInformation)
     }
 
     if (tableInformation.length === 1) {

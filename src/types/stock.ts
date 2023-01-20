@@ -55,7 +55,7 @@ export type Stock = {
   stat: string
 }
 
-export type Histroy = {
+export type History = {
   stat: string
   date: string
   title: string
@@ -103,6 +103,7 @@ export type StockOptionProps = {
   oddLot?: boolean
   date?: string
   type?: string
+  details?: boolean
 }
 
 export enum StockMode {
