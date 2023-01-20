@@ -1,17 +1,16 @@
-import { Table } from 'console-table-printer'
+import { table } from 'table'
 
 import { getStock as getStockData } from '../api/stocks'
 import { color } from '../color'
 import Field from '../field'
 import FilePath from '../lib/FilePath'
-import { convertToPercentage } from '../lib/Stock'
+import { convertToPercentage, shouldConvertToPercentage } from '../lib/Stock'
 import { displayFailed } from '../lib/Text'
 import { FAVORITE_NOT_FOUND } from '../message/Favorite'
 import {
   SOMETHING_WRONG,
   STOCK_NOT_FOUND,
   STOCK_NOT_FOUND_FILE,
-  STOCK_QUERY_DATE_NOT_FOUND_TRADE,
   STOCK_SEARCH_BUT_NOT_GIVE_CODE,
 } from '../message/Stock'
 import {
@@ -22,19 +21,19 @@ import {
 } from '../types/stock'
 import { getStock, getStockWithDate } from '../url/index'
 import { toUppercase } from '../utils'
+import { getTableHeader } from '../utils'
 import {
   generateGetStockURL,
   getConversionDate,
   getTaiwanDateFormat,
 } from '../utils/stock'
+import { tableConfig } from '../utils/table'
 
 interface Stock {
   code: string
   url: string
   prefix: string
   options: StockOptionProps
-  inexecutionToPercentage: (string | number)[]
-  table: Table
   date: string[]
   dateExistDay: boolean
 }
@@ -45,18 +44,6 @@ class Stock {
     this.url = ''
     this.code = code
     this.options = options
-    this.inexecutionToPercentage = [
-      'c',
-      'ex',
-      'n',
-      't',
-      '0',
-      '1',
-      '2',
-      '7',
-      '8',
-    ]
-    this.table = new Table({ columns: this.getField() })
     this.date = []
     this.dateExistDay = false
   }
@@ -152,38 +139,30 @@ class Stock {
       stocks = this.shouldFilterSpecificDateStock(stocks as string[])
     }
 
+    let tableInformation = [getTableHeader(this.getField())]
+
     for (let stock of stocks) {
-      const stockField: Record<string, string> = this.getField()
-        .map((field) => {
-          const { code, name, callback } = field
-          let trade = this.getTrade(stock, code ?? '')
+      const stockField: string[] = this.getField().map((field) => {
+        const { code, name, callback } = field
+        let trade = this.getTrade(stock, code ?? '')
 
-          if (typeof stock !== 'string') {
-            if (typeof callback === 'function') {
-              trade = callback(stock)
-            }
-            if (stock.ex === 'otc' && ['漲停', '跌停'].includes(name)) {
-              return { [name]: `${color.rest}-` }
-            }
+        if (typeof stock !== 'string') {
+          if (typeof callback === 'function') {
+            trade = callback(stock)
           }
-
-          return {
-            [name]: trade,
+          if (stock.ex === 'otc' && ['漲停', '跌停'].includes(name)) {
+            return `${color.rest}-`
           }
-        })
-        .reduce((acc, cur) => Object.assign(acc, cur), {})
-
-      this.table.addRow(stockField)
+        }
+        return trade
+      })
+      tableInformation.push(stockField)
     }
-    this.printTable()
-  }
 
-  printTable() {
-    if (this.table.table.rows.length > 0) {
-      this.table.printTable()
-    } else {
-      displayFailed(STOCK_QUERY_DATE_NOT_FOUND_TRADE)
+    if (tableInformation.length === 1) {
+      return displayFailed(STOCK_NOT_FOUND)
     }
+    console.log(table(tableInformation, tableConfig))
   }
 
   getStockData(data: StockResponse): string | TStock[] | string[] {
@@ -213,13 +192,9 @@ class Stock {
     return Field.basic(this.options)
   }
 
-  shouldConversionToPercentage(fieldCode: string) {
-    return this.inexecutionToPercentage.includes(fieldCode)
-  }
-
   getTrade(stock: TStock | string, fieldCode: string) {
     const fieldValue = stock[fieldCode as keyof typeof stock]
-    return this.shouldConversionToPercentage(fieldValue)
+    return shouldConvertToPercentage(fieldValue)
       ? convertToPercentage(fieldValue)
       : fieldValue
   }

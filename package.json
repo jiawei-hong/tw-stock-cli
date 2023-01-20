@@ -33,7 +33,9 @@
     "asciichart": "^1.5.25",
     "commander": "^9.3.0",
     "date-fns": "^2.29.3",
-    "enquirer": "^2.3.6"
+    "enquirer": "^2.3.6",
+    "table": "^6.8.1",
+    "webpack-build-notifier": "^2.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.18.5",
