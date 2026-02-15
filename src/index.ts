@@ -1,9 +1,9 @@
 import { program } from 'commander'
 
-import Crawler from './crawler'
-import Favorite from './handler/favorite'
-import Indices from './handler/indices'
-import Stock from './handler/stock'
+import Crawler from './commands/crawler/handler'
+import Favorite from './commands/favorite/handler'
+import Indices from './commands/index/handler'
+import Stock from './commands/stock/handler'
 import { IndexOptionProps } from './types/indices'
 import { Category, StockOptionProps } from './types/stock'
 

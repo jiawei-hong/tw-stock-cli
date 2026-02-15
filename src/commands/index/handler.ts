@@ -1,11 +1,12 @@
-import { getOHLC } from '@/api/indices'
-import { draw, filterDrawChartDataWithTwoTime } from '@/lib/chart'
-import { getSelectedIndex } from '@/lib/prompt'
-import { displayFailed } from '@/lib/text'
-import { INDEX_USE_DATE_OPTIONS } from '@/message/stock-index'
+import Stock from '@/commands/stock/handler'
+import { toUppercase } from '@/commands/stock/utils'
+import { INDEX_USE_DATE_OPTIONS } from '@/messages/stock-index'
 import { IndexOptionProps } from '@/types/indices'
-import { toUppercase } from '@/utils'
-import Stock from './stock'
+import { draw, filterDrawChartDataWithTwoTime } from '@/utils/chart'
+import { getSelectedIndex } from '@/utils/prompt'
+import { displayFailed } from '@/utils/text'
+
+import { getOHLC } from './api'
 
 type TIndices = {
   TAIEX: string

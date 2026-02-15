@@ -4,7 +4,8 @@ import { isAfter, isBefore, set } from 'date-fns'
 import {
   CHART_NOT_FOUND,
   CHART_START_DATE_IS_AFTER_END_DATE,
-} from '@/message/chart'
+} from '@/messages/chart'
+
 import { displayFailed } from './text'
 
 function getHisWithDate(date: string): Date {

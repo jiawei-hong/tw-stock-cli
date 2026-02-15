@@ -1,7 +1,8 @@
-import { category2Chinese, getStockUpsAndDownsPercentage } from '@/lib/stock'
-import { StockOptionProps } from '@/types/stock'
-import { TStock } from '@/types/stock'
-import { isTerminalWidthSmall } from '@/utils/index'
+import { MAX_TERMINAL_WIDTH } from '@/constants'
+import { StockOptionProps, TStock } from '@/types/stock'
+import { category2Chinese, getStockUpsAndDownsPercentage } from '@/utils/stock'
+
+const isTerminalWidthSmall = () => process.stdout.columns < MAX_TERMINAL_WIDTH
 
 export type FieldProps = {
   code?: string

@@ -1,7 +1,5 @@
 import { table } from 'table'
 
-import FilePath from '@/lib/file-path'
-import { displayFailed, displaySuccess } from '@/lib/text'
 import {
   FAVORITE_ADD_STOCK,
   FAVORITE_CREATE_FILE,
@@ -10,10 +8,12 @@ import {
   FAVORITE_NOT_FOUND,
   FAVORITE_NOT_FOUND_STOCK_IN_FILE,
   FAVORITE_STOCK_IS_EXIST,
-} from '@/message/favorite'
-import { STOCK_NOT_FOUND_FILE } from '@/message/stock'
+} from '@/messages/favorite'
+import { STOCK_NOT_FOUND_FILE } from '@/messages/stock'
 import { StockPayload } from '@/types/stock'
+import FilePath from '@/utils/file'
 import { tableConfig } from '@/utils/table'
+import { displayFailed, displaySuccess } from '@/utils/text'
 
 type Action = 'create' | 'add' | 'delete' | 'list'
 
