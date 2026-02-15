@@ -9,6 +9,10 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true ,
     "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
     "typeRoots": ["./node_modules/@types"]
   },
   "include": ["./src/**/*"],

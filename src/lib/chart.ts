@@ -4,8 +4,8 @@ import { isAfter, isBefore, set } from 'date-fns'
 import {
   CHART_NOT_FOUND,
   CHART_START_DATE_IS_AFTER_END_DATE,
-} from '../message/Chart'
-import { displayFailed } from './Text'
+} from '@/message/chart'
+import { displayFailed } from './text'
 
 function getHisWithDate(date: string): Date {
   const [hour, minute] = [0, 2].map((len) => parseInt(date.substr(len, 2)))

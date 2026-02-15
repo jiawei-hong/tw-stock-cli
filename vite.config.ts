@@ -1,8 +1,14 @@
+import path from 'node:path'
 import { builtinModules } from 'node:module'
 
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
   build: {
     target: 'node24',
     outDir: 'build',

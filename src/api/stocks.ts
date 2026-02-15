@@ -1,5 +1,5 @@
-import { displayFailed } from '../lib/Text'
-import { StockResponse } from '../types/stock'
+import { displayFailed } from '@/lib/text'
+import { StockResponse } from '@/types/stock'
 
 function getStock(url: string): Promise<StockResponse> {
   return fetch(url)

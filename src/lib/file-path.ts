@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, existFileSync } from './File'
+import { readFileSync, writeFileSync, existFileSync } from './file'
 
 enum File {
   stock,

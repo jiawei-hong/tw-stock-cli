@@ -1,6 +1,6 @@
 import cliSelect from 'cli-select'
 
-import { displayFailed } from './Text'
+import { displayFailed } from './text'
 
 function getSelectedIndex() {
   enum IndicesStatus {
