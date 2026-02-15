@@ -100,6 +100,12 @@ describe('getStockUpsAndDownsPercentage', () => {
     expect(result).toContain('-10%')
   })
 
+  it('returns red text for small fractional increase', () => {
+    const result = getStockUpsAndDownsPercentage('1845', '1855')
+    expect(result).toContain(color.red)
+    expect(result).toContain('0.54%')
+  })
+
   it('returns green text when no change', () => {
     const result = getStockUpsAndDownsPercentage('100', '100')
     expect(result).toContain('0%')
