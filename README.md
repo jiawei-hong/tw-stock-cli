@@ -1,73 +1,110 @@
 # tw-stock
 
-This command use in my daily quickly search stock information.
+A command-line tool for quickly searching Taiwan stock market information, including real-time prices, market indices, and historical trading data.
 
-## How to install
+[![npm version](https://img.shields.io/npm/v/tw-stock)](https://www.npmjs.com/package/tw-stock)
+[![license](https://img.shields.io/npm/l/tw-stock)](./LICENSE)
 
-```js
+## Installation
+
+```sh
 npm install -g tw-stock
 ```
 
-## How to crawler stock.json
+## Commands
 
-```shell
-tw-stock crawler
-```
+### `stock` — Search stock information
 
-## How to use
-
-```shell
+```sh
 tw-stock stock [stock_code]
 ```
 
-| Options       | Description                            |
-| ------------- | -------------------------------------- |
-| -l --listed   | input this tw_stock_code is tse or otc |
-| -m --multiple  | search multiple stock_code             |
-| -f --favorite | show stocks in favorite list           |
-| -d --date     | search stock history trade             |
+| Option | Description |
+| --- | --- |
+| `-l, --listed <listed>` | Market type: `tse` (default) or `otc` |
+| `-m, --multiple` | Search multiple stock codes (hyphen-separated) |
+| `-f, --favorite` | Search stocks from favorite list |
+| `-o, --oddLot` | Search odd-lot trading data |
+| `-d, --date <date>` | Search historical data (`YYYY-MM` or `YYYY-MM-DD`) |
+| `--details` | Show detailed stock data (default: `true`) |
 
-> Tips: When you must use date options search stock history trade.
+**Examples:**
 
-| DateFormat | Description          |
-| ---------- | -------------------- |
-| YYYY-MM    | get month trade data |
-| YYYY-MM-DD | get day trade data   |
+```sh
+# Search a single TSE stock
+tw-stock stock 2330
 
-## How to search tw-stock index
+# Search an OTC stock
+tw-stock stock 6488 -l otc
 
-```shell
-tw-stock index [index] // TAIEX, TWO, FRMSA
+# Search multiple stocks
+tw-stock stock 2330-2317-2454 -m
+
+# Search historical monthly data
+tw-stock stock 2330 -d 2025-01
+
+# Search historical daily data
+tw-stock stock 2330 -d 2025-01-15
 ```
 
-| Options       | Description                                            |
-| ------------- | ------------------------------------------------------ |
-| -m --multiple | search multiple index                                  |
-| -t --time     | user can specify time to draw indices e.g. 0900 1000   |
-| -c --chart    | draw index chart on today                              |
+### `index` — Search market indices
 
-## How to use favorite
-
-```shell
-tw-stock favorite [code]
+```sh
+tw-stock index [code]
 ```
 
-`[code]` input your add or delete stockCode
+Supported indices: `TAIEX`, `TWO`, `FRMSA`
 
-| Options     | Description                        |
-| ----------- | ---------------------------------- |
-| -c --create | create favorite file.              |
-| -a --add    | add stockCode in favorite file.    |
-| -d --delete | delete stockCode in favorite file. |
+| Option | Description |
+| --- | --- |
+| `-m, --multiple` | Search multiple indices |
+| `-t, --time <time...>` | Specify time range (`HHMM` format, 0900–1330) |
+| `-c, --chart` | Display ASCII chart |
 
-## Search Tse Stock
+**Examples:**
 
-![Search_TSE_Stock](/images/TSE.png)
+```sh
+# Search TAIEX (default)
+tw-stock index
 
-## Search Otc Stock
+# Search with ASCII chart
+tw-stock index TAIEX -c
 
-![Search_OTC_Stock](/images/OTC.png)
+# Search multiple indices
+tw-stock index TAIEX-TWO -m
 
-## Search Multiple Stock
+# Search within a specific time range
+tw-stock index TAIEX -t 0900 1100
+```
 
-![Search_MULTIPLE_Stock](/images/MULTIPLE.png)
+### `crawler` — Update stock list
+
+Crawl and update the local stock list from TWSE/TPEX exchanges.
+
+```sh
+tw-stock crawler
+```
+
+### `favorite` — Manage favorite stocks
+
+```sh
+tw-stock favorite              # List all favorite stocks (default)
+tw-stock favorite list         # List all favorite stocks
+tw-stock favorite create       # Create favorite file
+tw-stock favorite add <code>   # Add a stock code
+tw-stock favorite delete <code> # Remove a stock code
+```
+
+## Screenshots
+
+### Search TSE Stock
+
+![Search TSE Stock](/images/TSE.png)
+
+### Search OTC Stock
+
+![Search OTC Stock](/images/OTC.png)
+
+### Search Multiple Stocks
+
+![Search Multiple Stocks](/images/MULTIPLE.png)
