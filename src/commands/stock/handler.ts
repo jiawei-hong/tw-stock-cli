@@ -118,7 +118,7 @@ class Stock {
     }
 
     if (this.options.date) {
-      this.getStockURLWithSearchDate()
+      return this.getStockURLWithSearchDate()
     }
 
     return `${this.prefix}${generateGetStockURL(this.getStocks())}`
