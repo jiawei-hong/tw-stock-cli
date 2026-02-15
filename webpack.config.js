@@ -1,4 +1,5 @@
 const path = require('path')
+const webpack = require('webpack')
 const WebpackBuildNotifierPlugin = require('webpack-build-notifier')
 
 module.exports = {
@@ -7,7 +8,6 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'build'),
     filename: 'index.js',
-    libraryTarget: 'umd',
   },
   module: {
     rules: [
@@ -25,6 +25,7 @@ module.exports = {
     ],
   },
   plugins: [
+    new webpack.BannerPlugin({ banner: '#!/usr/bin/env node', raw: true }),
     new WebpackBuildNotifierPlugin({
       title: 'tw-stock',
       suppressSuccess: true,
