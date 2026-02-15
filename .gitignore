@@ -1,4 +1,5 @@
 node_modules
+build
 
 favorite.json
 stock.json

@@ -17,8 +17,8 @@ interface Crawler {
 class Crawler {
   constructor() {
     this.urls = {
-      tse: 'http://isin.twse.com.tw/isin/C_public.jsp?strMode=2',
-      otc: 'http://isin.twse.com.tw/isin/C_public.jsp?strMode=4',
+      tse: 'https://isin.twse.com.tw/isin/C_public.jsp?strMode=2',
+      otc: 'https://isin.twse.com.tw/isin/C_public.jsp?strMode=4',
     }
 
     this.data = {}
