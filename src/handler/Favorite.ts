@@ -12,32 +12,27 @@ import {
   FAVORITE_STOCK_IS_EXIST,
 } from '../message/Favorite'
 import { STOCK_NOT_FOUND_FILE } from '../message/Stock'
-import { FavoriteOptionProps } from '../types/favorite'
 import { StockPayload } from '../types/stock'
 import { tableConfig } from '../utils/table'
 
-type FavoriteProps = {
-  code: string | undefined
-  options: FavoriteOptionProps
-}
+type Action = 'create' | 'add' | 'delete' | 'list'
 
 interface Favorite {
+  action: Action
   code: string | undefined
   data: string[]
-  message: string
-  options: FavoriteOptionProps
   stocks: StockPayload
 }
 
 class Favorite {
-  constructor(params: FavoriteProps) {
-    this.code = params.code
-    this.options = params.options
+  constructor(action: Action, code?: string) {
+    this.action = action
+    this.code = code
     this.data = []
   }
 
   initialize() {
-    if (!this.options.create) {
+    if (this.action !== 'create') {
       if (FilePath.stock.exist()) {
         this.stocks = FilePath.stock.read()
       }
@@ -52,28 +47,26 @@ class Favorite {
   execute() {
     if (!FilePath.stock.exist()) {
       displayFailed(STOCK_NOT_FOUND_FILE)
-    } else if (!FilePath.favorite.exist() && !this.options.create) {
+    } else if (!FilePath.favorite.exist() && this.action !== 'create') {
       displayFailed(FAVORITE_NOT_FOUND)
-    } else if (this.options.create) {
+    } else if (this.action === 'create') {
       if (FilePath.favorite.exist()) {
         displayFailed(FAVORITE_IS_EXIST)
       } else {
         FilePath.favorite.write({ stockCodes: [] })
-
         displaySuccess(FAVORITE_CREATE_FILE)
       }
-    } else if (this.options.add) {
+    } else if (this.action === 'add') {
       if (this.code) {
         this.add(this.code.toUpperCase())
       }
-    } else if (this.options.delete) {
+    } else if (this.action === 'delete') {
       if (this.code) {
         this.delete(this.code.toUpperCase())
       }
     } else {
       const dataRows = this.data.map((stockCode) => {
         const stock = this.stocks[stockCode]
-
         return [stock.name, stockCode]
       })
       let stockInformation = [['公司簡稱', '股票代碼'], ...dataRows]
@@ -89,9 +82,7 @@ class Favorite {
       displayFailed(FAVORITE_STOCK_IS_EXIST)
     } else if (stock) {
       this.data.push(stockCode)
-
       FilePath.favorite.write({ stockCodes: this.data })
-
       displaySuccess(FAVORITE_ADD_STOCK)
     } else {
       displayFailed(FAVORITE_NOT_FOUND_STOCK_IN_FILE)
@@ -103,10 +94,8 @@ class Favorite {
       displayFailed(FAVORITE_NOT_FOUND_STOCK_IN_FILE)
     } else {
       const idx = this.data.indexOf(stockCode)
-
       this.data.splice(idx, 1)
       FilePath.favorite.write({ stockCodes: this.data })
-
       displaySuccess(FAVORITE_DELETE_STOCK)
     }
   }

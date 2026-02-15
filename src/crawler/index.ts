@@ -1,8 +1,8 @@
-import axios from 'axios'
 import Cheerio from 'cheerio'
 import { decode } from 'iconv-lite'
-import { displaySuccess } from '../lib/Text'
+
 import FilePath from '../lib/FilePath'
+import { displaySuccess } from '../lib/Text'
 import { CRAWLER_STOCK_FILE_CREATED } from '../message/Crawler'
 import { StockPayload } from '../types/stock'
 
@@ -26,14 +26,10 @@ class Crawler {
 
   async execute() {
     for (let category in this.urls) {
-      const html = await axios.get(
-        this.urls[category as keyof typeof this.urls],
-        {
-          responseType: 'arraybuffer',
-          transformResponse: [(data) => decode(Buffer.from(data), 'big5')],
-        }
-      )
-      const $ = Cheerio.load(html.data)
+      const res = await fetch(this.urls[category as keyof typeof this.urls])
+      const buffer = await res.arrayBuffer()
+      const html = decode(Buffer.from(buffer), 'big5')
+      const $ = Cheerio.load(html)
 
       $('tr').each((_, ele) => {
         const stockData = $(ele).find('td').first().text().split(/\s/g)
