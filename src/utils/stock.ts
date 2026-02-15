@@ -1,66 +1,50 @@
-import FilePath from '@/lib/file-path'
-import { Category } from '@/types/stock'
-import { toUppercase } from '.'
+import { displayFailed, getDisplayActionText, Status } from './text'
 
-function getConversionDate(date: string, category = 'tse') {
-  const dateRegex = {
-    day: /(\d{4})(\d{2})(\d{2})/g,
-    month: /(\d{4})(\d{2})/g,
-  }
-  let data = Object.keys(dateRegex)
-    .map((key) => [...date.matchAll(dateRegex[key as keyof typeof dateRegex])])
-    .find((d) => d.length > 0)
+export function getStockUpsAndDownsPercentage(
+  yesterdayPrice: string,
+  currentPrice: string
+): string {
+  const dec = getDecimalString(
+    convertToPercentage(
+      ((parseFloat(currentPrice) - parseFloat(yesterdayPrice)) /
+        parseFloat(yesterdayPrice)) *
+        100
+    )
+  )
 
-  if (data && category == 'otc') {
-    data[0][1] = (parseInt(data[0][1]) - 1911).toString()
-  }
-
-  return !data ? 'Invalid Date' : data[0].splice(1, data[0].length - 1)
+  return getDisplayActionText(
+    percentageHandle(dec),
+    parseInt(dec) > 0 ? Status.failed : Status.success
+  )
 }
 
-function getTaiwanDateFormat(date: string[], separator = '/') {
-  date[0] = (parseInt(date[0]) - 1911).toString()
-  return date.join(separator)
-}
+export function category2Chinese(category: 'tse' | 'otc') {
+  const categories = ['tse', 'otc']
+  const categoryLowerCase = category.toLowerCase()
 
-function getStockCategory(code: string): Category {
-  const stocks = FilePath.stock.read()
-  return stocks?.[code]?.category
-}
-
-function combineStockAndCategory(code: string) {
-  const category = getStockCategory(code)
-  return `${category}_${toUppercase(code)}.tw`
-}
-
-function transformStockToIncludeCategory({
-  stocks,
-  listed,
-}: {
-  stocks: string | string[]
-  listed?: Category
-}): string {
-  if (Array.isArray(stocks)) {
-    return stocks
-      .filter((code) => getStockCategory(code))
-      .map((code) => combineStockAndCategory(code))
-      .join('|')
+  if (!categories.includes(categoryLowerCase)) {
+    displayFailed(`${category} not found chinese word.`)
   }
 
-  return `${listed}_${toUppercase(stocks)}.tw`
+  return categoryLowerCase == 'tse' ? '上市' : '上櫃'
 }
 
-function generateGetStockURL({
-  stocks,
-  listed,
-}: {
-  stocks: string | string[]
-  listed?: Category
-}): string {
-  return transformStockToIncludeCategory({
-    stocks,
-    listed,
-  })
+export function getDecimalString(text: string | number, point = 2) {
+  if (typeof text === 'number') {
+    return text.toFixed(point).toString()
+  }
+
+  return parseFloat(text).toFixed(point).toString()
 }
 
-export { generateGetStockURL, getConversionDate, getTaiwanDateFormat }
+export function shouldConvertToPercentage(text: string): boolean {
+  return text?.includes('.')
+}
+
+export function convertToPercentage(text: string | number): string {
+  return isNaN(Number(text)) ? '-' : getDecimalString(text)
+}
+
+export function percentageHandle(num: string) {
+  return `${parseFloat(num)}%`
+}

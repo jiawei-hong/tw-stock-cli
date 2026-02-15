@@ -1,10 +1,10 @@
 import Cheerio from 'cheerio'
 import { decode } from 'iconv-lite'
 
-import FilePath from '@/lib/file-path'
-import { displaySuccess } from '@/lib/text'
-import { CRAWLER_STOCK_FILE_CREATED } from '@/message/crawler'
+import { CRAWLER_STOCK_FILE_CREATED } from '@/messages/crawler'
 import { StockPayload } from '@/types/stock'
+import FilePath from '@/utils/file'
+import { displaySuccess } from '@/utils/text'
 
 interface Crawler {
   urls: {

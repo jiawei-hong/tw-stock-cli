@@ -10,6 +10,8 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build",
+    "lint": "eslint 'src/**/*.ts'",
+    "format": "prettier --write src/",
     "prepublishOnly": "yarn build"
   },
   "repository": {

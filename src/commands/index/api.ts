@@ -1,4 +1,4 @@
-import { generateOHLCURL } from '@/url'
+import { generateOHLCURL } from '@/commands/stock/url'
 
 export const getOHLC = (type: string) =>
   fetch(generateOHLCURL(type))
