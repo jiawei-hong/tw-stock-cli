@@ -14,7 +14,7 @@ export function getStockUpsAndDownsPercentage(
 
   return getDisplayActionText(
     percentageHandle(dec),
-    parseInt(dec) > 0 ? Status.failed : Status.success
+    parseFloat(dec) > 0 ? Status.failed : Status.success
   )
 }
 

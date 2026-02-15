@@ -73,6 +73,18 @@ describe('getConversionDate', () => {
   it('defaults to tse category', () => {
     expect(getConversionDate('20220601')).toEqual(['2022', '06', '01'])
   })
+
+  it('parses YYYY-MM-DD format with hyphens', () => {
+    expect(getConversionDate('2025-01-15', 'tse')).toEqual(['2025', '01', '15'])
+  })
+
+  it('parses YYYY-MM format with hyphens', () => {
+    expect(getConversionDate('2025-01', 'tse')).toEqual(['2025', '01'])
+  })
+
+  it('parses YYYY-MM-DD format with hyphens for otc', () => {
+    expect(getConversionDate('2025-01-15', 'otc')).toEqual(['114', '01', '15'])
+  })
 })
 
 describe('getTaiwanDateFormat', () => {
