@@ -1,5 +1,5 @@
-import FilePath from '../lib/FilePath'
-import { Category } from '../types/stock'
+import FilePath from '@/lib/file-path'
+import { Category } from '@/types/stock'
 import { toUppercase } from '.'
 
 function getConversionDate(date: string, category = 'tse') {

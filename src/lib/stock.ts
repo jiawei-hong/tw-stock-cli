@@ -1,4 +1,4 @@
-import { displayFailed, getDisplayActionText, Status } from './Text'
+import { displayFailed, getDisplayActionText, Status } from './text'
 
 export function getStockUpsAndDownsPercentage(
   yesterdayPrice: string,

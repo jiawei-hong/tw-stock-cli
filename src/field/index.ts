@@ -1,7 +1,7 @@
-import { category2Chinese, getStockUpsAndDownsPercentage } from '../lib/Stock'
-import { StockOptionProps } from '../types/stock'
-import { TStock } from '../types/stock'
-import { isTerminalWidthSmall } from '../utils/index'
+import { category2Chinese, getStockUpsAndDownsPercentage } from '@/lib/stock'
+import { StockOptionProps } from '@/types/stock'
+import { TStock } from '@/types/stock'
+import { isTerminalWidthSmall } from '@/utils/index'
 
 export type FieldProps = {
   code?: string

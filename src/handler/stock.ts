@@ -1,33 +1,33 @@
 import { table } from 'table'
 
-import { getStock as getStockData } from '../api/stocks'
-import { color } from '../color'
-import Field from '../field'
-import FilePath from '../lib/FilePath'
-import { convertToPercentage, shouldConvertToPercentage } from '../lib/Stock'
-import { displayFailed } from '../lib/Text'
-import { FAVORITE_NOT_FOUND } from '../message/Favorite'
+import { getStock as getStockData } from '@/api/stocks'
+import { color } from '@/color'
+import Field from '@/field'
+import FilePath from '@/lib/file-path'
+import { convertToPercentage, shouldConvertToPercentage } from '@/lib/stock'
+import { displayFailed } from '@/lib/text'
+import { FAVORITE_NOT_FOUND } from '@/message/favorite'
 import {
   SOMETHING_WRONG,
   STOCK_NOT_FOUND,
   STOCK_NOT_FOUND_FILE,
   STOCK_SEARCH_BUT_NOT_GIVE_CODE,
-} from '../message/Stock'
+} from '@/message/stock'
 import {
   Category,
   StockOptionProps,
   StockResponse,
   TStock,
-} from '../types/stock'
-import { getStock, getStockWithDate } from '../url/index'
-import { toUppercase } from '../utils'
-import { getTableHeader } from '../utils'
+} from '@/types/stock'
+import { getStock, getStockWithDate } from '@/url/index'
+import { toUppercase } from '@/utils'
+import { getTableHeader } from '@/utils'
 import {
   generateGetStockURL,
   getConversionDate,
   getTaiwanDateFormat,
-} from '../utils/stock'
-import { tableConfig } from '../utils/table'
+} from '@/utils/stock'
+import { tableConfig } from '@/utils/table'
 
 interface Stock {
   code: string
