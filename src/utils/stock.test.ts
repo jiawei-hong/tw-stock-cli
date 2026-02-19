@@ -1,6 +1,7 @@
 import { color } from '@/constants'
 
 import {
+  addThousandSeparator,
   category2Chinese,
   convertToPercentage,
   getDecimalString,
@@ -84,6 +85,28 @@ describe('category2Chinese', () => {
 
   it('returns 上櫃 for otc', () => {
     expect(category2Chinese('otc')).toBe('上櫃')
+  })
+})
+
+describe('addThousandSeparator', () => {
+  it('adds commas to integer', () => {
+    expect(addThousandSeparator('119555')).toBe('119,555')
+  })
+
+  it('adds commas to large integer', () => {
+    expect(addThousandSeparator('1234567890')).toBe('1,234,567,890')
+  })
+
+  it('adds commas to decimal number', () => {
+    expect(addThousandSeparator('33605.71')).toBe('33,605.71')
+  })
+
+  it('does not modify small numbers', () => {
+    expect(addThousandSeparator('695')).toBe('695')
+  })
+
+  it('handles single digit', () => {
+    expect(addThousandSeparator('0')).toBe('0')
   })
 })
 
