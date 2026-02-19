@@ -15,7 +15,11 @@ import {
   TStock,
 } from '@/types/stock'
 import FilePath from '@/utils/file'
-import { convertToPercentage, shouldConvertToPercentage } from '@/utils/stock'
+import {
+  addThousandSeparator,
+  convertToPercentage,
+  shouldConvertToPercentage,
+} from '@/utils/stock'
 import { tableConfig } from '@/utils/table'
 import { displayFailed } from '@/utils/text'
 
@@ -196,9 +200,16 @@ class Stock {
 
   getTrade(stock: TStock | string, fieldCode: string) {
     const fieldValue = stock[fieldCode as keyof typeof stock]
-    return shouldConvertToPercentage(fieldValue)
-      ? convertToPercentage(fieldValue)
-      : fieldValue
+    if (fieldValue === undefined || fieldValue === null) {
+      return '-'
+    }
+    if (shouldConvertToPercentage(fieldValue)) {
+      return addThousandSeparator(convertToPercentage(fieldValue))
+    }
+    if (fieldCode !== 'c' && /^\d+$/.test(fieldValue)) {
+      return addThousandSeparator(fieldValue)
+    }
+    return fieldValue
   }
 }
 
