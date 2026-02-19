@@ -8,7 +8,7 @@ import { IndexOptionProps } from './types/indices'
 import { Category, StockOptionProps } from './types/stock'
 
 function run() {
-  program.name('tw-stock').version('2.1.1')
+  program.name('tw-stock').version('2.1.2')
 
   program
     .command('stock')
