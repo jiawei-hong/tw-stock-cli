@@ -35,11 +35,13 @@
     "asciichart": "^1.5.25",
     "commander": "^9.3.0",
     "date-fns": "^2.29.3",
+    "omelette": "^0.4.17",
     "table": "^6.8.1"
   },
   "devDependencies": {
     "@types/asciichart": "^1.5.6",
     "@types/node": "^24",
+    "@types/omelette": "^0",
     "@typescript-eslint/parser": "^5.29.0",
     "@vitest/coverage-v8": "^4.0.18",
     "cheerio": "^1.0.0-rc.10",

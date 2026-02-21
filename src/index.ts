@@ -4,10 +4,13 @@ import Crawler from './commands/crawler/handler'
 import Favorite from './commands/favorite/handler'
 import Indices from './commands/index/handler'
 import Stock from './commands/stock/handler'
+import completion from './completion'
 import { IndexOptionProps } from './types/indices'
 import { Category, StockOptionProps } from './types/stock'
 
 function run() {
+  completion.init()
+
   program.name('tw-stock').version('2.1.2')
 
   program
@@ -69,6 +72,18 @@ function run() {
     .command('list', { isDefault: true })
     .description('list favorite stocks')
     .action(() => new Favorite('list').initialize())
+
+  program
+    .command('completion')
+    .description('setup shell tab-completion')
+    .option('--cleanup', 'remove completion from shell profile')
+    .action((options: { cleanup?: boolean }) => {
+      if (options.cleanup) {
+        completion.cleanupShellInitFile()
+      } else {
+        completion.setupShellInitFile()
+      }
+    })
 
   program.parse(process.argv)
 }
