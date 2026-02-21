@@ -1,4 +1,4 @@
-import Cheerio from 'cheerio'
+import * as Cheerio from 'cheerio'
 import { decode } from 'iconv-lite'
 
 import { CRAWLER_STOCK_FILE_CREATED } from '@/messages/crawler'
