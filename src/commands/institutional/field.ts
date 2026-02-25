@@ -1,7 +1,5 @@
 import type { FieldProps } from '@/types/field'
 
-export type { FieldProps }
-
 class Field {
   static summary(): FieldProps[] {
     return [
