@@ -20,7 +20,7 @@ import {
   convertToPercentage,
   shouldConvertToPercentage,
 } from '@/utils/stock'
-import { tableConfig } from '@/utils/table'
+import { getTableHeader, tableConfig } from '@/utils/table'
 import { displayFailed } from '@/utils/text'
 
 import { getStock as getStockData } from './api'
@@ -29,7 +29,6 @@ import { getStock, getStockWithDate } from './url'
 import {
   generateGetStockURL,
   getConversionDate,
-  getTableHeader,
   getTaiwanDateFormat,
   toUppercase,
 } from './utils'

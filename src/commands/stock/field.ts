@@ -1,15 +1,11 @@
 import { MAX_TERMINAL_WIDTH } from '@/constants'
+import type { FieldProps } from '@/types/field'
 import { StockOptionProps, TStock } from '@/types/stock'
 import { category2Chinese, getStockUpsAndDownsPercentage } from '@/utils/stock'
 
-const isTerminalWidthSmall = () => process.stdout.columns < MAX_TERMINAL_WIDTH
+export type { FieldProps }
 
-export type FieldProps = {
-  code?: string
-  name: string
-  color?: string
-  callback?: (stock: TStock) => string
-}
+const isTerminalWidthSmall = () => process.stdout.columns < MAX_TERMINAL_WIDTH
 
 class Field {
   static basic(options: StockOptionProps): FieldProps[] {

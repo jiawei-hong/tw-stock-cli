@@ -1,10 +1,10 @@
 import { Category } from '@/types/stock'
 import FilePath from '@/utils/file'
+import { getTableHeader } from '@/utils/table'
 
 import {
   generateGetStockURL,
   getConversionDate,
-  getTableHeader,
   getTaiwanDateFormat,
   toUppercase,
 } from './utils'

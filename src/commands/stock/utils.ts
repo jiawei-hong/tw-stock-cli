@@ -1,12 +1,7 @@
 import { Category } from '@/types/stock'
 import FilePath from '@/utils/file'
 
-import type { FieldProps } from './field'
-
 export const toUppercase = (value: string) => value?.toUpperCase()
-
-export const getTableHeader = (headerField: FieldProps[]): string[] =>
-  headerField.map((field) => field.name)
 
 export function getConversionDate(date: string, category = 'tse') {
   const normalized = date.replace(/-/g, '')

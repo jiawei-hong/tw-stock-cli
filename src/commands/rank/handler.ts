@@ -9,7 +9,9 @@ import {
   RankTseTable,
 } from '@/types/rank'
 import { Category } from '@/types/stock'
-import { tableConfig } from '@/utils/table'
+import { getFormattedDate } from '@/utils/date'
+import { parseNumber } from '@/utils/number'
+import { getTableHeader, tableConfig } from '@/utils/table'
 import { displayFailed } from '@/utils/text'
 
 import { fetchRankData } from './api'
@@ -20,9 +22,6 @@ import {
   formatPercentage,
   formatPriceChange,
   formatVolume,
-  getFormattedDate,
-  getTableHeader,
-  parseNumber,
   parseTseChange,
   sortRows,
 } from './utils'
