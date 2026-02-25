@@ -3,8 +3,6 @@ import type { FieldProps } from '@/types/field'
 import { StockOptionProps, TStock } from '@/types/stock'
 import { category2Chinese, getStockUpsAndDownsPercentage } from '@/utils/stock'
 
-export type { FieldProps }
-
 const isTerminalWidthSmall = () => process.stdout.columns < MAX_TERMINAL_WIDTH
 
 class Field {
