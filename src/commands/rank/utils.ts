@@ -1,25 +1,6 @@
-import { format } from 'date-fns'
-
 import { color } from '@/constants'
 import { RankRow } from '@/types/rank'
-import { Category } from '@/types/stock'
-
-import type { FieldProps } from './field'
-
-export function getFormattedDate(
-  date: string | undefined,
-  category: Category
-): string {
-  if (!date) return ''
-  const d = new Date(date)
-  if (category === Category.OTC) {
-    const year = d.getFullYear() - 1911
-    const month = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    return `${year}/${month}/${day}`
-  }
-  return format(d, 'yyyyMMdd')
-}
+import { parseNumber } from '@/utils/number'
 
 export function calculateChangePercent(close: number, change: number): number {
   const previous = close - change
@@ -53,13 +34,6 @@ export function formatVolume(value: number): string {
   return value.toLocaleString('en-US')
 }
 
-export function parseNumber(value: string): number {
-  if (typeof value !== 'string') return 0
-  const cleaned = value.replace(/,/g, '').trim()
-  const num = parseFloat(cleaned)
-  return isNaN(num) ? 0 : num
-}
-
 export function parseTseChange(direction: string, value: string): number {
   const amount = parseNumber(value)
   if (direction.includes('-')) {
@@ -81,6 +55,3 @@ export function sortRows(
   return [...rows].sort((a, b) => b.changePercent - a.changePercent)
 }
 
-export function getTableHeader(headerField: FieldProps[]): string[] {
-  return headerField.map((field) => field.name)
-}

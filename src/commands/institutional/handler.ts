@@ -12,18 +12,15 @@ import {
   InstitutionalTseResponse,
 } from '@/types/institutional'
 import { Category } from '@/types/stock'
-import { tableConfig } from '@/utils/table'
+import { getFormattedDate } from '@/utils/date'
+import { parseNumber } from '@/utils/number'
+import { getTableHeader, tableConfig } from '@/utils/table'
 import { displayFailed } from '@/utils/text'
 
 import { fetchInstitutionalData } from './api'
 import Field from './field'
 import { getStockUrl, getSummaryUrl } from './url'
-import {
-  formatNetValue,
-  getFormattedDate,
-  getTableHeader,
-  parseNumber,
-} from './utils'
+import { formatNetValue } from './utils'
 
 interface Institutional {
   code: string

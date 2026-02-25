@@ -1,6 +1,6 @@
-export type FieldProps = {
-  name: string
-}
+import type { FieldProps } from '@/types/field'
+
+export type { FieldProps }
 
 class Field {
   static ranking(): FieldProps[] {
