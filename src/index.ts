@@ -3,9 +3,13 @@ import { program } from 'commander'
 import Crawler from './commands/crawler/handler'
 import Favorite from './commands/favorite/handler'
 import Indices from './commands/index/handler'
+import Institutional from './commands/institutional/handler'
+import Rank from './commands/rank/handler'
 import Stock from './commands/stock/handler'
 import completion from './completion'
 import { IndexOptionProps } from './types/indices'
+import { InstitutionalOptionProps } from './types/institutional'
+import { RankOptionProps } from './types/rank'
 import { Category, StockOptionProps } from './types/stock'
 
 function run() {
@@ -40,6 +44,29 @@ function run() {
     .action((code: string, options: IndexOptionProps) =>
       new Indices(code, options).initialize()
     )
+
+  program
+    .command('institutional')
+    .description(
+      'search institutional investors buy/sell data (三大法人買賣超)'
+    )
+    .argument('[stock_code]', 'stock code')
+    .option('-l --listed <listed>', 'market type (tse or otc)', Category.TSE)
+    .option('-d --date <date>', 'search specific date (YYYY-MM-DD)')
+    .option('-n --number <number>', 'number of results to show', parseInt)
+    .action((code: string, options: InstitutionalOptionProps) =>
+      new Institutional(code, options).initialize()
+    )
+
+  program
+    .command('rank')
+    .description('show daily stock ranking (當日漲跌幅排行)')
+    .option('-l --listed <listed>', 'market type (tse or otc)', Category.TSE)
+    .option('-d --date <date>', 'search specific date (YYYY-MM-DD)')
+    .option('-n --number <number>', 'number of results to show', parseInt)
+    .option('--losers', 'show top losers instead of gainers', false)
+    .option('--volume', 'sort by volume', false)
+    .action((options: RankOptionProps) => new Rank(options).initialize())
 
   program
     .command('crawler')
