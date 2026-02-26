@@ -5,9 +5,11 @@ import {
   RankTseTable,
 } from '@/types/rank'
 import { Category } from '@/types/stock'
-import { parseNumber } from '@/utils/number'
-
-import { calculateChangePercent, parseTseChange } from '../commands/rank/utils'
+import {
+  calculateChangePercent,
+  parseNumber,
+  parseTseChange,
+} from '@/utils/number'
 
 function adaptTseResponse(data: RankTseResponse): RankRow[] | null {
   if (!data || data.stat !== 'OK' || !data.tables) {

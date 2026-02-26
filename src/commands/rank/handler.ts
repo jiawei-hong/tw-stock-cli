@@ -1,8 +1,14 @@
 import { adaptRankResponse } from '@/adapters/rank'
 import { RANK_NOT_FOUND } from '@/messages/rank'
 import type { FieldProps } from '@/types/field'
-import { RankOptionProps, RankRow } from '@/types/rank'
+import {
+  RankOptionProps,
+  RankOtcResponse,
+  RankRow,
+  RankTseResponse,
+} from '@/types/rank'
 import { Category } from '@/types/stock'
+import { displayFailed } from '@/utils/text'
 
 import { BaseHandler } from '../base-handler'
 import { fetchRankData } from './api'
@@ -21,7 +27,7 @@ class Rank extends BaseHandler<RankOptionProps, RankRow> {
   }
 
   initialize() {
-    this.execute()
+    this.execute().catch((err) => displayFailed(String(err)))
   }
 
   protected buildUrl(date: string, category: Category): string {
@@ -33,7 +39,10 @@ class Rank extends BaseHandler<RankOptionProps, RankRow> {
   }
 
   protected parseData(data: unknown, category: Category): RankRow[] | null {
-    return adaptRankResponse(data as any, category)
+    return adaptRankResponse(
+      data as RankTseResponse | RankOtcResponse,
+      category
+    )
   }
 
   protected getFields(): FieldProps[] {

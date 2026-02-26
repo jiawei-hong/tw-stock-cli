@@ -9,16 +9,19 @@ export class UrlBuilder {
   private baseUrl: string = ''
   private path: string = ''
   private params: Map<string, string> = new Map()
+  private category?: Category
 
   static tse(): UrlBuilder {
     const builder = new UrlBuilder()
     builder.baseUrl = BASE_URLS[Category.TSE]
+    builder.category = Category.TSE
     return builder
   }
 
   static otc(): UrlBuilder {
     const builder = new UrlBuilder()
     builder.baseUrl = BASE_URLS[Category.OTC]
+    builder.category = Category.OTC
     return builder
   }
 
@@ -38,14 +41,14 @@ export class UrlBuilder {
   }
 
   withDate(date: string): UrlBuilder {
-    if (this.baseUrl === BASE_URLS[Category.OTC]) {
+    if (this.category === Category.OTC) {
       return this.withParam('d', date)
     }
     return this.withParam('date', date)
   }
 
   withJsonResponse(): UrlBuilder {
-    if (this.baseUrl === BASE_URLS[Category.OTC]) {
+    if (this.category === Category.OTC) {
       return this.withParam('o', 'json')
     }
     return this.withParam('response', 'json')

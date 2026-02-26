@@ -25,7 +25,7 @@ class HistoryStock extends BaseHandler<StockOptionProps, HistoryRow> {
     if (!this.code) {
       return displayFailed(SOMETHING_WRONG)
     }
-    this.execute()
+    this.execute().catch((err) => displayFailed(String(err)))
   }
 
   protected getDate(category: Category): string {
@@ -65,7 +65,7 @@ class HistoryStock extends BaseHandler<StockOptionProps, HistoryRow> {
       dataField.includes(key)
     )
 
-    if ('stat' in response && response['stat'] != 'OK') {
+    if ('stat' in response && response['stat'] !== 'OK') {
       return null
     }
 

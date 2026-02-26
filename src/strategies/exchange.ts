@@ -13,6 +13,7 @@ class TseStrategy implements ExchangeStrategy {
   formatDate(date: string): string {
     if (!date) return ''
     const d = new Date(date)
+    if (isNaN(d.getTime())) return ''
     return format(d, 'yyyyMMdd')
   }
 }
@@ -23,6 +24,7 @@ class OtcStrategy implements ExchangeStrategy {
   formatDate(date: string): string {
     if (!date) return ''
     const d = new Date(date)
+    if (isNaN(d.getTime())) return ''
     const year = d.getFullYear() - 1911
     const month = String(d.getMonth() + 1).padStart(2, '0')
     const day = String(d.getDate()).padStart(2, '0')
