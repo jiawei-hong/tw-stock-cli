@@ -28,11 +28,7 @@ class HistoryStock extends BaseHandler<StockOptionProps, HistoryRow> {
     this.execute()
   }
 
-  protected getDate(): string {
-    return this.options.date ?? ''
-  }
-
-  protected buildUrl(_date: string, category: Category): string {
+  protected getDate(category: Category): string {
     const specificDate = getConversionDate(
       this.options.date ?? '',
       this.options.listed
@@ -50,11 +46,12 @@ class HistoryStock extends BaseHandler<StockOptionProps, HistoryRow> {
     }
 
     const separator = category === Category.OTC ? '/' : ''
-    return getStockWithDate(
-      toUppercase(this.code),
-      this.parsedDate.join(separator),
-      category
-    )
+    return this.parsedDate.join(separator)
+  }
+
+  protected buildUrl(date: string, category: Category): string {
+    if (!date) return ''
+    return getStockWithDate(toUppercase(this.code), date, category)
   }
 
   protected fetchData(url: string): Promise<unknown> {

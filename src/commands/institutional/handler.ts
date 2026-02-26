@@ -96,23 +96,17 @@ class Institutional extends BaseHandler<
     ]
   }
 
-  protected getNotFoundMessage(): string {
-    return INSTITUTIONAL_NOT_FOUND
-  }
-
   protected processRows(
     rows: InstitutionalStockRow[]
   ): InstitutionalStockRow[] {
-    const filtered = rows.filter(
-      (row) => row.code.trim() === this.code.toUpperCase()
-    )
+    return rows.filter((row) => row.code.trim() === this.code.toUpperCase())
+  }
 
-    if (filtered.length === 0) {
-      displayFailed(INSTITUTIONAL_STOCK_NOT_FOUND)
-      return []
+  protected getNotFoundMessage(): string {
+    if (this.code) {
+      return INSTITUTIONAL_STOCK_NOT_FOUND
     }
-
-    return filtered
+    return INSTITUTIONAL_NOT_FOUND
   }
 }
 

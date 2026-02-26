@@ -14,6 +14,7 @@ export function extractStockData(
 
   if (!getDataKey) {
     displayFailed(STOCK_NOT_FOUND)
+    return []
   }
 
   return data[getDataKey as keyof typeof data]

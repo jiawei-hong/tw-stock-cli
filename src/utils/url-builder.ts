@@ -53,7 +53,10 @@ export class UrlBuilder {
 
   build(): string {
     const queryString = Array.from(this.params.entries())
-      .map(([key, value]) => `${key}=${value}`)
+      .map(
+        ([key, value]) =>
+          `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+      )
       .join('&')
 
     const base = `${this.baseUrl}${this.path}`

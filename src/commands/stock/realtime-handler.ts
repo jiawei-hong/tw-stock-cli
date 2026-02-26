@@ -60,7 +60,7 @@ class RealtimeStock {
     const stocks = extractStockData(response)
 
     if (typeof stocks === 'string') {
-      return displayFailed(Array.isArray(stocks) ? STOCK_NOT_FOUND : stocks)
+      return displayFailed(stocks)
     }
 
     if (!stocks || stocks.length === 0) {
