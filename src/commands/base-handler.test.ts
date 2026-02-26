@@ -132,10 +132,7 @@ describe('BaseHandler', () => {
       const handler = new TestHandler({ listed: Category.OTC })
       const buildUrlSpy = vi.spyOn(handler as any, 'buildUrl')
       await handler.execute()
-      expect(buildUrlSpy).toHaveBeenCalledWith(
-        expect.any(String),
-        Category.OTC
-      )
+      expect(buildUrlSpy).toHaveBeenCalledWith(expect.any(String), Category.OTC)
     })
   })
 })

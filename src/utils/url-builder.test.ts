@@ -36,10 +36,7 @@ describe('UrlBuilder fluent methods', () => {
   })
 
   it('withParam supports multiple parameters', () => {
-    const url = UrlBuilder.tse()
-      .withParam('a', '1')
-      .withParam('b', '2')
-      .build()
+    const url = UrlBuilder.tse().withParam('a', '1').withParam('b', '2').build()
     expect(url).toBe('https://www.twse.com.tw?a=1&b=2')
   })
 

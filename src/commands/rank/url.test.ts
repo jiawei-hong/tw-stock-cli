@@ -5,7 +5,9 @@ import { getRankUrl } from './url'
 describe('getRankUrl', () => {
   it('builds TSE rank URL', () => {
     const url = getRankUrl('20240315', Category.TSE)
-    expect(url).toContain('https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX')
+    expect(url).toContain(
+      'https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX'
+    )
     expect(url).toContain('date=20240315')
     expect(url).toContain('type=ALLBUT0999')
     expect(url).toContain('response=json')
