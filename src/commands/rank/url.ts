@@ -1,18 +1,25 @@
 import { Category } from '@/types/stock'
-
-function getTseRankUrl(date: string): string {
-  return `https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date=${date}&type=ALLBUT0999&response=json`
-}
-
-function getOtcRankUrl(date: string): string {
-  return `https://www.tpex.org.tw/web/stock/aftertrading/daily_close_quotes/stk_quote_result.php?l=zh-tw&o=json&d=${date}&s=0,asc,0`
-}
+import { UrlBuilder } from '@/utils/url-builder'
 
 function getRankUrl(date: string, category: Category): string {
   if (category === Category.OTC) {
-    return getOtcRankUrl(date)
+    return UrlBuilder.otc()
+      .withPath(
+        '/web/stock/aftertrading/daily_close_quotes/stk_quote_result.php'
+      )
+      .withParam('l', 'zh-tw')
+      .withJsonResponse()
+      .withDate(date)
+      .withParam('s', '0,asc,0')
+      .build()
   }
-  return getTseRankUrl(date)
+
+  return UrlBuilder.tse()
+    .withPath('/rwd/zh/afterTrading/MI_INDEX')
+    .withDate(date)
+    .withParam('type', 'ALLBUT0999')
+    .withJsonResponse()
+    .build()
 }
 
-export { getOtcRankUrl, getRankUrl, getTseRankUrl }
+export { getRankUrl }
