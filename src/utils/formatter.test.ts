@@ -22,9 +22,7 @@ describe('formatInteger', () => {
   })
 
   it('formats large positive value with thousands separator', () => {
-    expect(formatInteger(1234567)).toBe(
-      `${color.red}+1,234,567${color.rest}`
-    )
+    expect(formatInteger(1234567)).toBe(`${color.red}+1,234,567${color.rest}`)
   })
 })
 

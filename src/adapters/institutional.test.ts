@@ -6,16 +6,16 @@ describe('adaptInstitutionalResponse', () => {
   const makeRow = (code: string, name: string): string[] => [
     code,
     name,
-    '1,000',  // foreignBuy
-    '500',    // foreignSell
-    '500',    // foreignNet
-    '200',    // trustBuy
-    '100',    // trustSell
-    '100',    // trustNet
-    '50',     // dealerNet
-    'x',      // row[9]
-    'x',      // row[10]
-    '650',    // totalNet
+    '1,000', // foreignBuy
+    '500', // foreignSell
+    '500', // foreignNet
+    '200', // trustBuy
+    '100', // trustSell
+    '100', // trustNet
+    '50', // dealerNet
+    'x', // row[9]
+    'x', // row[10]
+    '650', // totalNet
   ]
 
   describe('TSE response', () => {
