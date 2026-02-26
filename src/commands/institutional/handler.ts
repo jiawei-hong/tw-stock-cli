@@ -8,8 +8,10 @@ import {
 import type { FieldProps } from '@/types/field'
 import {
   InstitutionalOptionProps,
+  InstitutionalOtcResponse,
   InstitutionalStockRow,
   InstitutionalSummaryResponse,
+  InstitutionalTseResponse,
 } from '@/types/institutional'
 import { Category } from '@/types/stock'
 import { getFormattedDate } from '@/utils/date'
@@ -36,9 +38,9 @@ class Institutional extends BaseHandler<
 
   initialize() {
     if (this.code) {
-      this.execute()
+      this.execute().catch((err) => displayFailed(String(err)))
     } else {
-      this.executeSummary()
+      this.executeSummary().catch((err) => displayFailed(String(err)))
     }
   }
 
@@ -78,7 +80,10 @@ class Institutional extends BaseHandler<
     data: unknown,
     category: Category
   ): InstitutionalStockRow[] | null {
-    return adaptInstitutionalResponse(data as any, category)
+    return adaptInstitutionalResponse(
+      data as InstitutionalTseResponse | InstitutionalOtcResponse,
+      category
+    )
   }
 
   protected getFields(): FieldProps[] {

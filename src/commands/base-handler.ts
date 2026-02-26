@@ -31,6 +31,11 @@ export abstract class BaseHandler<TOptions extends BaseOptions, TRow> {
     const category = this.getCategory()
     const date = this.getDate(category)
     const url = this.buildUrl(date, category)
+
+    if (!url) {
+      return displayFailed(this.getNotFoundMessage())
+    }
+
     const data = await this.fetchData(url)
     const rows = this.parseData(data, category)
 

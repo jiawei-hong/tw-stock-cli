@@ -1,11 +1,11 @@
 import { getStock as fetchStockData } from '@/commands/stock/api'
+import Field from '@/commands/stock/field'
 import { renderStockTable } from '@/commands/stock/render'
 import { extractStockData } from '@/commands/stock/response'
-import Field from '@/commands/stock/field'
 import { getStock as getStockPrefix } from '@/commands/stock/url'
 import { toUppercase } from '@/commands/stock/utils'
-import { INDEX_USE_DATE_OPTIONS } from '@/messages/stock-index'
 import { STOCK_NOT_FOUND } from '@/messages/stock'
+import { INDEX_USE_DATE_OPTIONS } from '@/messages/stock-index'
 import { IndexOptionProps } from '@/types/indices'
 import { TStock } from '@/types/stock'
 import { draw, filterDrawChartDataWithTwoTime } from '@/utils/chart'
@@ -53,7 +53,7 @@ class Indices {
     let data = await getOHLC(type)
 
     if (this.options.time) {
-      if (this.options.time.length == 2) {
+      if (this.options.time.length === 2) {
         data = filterDrawChartDataWithTwoTime(data, this.options.time)
 
         if (typeof data === 'string') {
@@ -81,7 +81,7 @@ class Indices {
     const stocks = extractStockData(response)
 
     if (typeof stocks === 'string') {
-      return displayFailed(STOCK_NOT_FOUND)
+      return displayFailed(stocks)
     }
 
     if (!stocks || stocks.length === 0) {

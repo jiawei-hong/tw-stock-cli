@@ -37,7 +37,7 @@ class RealtimeStock {
     if (this.options.favorite && !FilePath.favorite.exist()) {
       return displayFailed(FAVORITE_NOT_FOUND)
     }
-    this.execute()
+    this.execute().catch((err) => displayFailed(String(err)))
   }
 
   getStocks(): { stocks: string | string[]; listed?: Category } {
