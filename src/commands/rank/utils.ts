@@ -1,37 +1,15 @@
-import { color } from '@/constants'
 import { RankRow } from '@/types/rank'
+import { formatDecimal, formatPercent, formatVolume } from '@/utils/formatter'
 import { parseNumber } from '@/utils/number'
+
+export { formatDecimal as formatPriceChange }
+export { formatPercent as formatPercentage }
+export { formatVolume }
 
 export function calculateChangePercent(close: number, change: number): number {
   const previous = close - change
   if (previous === 0) return 0
   return (change / previous) * 100
-}
-
-export function formatPriceChange(value: number): string {
-  const formatted = Math.abs(value).toFixed(2)
-  if (value > 0) {
-    return `${color.red}+${formatted}${color.rest}`
-  }
-  if (value < 0) {
-    return `${color.green}-${formatted}${color.rest}`
-  }
-  return formatted
-}
-
-export function formatPercentage(value: number): string {
-  const formatted = Math.abs(value).toFixed(2) + '%'
-  if (value > 0) {
-    return `${color.red}+${formatted}${color.rest}`
-  }
-  if (value < 0) {
-    return `${color.green}-${formatted}${color.rest}`
-  }
-  return formatted
-}
-
-export function formatVolume(value: number): string {
-  return value.toLocaleString('en-US')
 }
 
 export function parseTseChange(direction: string, value: string): number {
