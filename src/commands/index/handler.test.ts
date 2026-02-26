@@ -1,16 +1,10 @@
+import { getStock as fetchStockData } from '@/commands/stock/api'
 import { INDEX_USE_DATE_OPTIONS } from '@/messages/stock-index'
 import { draw, filterDrawChartDataWithTwoTime } from '@/utils/chart'
 import { getSelectedIndex } from '@/utils/prompt'
 
 import { getOHLC } from './api'
 import Indices from './handler'
-
-vi.mock('@/utils/file', () => ({
-  default: {
-    stock: { read: vi.fn(), write: vi.fn(), exist: vi.fn() },
-    favorite: { read: vi.fn(), write: vi.fn(), exist: vi.fn() },
-  },
-}))
 
 vi.mock('./api', () => ({
   getOHLC: vi.fn(),
@@ -101,21 +95,25 @@ describe('Indices', () => {
   })
 
   describe('index lookup', () => {
-    it('sets URL for valid index code', async () => {
-      vi.mocked(
-        (await import('@/commands/stock/api')).getStock
-      ).mockResolvedValue({ stat: 'OK', msgArray: [] } as any)
+    it('fetches data for valid index code', async () => {
+      vi.mocked(fetchStockData).mockResolvedValue({
+        stat: 'OK',
+        msgArray: [],
+      } as any)
 
       const indices = new Indices('TAIEX', { chart: false })
       await indices.initialize()
 
-      expect((indices as any).url).toContain('tse_t00.tw')
+      expect(fetchStockData).toHaveBeenCalledWith(
+        expect.stringContaining('tse_t00.tw')
+      )
     })
 
     it('joins multiple index codes', async () => {
-      vi.mocked(
-        (await import('@/commands/stock/api')).getStock
-      ).mockResolvedValue({ stat: 'OK', msgArray: [] } as any)
+      vi.mocked(fetchStockData).mockResolvedValue({
+        stat: 'OK',
+        msgArray: [],
+      } as any)
 
       const indices = new Indices('TAIEX-TWO', {
         chart: false,
@@ -123,19 +121,23 @@ describe('Indices', () => {
       })
       await indices.initialize()
 
-      expect((indices as any).url).toContain('tse_t00.tw|otc_o00.tw')
+      expect(fetchStockData).toHaveBeenCalledWith(
+        expect.stringContaining('tse_t00.tw|otc_o00.tw')
+      )
     })
 
     it('filters out invalid index codes', async () => {
-      vi.mocked(
-        (await import('@/commands/stock/api')).getStock
-      ).mockResolvedValue({ stat: 'OK', msgArray: [] } as any)
+      vi.mocked(fetchStockData).mockResolvedValue({
+        stat: 'OK',
+        msgArray: [],
+      } as any)
 
       const indices = new Indices('TAIEX-INVALID', { chart: false })
       await indices.initialize()
 
-      expect((indices as any).url).toContain('tse_t00.tw')
-      expect((indices as any).url).not.toContain('INVALID')
+      const calledUrl = vi.mocked(fetchStockData).mock.calls[0][0]
+      expect(calledUrl).toContain('tse_t00.tw')
+      expect(calledUrl).not.toContain('INVALID')
     })
   })
 })
