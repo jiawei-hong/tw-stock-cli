@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  pull-requests: write
+
 jobs:
   lint:
     name: Lint
@@ -20,4 +23,23 @@ jobs:
 
       - run: yarn install --immutable
       - run: yarn lint
-      - run: yarn test
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.13.0'
+
+      - run: yarn install --immutable
+      - run: yarn test:coverage
+
+      - uses: davelosert/vitest-coverage-report-action@v2
+        if: always()
+        with:
+          json-summary-path: coverage/coverage-summary.json
