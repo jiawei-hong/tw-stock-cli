@@ -15,7 +15,7 @@ import { Category, StockOptionProps } from './types/stock'
 function run() {
   completion.init()
 
-  program.name('tw-stock').version('2.1.2')
+  program.name('tw-stock').version('2.2.0')
 
   program
     .command('stock')
