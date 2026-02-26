@@ -77,6 +77,65 @@ tw-stock index TAIEX-TWO -m
 tw-stock index TAIEX -t 0900 1100
 ```
 
+### `institutional` — Institutional investors buy/sell data
+
+```sh
+tw-stock institutional [stock_code]
+```
+
+View daily buy/sell data from the three major institutional investors (三大法人買賣超). Without a stock code, displays the summary table.
+
+| Option | Description |
+| --- | --- |
+| `-l, --listed <listed>` | Market type: `tse` (default) or `otc` |
+| `-d, --date <date>` | Search specific date (`YYYY-MM-DD`) |
+| `-n, --number <number>` | Number of results to show |
+
+**Examples:**
+
+```sh
+# Show institutional summary for today
+tw-stock institutional
+
+# Show institutional data for a specific stock
+tw-stock institutional 2330
+
+# Show OTC institutional data for a specific date
+tw-stock institutional 6488 -l otc -d 2025-01-15
+```
+
+### `rank` — Daily stock ranking
+
+```sh
+tw-stock rank
+```
+
+Show daily stock ranking by price change or volume (當日漲跌幅排行).
+
+| Option | Description |
+| --- | --- |
+| `-l, --listed <listed>` | Market type: `tse` (default) or `otc` |
+| `-d, --date <date>` | Search specific date (`YYYY-MM-DD`) |
+| `-n, --number <number>` | Number of results to show (default: `10`) |
+| `--losers` | Show top losers instead of gainers |
+| `--volume` | Sort by volume |
+
+**Examples:**
+
+```sh
+# Show top 10 gainers (default)
+tw-stock rank
+
+# Show top 20 losers
+tw-stock rank --losers -n 20
+
+# Show top 10 by volume for OTC
+tw-stock rank --volume -l otc
+
+# Show ranking for a specific date
+tw-stock rank -d 2025-01-15
+```
+
 ### `crawler` — Update stock list
 
 Crawl and update the local stock list from TWSE/TPEX exchanges.
@@ -93,6 +152,13 @@ tw-stock favorite list         # List all favorite stocks
 tw-stock favorite create       # Create favorite file
 tw-stock favorite add <code>   # Add a stock code
 tw-stock favorite delete <code> # Remove a stock code
+```
+
+### `completion` — Shell tab-completion
+
+```sh
+tw-stock completion           # Setup shell tab-completion
+tw-stock completion --cleanup # Remove completion from shell profile
 ```
 
 ## Screenshots
