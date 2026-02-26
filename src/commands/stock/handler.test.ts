@@ -9,6 +9,8 @@ import FilePath from '@/utils/file'
 
 import { getStock as getStockData } from './api'
 import Stock from './handler'
+import RealtimeStock from './realtime-handler'
+import { extractStockData } from './response'
 
 vi.mock('@/utils/file', () => ({
   default: {
@@ -82,7 +84,7 @@ describe('Stock', () => {
 
   describe('getStocks', () => {
     it('returns single stock with listed category', () => {
-      const stock = new Stock('2330', { listed: Category.TSE })
+      const stock = new RealtimeStock('2330', { listed: Category.TSE })
       expect(stock.getStocks()).toEqual({
         stocks: '2330',
         listed: Category.TSE,
@@ -90,7 +92,7 @@ describe('Stock', () => {
     })
 
     it('splits multiple stocks by hyphen', () => {
-      const stock = new Stock('2330-2317', {
+      const stock = new RealtimeStock('2330-2317', {
         listed: Category.TSE,
         multiple: true,
       })
@@ -104,7 +106,7 @@ describe('Stock', () => {
         stockCodes: ['2330', '2317'],
       })
 
-      const stock = new Stock('', {
+      const stock = new RealtimeStock('', {
         listed: Category.TSE,
         favorite: true,
       })
@@ -114,59 +116,25 @@ describe('Stock', () => {
     })
   })
 
-  describe('getStockData', () => {
+  describe('extractStockData', () => {
     it('returns msgArray when stat is OK', () => {
-      const stock = new Stock('2330', { listed: Category.TSE })
       const data = { stat: 'OK', msgArray: [{ c: '2330' }] } as any
-
-      expect(stock.getStockData(data)).toEqual([{ c: '2330' }])
+      expect(extractStockData(data)).toEqual([{ c: '2330' }])
     })
 
     it('returns stat string when stat is not OK', () => {
-      const stock = new Stock('2330', { listed: Category.TSE })
       const data = { stat: 'ERROR', msgArray: [] } as any
-
-      expect(stock.getStockData(data)).toBe('ERROR')
+      expect(extractStockData(data)).toBe('ERROR')
     })
 
     it('returns data array when data key exists', () => {
-      const stock = new Stock('2330', { listed: Category.TSE })
       const data = { stat: 'OK', data: [['row1']] } as any
-
-      expect(stock.getStockData(data)).toEqual([['row1']])
+      expect(extractStockData(data)).toEqual([['row1']])
     })
 
     it('returns aaData when aaData key exists', () => {
-      const stock = new Stock('2330', { listed: Category.TSE })
       const data = { aaData: [['row1']] } as any
-
-      expect(stock.getStockData(data)).toEqual([['row1']])
-    })
-  })
-
-  describe('getField', () => {
-    it('returns history fields when date option is set', () => {
-      const stock = new Stock('2330', {
-        listed: Category.TSE,
-        date: '202201',
-      })
-      const fields = stock.getField()
-      expect(fields[0].name).toBe('日期')
-    })
-
-    it('returns stock index fields when type is index', () => {
-      const stock = new Stock('2330', {
-        listed: Category.TSE,
-        type: 'index',
-      })
-      const fields = stock.getField()
-      expect(fields[0].name).toBe('指數名稱')
-    })
-
-    it('returns basic fields by default', () => {
-      const stock = new Stock('2330', { listed: Category.TSE })
-      const fields = stock.getField()
-      expect(fields[0].name).toBe('代號')
+      expect(extractStockData(data)).toEqual([['row1']])
     })
   })
 
@@ -187,7 +155,10 @@ describe('Stock', () => {
         ],
       } as any)
 
-      const stock = new Stock('2330', { listed: Category.TSE, details: false })
+      const stock = new RealtimeStock('2330', {
+        listed: Category.TSE,
+        details: false,
+      })
       await stock.execute()
 
       expect(consoleSpy).toHaveBeenCalled()
@@ -199,7 +170,10 @@ describe('Stock', () => {
         msgArray: [],
       } as any)
 
-      const stock = new Stock('9999', { listed: Category.TSE, details: false })
+      const stock = new RealtimeStock('9999', {
+        listed: Category.TSE,
+        details: false,
+      })
       await stock.execute()
 
       expect(consoleSpy).toHaveBeenCalledWith(
