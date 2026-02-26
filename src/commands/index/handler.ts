@@ -1,7 +1,13 @@
-import Stock from '@/commands/stock/handler'
+import { getStock as fetchStockData } from '@/commands/stock/api'
+import { renderStockTable } from '@/commands/stock/render'
+import { extractStockData } from '@/commands/stock/response'
+import Field from '@/commands/stock/field'
+import { getStock as getStockPrefix } from '@/commands/stock/url'
 import { toUppercase } from '@/commands/stock/utils'
 import { INDEX_USE_DATE_OPTIONS } from '@/messages/stock-index'
+import { STOCK_NOT_FOUND } from '@/messages/stock'
 import { IndexOptionProps } from '@/types/indices'
+import { TStock } from '@/types/stock'
 import { draw, filterDrawChartDataWithTwoTime } from '@/utils/chart'
 import { getSelectedIndex } from '@/utils/prompt'
 import { displayFailed } from '@/utils/text'
@@ -14,60 +20,76 @@ type TIndices = {
   FRMSA: string
 }
 
-interface Indices {
-  code: string
-  indices: TIndices
-  options: IndexOptionProps
-  ohlc: string[]
+const INDICES_MAP: TIndices = {
+  TAIEX: 'tse_t00.tw',
+  TWO: 'otc_o00.tw',
+  FRMSA: 'tse_FRMSA.tw',
 }
 
-class Indices extends Stock {
+class Indices {
+  private code: string
+  private options: IndexOptionProps
+
   constructor(code: string, options: IndexOptionProps) {
-    super(code, options)
-    this.options.type = 'index'
+    this.code = code
     this.options = options
-    this.indices = {
-      TAIEX: 'tse_t00.tw',
-      TWO: 'otc_o00.tw',
-      FRMSA: 'tse_FRMSA.tw',
-    }
   }
 
   async initialize() {
     if (this.options.chart) {
-      const type = await getSelectedIndex()
-
-      if (type) {
-        let data = await getOHLC(type)
-
-        if (this.options.time) {
-          if (this.options.time.length == 2) {
-            data = filterDrawChartDataWithTwoTime(data, this.options.time)
-
-            if (typeof data === 'string') {
-              return displayFailed(data)
-            }
-          } else {
-            return displayFailed(INDEX_USE_DATE_OPTIONS)
-          }
-        }
-        draw(data)
-      }
-      return
+      return this.executeChart()
     }
 
     if (this.code) {
-      let stockIdx = this.code
-        .split('-')
-        .map((code) => toUppercase(code))
-        .filter((code) => Object.keys(this.indices).includes(toUppercase(code)))
-        .map((code) => this.indices[code as keyof typeof this.indices])
-
-      if (!!stockIdx) {
-        this.url = `${this.prefix}${stockIdx.join('|')}`
-      }
-      this.execute()
+      return this.executeRealtime()
     }
+  }
+
+  private async executeChart() {
+    const type = await getSelectedIndex()
+
+    if (!type) return
+
+    let data = await getOHLC(type)
+
+    if (this.options.time) {
+      if (this.options.time.length == 2) {
+        data = filterDrawChartDataWithTwoTime(data, this.options.time)
+
+        if (typeof data === 'string') {
+          return displayFailed(data)
+        }
+      } else {
+        return displayFailed(INDEX_USE_DATE_OPTIONS)
+      }
+    }
+    draw(data)
+  }
+
+  private async executeRealtime() {
+    const prefix = getStockPrefix(false)
+    const stockIdx = this.code
+      .split('-')
+      .map((code) => toUppercase(code))
+      .filter((code) => Object.keys(INDICES_MAP).includes(toUppercase(code)))
+      .map((code) => INDICES_MAP[code as keyof TIndices])
+
+    if (!stockIdx.length) return
+
+    const url = `${prefix}${stockIdx.join('|')}`
+    const response = await fetchStockData(url)
+    const stocks = extractStockData(response)
+
+    if (typeof stocks === 'string') {
+      return displayFailed(STOCK_NOT_FOUND)
+    }
+
+    if (!stocks || stocks.length === 0) {
+      return displayFailed(STOCK_NOT_FOUND)
+    }
+
+    const fields = Field.stockIndex()
+    renderStockTable(stocks as TStock[], fields)
   }
 }
 
