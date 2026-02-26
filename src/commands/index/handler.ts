@@ -3,7 +3,7 @@ import Field from '@/commands/stock/field'
 import { renderStockTable } from '@/commands/stock/render'
 import { extractStockData } from '@/commands/stock/response'
 import { getStock as getStockPrefix } from '@/commands/stock/url'
-import { toUppercase } from '@/commands/stock/utils'
+import { generateGetStockURL, toUppercase } from '@/commands/stock/utils'
 import { STOCK_NOT_FOUND } from '@/messages/stock'
 import { INDEX_USE_DATE_OPTIONS } from '@/messages/stock-index'
 import { IndexOptionProps } from '@/types/indices'
@@ -68,15 +68,23 @@ class Indices {
 
   private async executeRealtime() {
     const prefix = getStockPrefix(false)
-    const stockIdx = this.code
-      .split('-')
-      .map((code) => toUppercase(code))
-      .filter((code) => Object.keys(INDICES_MAP).includes(toUppercase(code)))
+    const codes = this.code.split('-').map((code) => toUppercase(code))
+
+    const indexKeys = Object.keys(INDICES_MAP)
+    const indexTickers = codes
+      .filter((code) => indexKeys.includes(code))
       .map((code) => INDICES_MAP[code as keyof TIndices])
 
-    if (!stockIdx.length) return
+    const stockCodes = codes.filter((code) => !indexKeys.includes(code))
+    const stockTickers = generateGetStockURL({ stocks: stockCodes })
 
-    const url = `${prefix}${stockIdx.join('|')}`
+    const allTickers = [indexTickers.join('|'), stockTickers]
+      .filter(Boolean)
+      .join('|')
+
+    if (!allTickers) return
+
+    const url = `${prefix}${allTickers}`
     const response = await fetchStockData(url)
     const stocks = extractStockData(response)
 
@@ -88,7 +96,7 @@ class Indices {
       return displayFailed(STOCK_NOT_FOUND)
     }
 
-    const fields = Field.stockIndex()
+    const fields = Field.basic({})
     renderStockTable(stocks as TStock[], fields)
   }
 }

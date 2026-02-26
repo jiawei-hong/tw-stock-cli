@@ -1,4 +1,5 @@
 import { getStock as fetchStockData } from '@/commands/stock/api'
+import { generateGetStockURL } from '@/commands/stock/utils'
 import { INDEX_USE_DATE_OPTIONS } from '@/messages/stock-index'
 import { draw, filterDrawChartDataWithTwoTime } from '@/utils/chart'
 import { getSelectedIndex } from '@/utils/prompt'
@@ -22,6 +23,14 @@ vi.mock('@/utils/chart', () => ({
 vi.mock('@/commands/stock/api', () => ({
   getStock: vi.fn(),
 }))
+
+vi.mock('@/commands/stock/utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/commands/stock/utils')>()
+  return {
+    ...actual,
+    generateGetStockURL: vi.fn().mockReturnValue(''),
+  }
+})
 
 let consoleSpy: ReturnType<typeof vi.spyOn>
 
@@ -126,7 +135,8 @@ describe('Indices', () => {
       )
     })
 
-    it('filters out invalid index codes', async () => {
+    it('filters out invalid index codes and resolves unknown codes as stocks', async () => {
+      vi.mocked(generateGetStockURL).mockReturnValue('')
       vi.mocked(fetchStockData).mockResolvedValue({
         stat: 'OK',
         msgArray: [],
@@ -135,9 +145,44 @@ describe('Indices', () => {
       const indices = new Indices('TAIEX-INVALID', { chart: false })
       await indices.initialize()
 
+      expect(generateGetStockURL).toHaveBeenCalledWith({
+        stocks: ['INVALID'],
+      })
       const calledUrl = vi.mocked(fetchStockData).mock.calls[0][0]
       expect(calledUrl).toContain('tse_t00.tw')
-      expect(calledUrl).not.toContain('INVALID')
+    })
+
+    it('resolves regular stock codes via generateGetStockURL', async () => {
+      vi.mocked(generateGetStockURL).mockReturnValue('tse_2330.tw')
+      vi.mocked(fetchStockData).mockResolvedValue({
+        stat: 'OK',
+        msgArray: [],
+      } as any)
+
+      const indices = new Indices('2330', { chart: false })
+      await indices.initialize()
+
+      expect(generateGetStockURL).toHaveBeenCalledWith({
+        stocks: ['2330'],
+      })
+      expect(fetchStockData).toHaveBeenCalledWith(
+        expect.stringContaining('tse_2330.tw')
+      )
+    })
+
+    it('combines indices and stock codes in mixed query', async () => {
+      vi.mocked(generateGetStockURL).mockReturnValue('tse_2330.tw')
+      vi.mocked(fetchStockData).mockResolvedValue({
+        stat: 'OK',
+        msgArray: [],
+      } as any)
+
+      const indices = new Indices('TAIEX-2330', { chart: false })
+      await indices.initialize()
+
+      const calledUrl = vi.mocked(fetchStockData).mock.calls[0][0]
+      expect(calledUrl).toContain('tse_t00.tw')
+      expect(calledUrl).toContain('tse_2330.tw')
     })
   })
 })
