@@ -54,4 +54,3 @@ export function sortRows(
   }
   return [...rows].sort((a, b) => b.changePercent - a.changePercent)
 }
-

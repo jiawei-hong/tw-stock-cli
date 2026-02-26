@@ -10,4 +10,3 @@ export function formatNetValue(value: number): string {
   }
   return formatted
 }
-
