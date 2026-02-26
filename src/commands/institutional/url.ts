@@ -1,22 +1,31 @@
 import { Category } from '@/types/stock'
+import { UrlBuilder } from '@/utils/url-builder'
 
 function getSummaryUrl(date: string): string {
-  return `https://www.twse.com.tw/rwd/zh/fund/BFI82U?date=${date}&response=json`
-}
-
-function getTseStockUrl(date: string): string {
-  return `https://www.twse.com.tw/rwd/zh/fund/T86?date=${date}&selectType=ALL&response=json`
-}
-
-function getOtcStockUrl(date: string): string {
-  return `https://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&o=json&se=AL&d=${date}`
+  return UrlBuilder.tse()
+    .withPath('/rwd/zh/fund/BFI82U')
+    .withDate(date)
+    .withJsonResponse()
+    .build()
 }
 
 function getStockUrl(date: string, category: Category): string {
   if (category === Category.OTC) {
-    return getOtcStockUrl(date)
+    return UrlBuilder.otc()
+      .withPath('/web/stock/3insti/daily_trade/3itrade_hedge_result.php')
+      .withParam('l', 'zh-tw')
+      .withJsonResponse()
+      .withParam('se', 'AL')
+      .withDate(date)
+      .build()
   }
-  return getTseStockUrl(date)
+
+  return UrlBuilder.tse()
+    .withPath('/rwd/zh/fund/T86')
+    .withDate(date)
+    .withParam('selectType', 'ALL')
+    .withJsonResponse()
+    .build()
 }
 
-export { getOtcStockUrl, getStockUrl, getSummaryUrl, getTseStockUrl }
+export { getStockUrl, getSummaryUrl }
