@@ -28,14 +28,15 @@ globalThis.fetch = async (input) => {
   }
 
   if (url.includes('getStockInfo.jsp') || url.includes('getOddInfo.jsp')) {
-    const symbols = [...url.matchAll(/(?:tse|otc)_([A-Za-z0-9]+)\.tw/g)]
-      .map((match) => match[1].toUpperCase())
-      .filter((code, index, codes) => codes.indexOf(code) === index)
+    const symbols = [...url.matchAll(/(tse|otc)_([A-Za-z0-9]+)\.tw/g)]
     return fixtureResponse({
       json: {
         stat: 'OK',
         rtcode: '0000',
-        msgArray: symbols.map((code) => stockRows[code]).filter(Boolean),
+        msgArray: symbols.map((match) => {
+          const row = stockRows[match[2].toUpperCase()]
+          return row?.ex === match[1] ? row : { c: '', z: '-', tv: '-', s: '-' }
+        }),
       },
     })
   }
