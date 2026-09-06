@@ -29,6 +29,8 @@ describe.sequential('built CLI', () => {
 
     expect(result.output).toContain('TSMC')
     expect(result.output).toContain('1,000.00')
+    expect(result.output).toContain('2026-09-04 09:30:00')
+    expect(result.output).toContain('報價狀態')
     expect(result.requests.some((url) => url.includes('tdcc'))).toBe(false)
     expect(exists('stock.json')).toBe(false)
   })
@@ -83,6 +85,7 @@ describe.sequential('built CLI', () => {
   it('renders an unavailable current price without losing the stock row', () => {
     const result = run(['stock', '1101'])
     expect(result.output).toContain('Taiwan Cement')
+    expect(result.output).toContain('無成交價')
     expect(result.output).toMatch(
       /1101\s*\|\s*上市\s*\|\s*Taiwan Cement\s*\|\s*-\s*\|/
     )

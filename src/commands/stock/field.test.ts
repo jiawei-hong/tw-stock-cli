@@ -27,20 +27,20 @@ describe('Field.basic', () => {
   it('returns short form when details is false', () => {
     setTerminalWidth(200)
     const fields = Field.basic({ ...baseOptions, details: false })
-    expect(fields).toHaveLength(6)
+    expect(fields).toHaveLength(8)
     expect(fields[0].name).toBe('代號')
   })
 
   it('returns short form when terminal is narrow', () => {
     setTerminalWidth(MAX_TERMINAL_WIDTH - 1)
     const fields = Field.basic(baseOptions)
-    expect(fields).toHaveLength(6)
+    expect(fields).toHaveLength(8)
   })
 
   it('returns detailed form when terminal is wide and details is true', () => {
     setTerminalWidth(MAX_TERMINAL_WIDTH + 1)
     const fields = Field.basic(baseOptions)
-    expect(fields).toHaveLength(14)
+    expect(fields).toHaveLength(15)
     expect(fields.map((f) => f.name)).toContain('類別')
     expect(fields.map((f) => f.name)).toContain('昨收')
     expect(fields.map((f) => f.name)).toContain('漲停')

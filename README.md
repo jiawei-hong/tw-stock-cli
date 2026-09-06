@@ -47,6 +47,11 @@ tw-stock stock 2330 -d 2025-01
 tw-stock stock 2330 -d 2025-01-15
 ```
 
+Stock quote tables show the exchange trade date/time in Taipei time and a
+status: `今日成交` (trade dated today), `前期成交` (earlier session), or
+`無成交價` (price unavailable). Missing or invalid dates are marked explicitly.
+Today's date alone does not guarantee the quote is current; check its timestamp.
+
 ### `index` — Search market indices
 
 ```sh
