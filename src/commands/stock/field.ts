@@ -3,6 +3,13 @@ import type { FieldProps } from '@/types/field'
 import { StockOptionProps, TStock } from '@/types/stock'
 import { category2Chinese, getStockUpsAndDownsPercentage } from '@/utils/stock'
 
+import { quoteStatus, quoteTimestamp } from './quote-status'
+
+const quoteFields = (): FieldProps[] => [
+  { name: '成交時間 (台北)', callback: quoteTimestamp },
+  { name: '報價狀態', callback: (stock: TStock) => quoteStatus(stock) },
+]
+
 const isTerminalWidthSmall = () => process.stdout.columns < MAX_TERMINAL_WIDTH
 
 class Field {
@@ -19,6 +26,7 @@ class Field {
           callback: (stock: TStock): string =>
             getStockUpsAndDownsPercentage(stock.y, stock.z),
         },
+        ...quoteFields(),
       ]
     }
 
@@ -39,7 +47,7 @@ class Field {
       { code: 'l', name: '最低' },
       { code: 'u', name: '漲停' },
       { code: 'w', name: '跌停' },
-      { code: 't', name: '最近成交時刻' },
+      ...quoteFields(),
       {
         name: '漲跌幅',
         callback: (stock: TStock): string =>

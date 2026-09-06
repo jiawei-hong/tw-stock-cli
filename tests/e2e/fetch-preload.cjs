@@ -156,6 +156,7 @@ function stock(code, name, exchange, price) {
     u: '1075.00',
     w: '885.00',
     t: '09:30:00',
+    d: '20260904',
   }
 }
 
