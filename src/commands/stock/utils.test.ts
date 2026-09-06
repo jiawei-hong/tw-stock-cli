@@ -100,7 +100,7 @@ describe('generateGetStockURL', () => {
     ).resolves.toBe('otc_6547.tw')
   })
 
-  it('generates URL for multiple stocks from TDCC', async () => {
+  it('queries both markets for multiple stocks without TDCC', async () => {
     vi.mocked(getSecurityDirectory).mockResolvedValue({
       '2330': { name: 'TSMC', category: 'tse' },
       '00400A': { name: 'ETF', category: 'tse' },
@@ -108,16 +108,21 @@ describe('generateGetStockURL', () => {
 
     await expect(
       generateGetStockURL({ stocks: ['2330', '00400a'] })
-    ).resolves.toBe('tse_2330.tw|tse_00400A.tw')
+    ).resolves.toBe('tse_2330.tw|otc_2330.tw|tse_00400A.tw|otc_00400A.tw')
+    expect(getSecurityDirectory).not.toHaveBeenCalled()
   })
 
-  it('filters out codes not found in TDCC', async () => {
+  it('lets MIS resolve unknown codes', async () => {
     vi.mocked(getSecurityDirectory).mockResolvedValue({
       '2330': { name: 'TSMC', category: 'tse' },
     })
 
     await expect(
       generateGetStockURL({ stocks: ['2330', '9999'] })
-    ).resolves.toBe('tse_2330.tw')
+    ).resolves.toBe('tse_2330.tw|otc_2330.tw|tse_9999.tw|otc_9999.tw')
+  })
+  it('returns an empty query without fetching a directory', async () => {
+    await expect(generateGetStockURL({ stocks: [] })).resolves.toBe('')
+    expect(getSecurityDirectory).not.toHaveBeenCalled()
   })
 })

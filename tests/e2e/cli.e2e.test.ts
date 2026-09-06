@@ -64,7 +64,7 @@ describe.sequential('built CLI', () => {
     expect(mixed.output).toContain('1,000.00')
     expect(mixed.output).toContain('42.50')
     expect(mixed.requests.at(-1)).toContain(
-      'tse_2330.tw|otc_6547.tw|tse_0050.tw|tse_00679B.tw'
+      'tse_2330.tw|otc_2330.tw|tse_6547.tw|otc_6547.tw|tse_0050.tw|otc_0050.tw|tse_00679B.tw|otc_00679B.tw'
     )
 
     writeFileSync(
@@ -74,7 +74,10 @@ describe.sequential('built CLI', () => {
     const favorites = run(['stock', '--favorite'])
     expect(favorites.output).toContain('ETF50')
     expect(favorites.output).toContain('Medigen')
-    expect(favorites.requests.at(-1)).toContain('tse_0050.tw|otc_6547.tw')
+    expect(favorites.requests.at(-1)).toContain(
+      'tse_0050.tw|otc_0050.tw|tse_6547.tw|otc_6547.tw'
+    )
+    expect(favorites.requests).toHaveLength(1)
   })
 
   it('renders an unavailable current price without losing the stock row', () => {
@@ -103,13 +106,15 @@ describe.sequential('built CLI', () => {
     expect(institutional.output).toContain('1,700')
   })
 
-  it('reports a directory API failure without creating stock.json', () => {
-    const result = runAllowFailure(
+  it('quotes mixed markets even when the directory API is unavailable', () => {
+    const result = run(
       ['stock', '2330-6547', '--multiple'],
       'directory-failure'
     )
 
-    expect(result.output).toContain('Failure:')
+    expect(result.output).toContain('TSMC')
+    expect(result.output).toContain('Medigen')
+    expect(result.requests).toHaveLength(1)
     expect(exists('stock.json')).toBe(false)
   })
 })

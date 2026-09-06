@@ -155,6 +155,10 @@ tw-stock completion --cleanup # Remove completion from shell profile
 
 ## Development and verification
 
+Price lookups do not download the TDCC directory or require `stock.json`.
+Multiple-stock and favorite price queries resolve both markets through MIS.
+Favorite add/list commands still download TDCC metadata on each invocation.
+
 Use Node from `.nvmrc` and the Yarn version declared in `package.json`.
 Install dependencies with `yarn install --immutable`.
 

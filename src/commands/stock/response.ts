@@ -14,5 +14,9 @@ export function extractStockData(
     return null
   }
 
+  if (getDataKey === 'msgArray' && 'msgArray' in data) {
+    return data.msgArray.filter((stock) => Boolean(stock.c))
+  }
+
   return data[getDataKey as keyof typeof data]
 }

@@ -1,4 +1,3 @@
-import { getSecurityDirectory } from '@/services/security-directory'
 import { Category } from '@/types/stock'
 
 export const toUppercase = (value: string) => value?.toUpperCase()
@@ -35,11 +34,8 @@ async function transformStockToIncludeCategory({
   listed?: Category
 }): Promise<string> {
   if (Array.isArray(stocks)) {
-    const directory = await getSecurityDirectory()
-    return stocks
-      .map(toUppercase)
-      .filter((code) => directory[code])
-      .map((code) => `${directory[code].category}_${code}.tw`)
+    return [...new Set(stocks.map(toUppercase).filter(Boolean))]
+      .flatMap((code) => [`tse_${code}.tw`, `otc_${code}.tw`])
       .join('|')
   }
 
