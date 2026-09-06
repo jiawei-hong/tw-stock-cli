@@ -1,5 +1,5 @@
+import { getSecurityDirectory } from '@/services/security-directory'
 import { Category } from '@/types/stock'
-import FilePath from '@/utils/file'
 import { getTableHeader } from '@/utils/table'
 
 import {
@@ -9,19 +9,8 @@ import {
   toUppercase,
 } from './utils'
 
-vi.mock('@/utils/file', () => ({
-  default: {
-    stock: {
-      read: vi.fn(),
-      write: vi.fn(),
-      exist: vi.fn(),
-    },
-    favorite: {
-      read: vi.fn(),
-      write: vi.fn(),
-      exist: vi.fn(),
-    },
-  },
+vi.mock('@/services/security-directory', () => ({
+  getSecurityDirectory: vi.fn(),
 }))
 
 describe('toUppercase', () => {
@@ -98,36 +87,37 @@ describe('getTaiwanDateFormat', () => {
 })
 
 describe('generateGetStockURL', () => {
-  it('generates URL for single stock with listed category', () => {
-    expect(generateGetStockURL({ stocks: '2330', listed: Category.TSE })).toBe(
-      'tse_2330.tw'
-    )
+  it('generates URL for single stock with listed category', async () => {
+    await expect(
+      generateGetStockURL({ stocks: '2330', listed: Category.TSE })
+    ).resolves.toBe('tse_2330.tw')
+    expect(getSecurityDirectory).not.toHaveBeenCalled()
   })
 
-  it('generates URL for single OTC stock', () => {
-    expect(generateGetStockURL({ stocks: '6547', listed: Category.OTC })).toBe(
-      'otc_6547.tw'
-    )
+  it('generates URL for single OTC stock', async () => {
+    await expect(
+      generateGetStockURL({ stocks: '6547', listed: Category.OTC })
+    ).resolves.toBe('otc_6547.tw')
   })
 
-  it('generates URL for multiple stocks from stock file', () => {
-    vi.mocked(FilePath.stock.read).mockReturnValue({
+  it('generates URL for multiple stocks from TDCC', async () => {
+    vi.mocked(getSecurityDirectory).mockResolvedValue({
       '2330': { name: 'TSMC', category: 'tse' },
-      '2317': { name: 'Foxconn', category: 'tse' },
+      '00400A': { name: 'ETF', category: 'tse' },
     })
 
-    expect(generateGetStockURL({ stocks: ['2330', '2317'] })).toBe(
-      'tse_2330.tw|tse_2317.tw'
-    )
+    await expect(
+      generateGetStockURL({ stocks: ['2330', '00400a'] })
+    ).resolves.toBe('tse_2330.tw|tse_00400A.tw')
   })
 
-  it('filters out codes not found in stock file', () => {
-    vi.mocked(FilePath.stock.read).mockReturnValue({
+  it('filters out codes not found in TDCC', async () => {
+    vi.mocked(getSecurityDirectory).mockResolvedValue({
       '2330': { name: 'TSMC', category: 'tse' },
     })
 
-    expect(generateGetStockURL({ stocks: ['2330', '9999'] })).toBe(
-      'tse_2330.tw'
-    )
+    await expect(
+      generateGetStockURL({ stocks: ['2330', '9999'] })
+    ).resolves.toBe('tse_2330.tw')
   })
 })

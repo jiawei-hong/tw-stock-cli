@@ -76,7 +76,7 @@ class Indices {
       .map((code) => INDICES_MAP[code as keyof TIndices])
 
     const stockCodes = codes.filter((code) => !indexKeys.includes(code))
-    const stockTickers = generateGetStockURL({ stocks: stockCodes })
+    const stockTickers = await generateGetStockURL({ stocks: stockCodes })
 
     const allTickers = [indexTickers.join('|'), stockTickers]
       .filter(Boolean)

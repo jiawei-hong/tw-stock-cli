@@ -2,7 +2,6 @@ import { FAVORITE_NOT_FOUND } from '@/messages/favorite'
 import {
   SOMETHING_WRONG,
   STOCK_NOT_FOUND,
-  STOCK_NOT_FOUND_FILE,
   STOCK_SEARCH_BUT_NOT_GIVE_CODE,
 } from '@/messages/stock'
 import { Category, StockOptionProps, TStock } from '@/types/stock'
@@ -31,9 +30,6 @@ class RealtimeStock {
     if (!this.code && !this.options.favorite) {
       return displayFailed(STOCK_SEARCH_BUT_NOT_GIVE_CODE)
     }
-    if (this.options.multiple && !FilePath.stock.exist()) {
-      return displayFailed(STOCK_NOT_FOUND_FILE)
-    }
     if (this.options.favorite && !FilePath.favorite.exist()) {
       return displayFailed(FAVORITE_NOT_FOUND)
     }
@@ -51,10 +47,11 @@ class RealtimeStock {
   }
 
   async execute() {
-    const url = `${this.prefix}${generateGetStockURL(this.getStocks())}`
-    if (!url) {
+    const query = await generateGetStockURL(this.getStocks())
+    if (!query) {
       return displayFailed(SOMETHING_WRONG)
     }
+    const url = `${this.prefix}${query}`
 
     const response = await fetchStockData(url)
     const stocks = extractStockData(response)

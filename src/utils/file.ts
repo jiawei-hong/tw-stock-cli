@@ -14,11 +14,6 @@ function existFileSync(path: string): boolean {
   return fs.existsSync(path)
 }
 
-enum File {
-  stock,
-  favorite,
-}
-
 type TFile = {
   read: any
   exist: () => boolean
@@ -29,22 +24,13 @@ type IFile = {
   [key: string]: TFile
 }
 
-const FilePath: IFile = {}
-
-for (let key in File) {
-  const path = `./${key}.json`
-
-  FilePath[key] = {
-    read() {
-      return readFileSync(path)
-    },
-    exist() {
-      return existFileSync(path)
-    },
-    write(data) {
-      writeFileSync(path, data)
-    },
-  }
+const path = './favorite.json'
+const FilePath: IFile = {
+  favorite: {
+    read: () => readFileSync(path),
+    exist: () => existFileSync(path),
+    write: (data) => writeFileSync(path, data),
+  },
 }
 
 export default FilePath

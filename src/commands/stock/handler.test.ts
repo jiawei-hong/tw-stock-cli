@@ -1,7 +1,6 @@
 import { FAVORITE_NOT_FOUND } from '@/messages/favorite'
 import {
   STOCK_NOT_FOUND,
-  STOCK_NOT_FOUND_FILE,
   STOCK_SEARCH_BUT_NOT_GIVE_CODE,
 } from '@/messages/stock'
 import { Category } from '@/types/stock'
@@ -14,11 +13,6 @@ import { extractStockData } from './response'
 
 vi.mock('@/utils/file', () => ({
   default: {
-    stock: {
-      read: vi.fn(),
-      write: vi.fn(),
-      exist: vi.fn(),
-    },
     favorite: {
       read: vi.fn(),
       write: vi.fn(),
@@ -50,20 +44,6 @@ describe('Stock', () => {
 
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining(STOCK_SEARCH_BUT_NOT_GIVE_CODE)
-      )
-    })
-
-    it('displays error when multiple mode but stock file missing', () => {
-      vi.mocked(FilePath.stock.exist).mockReturnValue(false)
-
-      const stock = new Stock('2330-2317', {
-        listed: Category.TSE,
-        multiple: true,
-      })
-      stock.initialize()
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(STOCK_NOT_FOUND_FILE)
       )
     })
 

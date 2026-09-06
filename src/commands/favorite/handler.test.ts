@@ -7,30 +7,32 @@ import {
   FAVORITE_NOT_FOUND_STOCK_IN_FILE,
   FAVORITE_STOCK_IS_EXIST,
 } from '@/messages/favorite'
-import { STOCK_NOT_FOUND_FILE } from '@/messages/stock'
+import { getSecurityDirectory } from '@/services/security-directory'
+import { Category } from '@/types/stock'
 import FilePath from '@/utils/file'
 
 import Favorite from './handler'
 
 vi.mock('@/utils/file', () => ({
   default: {
-    stock: {
-      read: vi.fn(),
-      write: vi.fn(),
-      exist: vi.fn(),
-    },
-    favorite: {
-      read: vi.fn(),
-      write: vi.fn(),
-      exist: vi.fn(),
-    },
+    favorite: { read: vi.fn(), exist: vi.fn(), write: vi.fn() },
   },
 }))
+
+vi.mock('@/services/security-directory', () => ({
+  getSecurityDirectory: vi.fn(),
+}))
+
+const directory = {
+  '2330': { name: 'TSMC', category: Category.TSE },
+  '6547': { name: 'Medigen', category: Category.OTC },
+}
 
 let consoleSpy: ReturnType<typeof vi.spyOn>
 
 beforeEach(() => {
   consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+  vi.mocked(getSecurityDirectory).mockResolvedValue(directory)
 })
 
 afterEach(() => {
@@ -39,159 +41,98 @@ afterEach(() => {
 })
 
 describe('Favorite', () => {
-  describe('create', () => {
-    it('creates favorite file when it does not exist', () => {
-      vi.mocked(FilePath.stock.exist).mockReturnValue(true)
-      vi.mocked(FilePath.favorite.exist).mockReturnValue(false)
+  it('creates favorite file when it does not exist', async () => {
+    vi.mocked(FilePath.favorite.exist).mockReturnValue(false)
 
-      new Favorite('create').initialize()
+    await new Favorite('create').initialize()
 
-      expect(FilePath.favorite.write).toHaveBeenCalledWith({ stockCodes: [] })
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(FAVORITE_CREATE_FILE)
-      )
-    })
-
-    it('fails when favorite file already exists', () => {
-      vi.mocked(FilePath.stock.exist).mockReturnValue(true)
-      vi.mocked(FilePath.favorite.exist).mockReturnValue(true)
-
-      new Favorite('create').initialize()
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(FAVORITE_IS_EXIST)
-      )
-    })
+    expect(FilePath.favorite.write).toHaveBeenCalledWith({ stockCodes: [] })
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining(FAVORITE_CREATE_FILE)
+    )
   })
 
-  describe('add', () => {
-    beforeEach(() => {
-      vi.mocked(FilePath.stock.exist).mockReturnValue(true)
-      vi.mocked(FilePath.favorite.exist).mockReturnValue(true)
-      vi.mocked(FilePath.stock.read).mockReturnValue({
-        '2330': { name: 'TSMC', category: 'tse' },
-      })
-    })
+  it('fails when favorite file already exists', async () => {
+    vi.mocked(FilePath.favorite.exist).mockReturnValue(true)
 
-    it('adds stock code to favorites', () => {
-      vi.mocked(FilePath.favorite.read).mockReturnValue({ stockCodes: [] })
+    await new Favorite('create').initialize()
 
-      new Favorite('add', '2330').initialize()
-
-      expect(FilePath.favorite.write).toHaveBeenCalledWith({
-        stockCodes: ['2330'],
-      })
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(FAVORITE_ADD_STOCK)
-      )
-    })
-
-    it('fails when stock already in favorites', () => {
-      vi.mocked(FilePath.favorite.read).mockReturnValue({
-        stockCodes: ['2330'],
-      })
-
-      new Favorite('add', '2330').initialize()
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(FAVORITE_STOCK_IS_EXIST)
-      )
-    })
-
-    it('fails when stock code not found in stock file', () => {
-      vi.mocked(FilePath.favorite.read).mockReturnValue({ stockCodes: [] })
-      vi.mocked(FilePath.stock.read).mockReturnValue({})
-
-      new Favorite('add', '9999').initialize()
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(FAVORITE_NOT_FOUND_STOCK_IN_FILE)
-      )
-    })
-
-    it('uppercases the stock code', () => {
-      vi.mocked(FilePath.favorite.read).mockReturnValue({ stockCodes: [] })
-
-      new Favorite('add', '2330').initialize()
-
-      expect(FilePath.favorite.write).toHaveBeenCalledWith({
-        stockCodes: ['2330'],
-      })
-    })
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining(FAVORITE_IS_EXIST)
+    )
   })
 
-  describe('delete', () => {
-    beforeEach(() => {
-      vi.mocked(FilePath.stock.exist).mockReturnValue(true)
-      vi.mocked(FilePath.favorite.exist).mockReturnValue(true)
-      vi.mocked(FilePath.stock.read).mockReturnValue({})
+  it('adds a directory-listed stock code to favorites', async () => {
+    vi.mocked(FilePath.favorite.exist).mockReturnValue(true)
+    vi.mocked(FilePath.favorite.read).mockReturnValue({ stockCodes: [] })
+
+    await new Favorite('add', '2330').initialize()
+
+    expect(getSecurityDirectory).toHaveBeenCalledOnce()
+    expect(FilePath.favorite.write).toHaveBeenCalledWith({
+      stockCodes: ['2330'],
     })
-
-    it('deletes stock code from favorites', () => {
-      vi.mocked(FilePath.favorite.read).mockReturnValue({
-        stockCodes: ['2330', '2317'],
-      })
-
-      new Favorite('delete', '2330').initialize()
-
-      expect(FilePath.favorite.write).toHaveBeenCalledWith({
-        stockCodes: ['2317'],
-      })
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(FAVORITE_DELETE_STOCK)
-      )
-    })
-
-    it('fails when stock code not in favorites', () => {
-      vi.mocked(FilePath.favorite.read).mockReturnValue({
-        stockCodes: ['2317'],
-      })
-
-      new Favorite('delete', '2330').initialize()
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(FAVORITE_NOT_FOUND_STOCK_IN_FILE)
-      )
-    })
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining(FAVORITE_ADD_STOCK)
+    )
   })
 
-  describe('list', () => {
-    it('displays table of favorite stocks', () => {
-      vi.mocked(FilePath.stock.exist).mockReturnValue(true)
-      vi.mocked(FilePath.favorite.exist).mockReturnValue(true)
-      vi.mocked(FilePath.stock.read).mockReturnValue({
-        '2330': { name: 'TSMC', category: 'tse' },
-      })
-      vi.mocked(FilePath.favorite.read).mockReturnValue({
-        stockCodes: ['2330'],
-      })
+  it('fails when stock code is not in the directory', async () => {
+    vi.mocked(FilePath.favorite.exist).mockReturnValue(true)
+    vi.mocked(FilePath.favorite.read).mockReturnValue({ stockCodes: [] })
 
-      new Favorite('list').initialize()
+    await new Favorite('add', '9999').initialize()
 
-      expect(consoleSpy).toHaveBeenCalled()
-    })
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining(FAVORITE_NOT_FOUND_STOCK_IN_FILE)
+    )
   })
 
-  describe('error conditions', () => {
-    it('displays error when stock.json does not exist', () => {
-      vi.mocked(FilePath.stock.exist).mockReturnValue(false)
+  it('fails when stock already exists in favorites', async () => {
+    vi.mocked(FilePath.favorite.exist).mockReturnValue(true)
+    vi.mocked(FilePath.favorite.read).mockReturnValue({ stockCodes: ['2330'] })
 
-      new Favorite('list').initialize()
+    await new Favorite('add', '2330').initialize()
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(STOCK_NOT_FOUND_FILE)
-      )
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining(FAVORITE_STOCK_IS_EXIST)
+    )
+  })
+
+  it('deletes a favorite without directory lookup', async () => {
+    vi.mocked(FilePath.favorite.exist).mockReturnValue(true)
+    vi.mocked(FilePath.favorite.read).mockReturnValue({
+      stockCodes: ['2330', '6547'],
     })
 
-    it('displays error when favorite.json does not exist for non-create action', () => {
-      vi.mocked(FilePath.stock.exist).mockReturnValue(true)
-      vi.mocked(FilePath.favorite.exist).mockReturnValue(false)
+    await new Favorite('delete', '2330').initialize()
 
-      new Favorite('list').initialize()
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(FAVORITE_NOT_FOUND)
-      )
+    expect(getSecurityDirectory).not.toHaveBeenCalled()
+    expect(FilePath.favorite.write).toHaveBeenCalledWith({
+      stockCodes: ['6547'],
     })
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining(FAVORITE_DELETE_STOCK)
+    )
+  })
+
+  it('lists favorites using the directory for names', async () => {
+    vi.mocked(FilePath.favorite.exist).mockReturnValue(true)
+    vi.mocked(FilePath.favorite.read).mockReturnValue({ stockCodes: ['2330'] })
+
+    await new Favorite('list').initialize()
+
+    expect(getSecurityDirectory).toHaveBeenCalledOnce()
+    expect(consoleSpy).toHaveBeenCalled()
+  })
+
+  it('fails when the favorite file does not exist', async () => {
+    vi.mocked(FilePath.favorite.exist).mockReturnValue(false)
+
+    await new Favorite('list').initialize()
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining(FAVORITE_NOT_FOUND)
+    )
   })
 })

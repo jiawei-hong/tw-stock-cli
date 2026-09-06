@@ -9,7 +9,7 @@ import {
   FAVORITE_NOT_FOUND_STOCK_IN_FILE,
   FAVORITE_STOCK_IS_EXIST,
 } from '@/messages/favorite'
-import { STOCK_NOT_FOUND_FILE } from '@/messages/stock'
+import { getSecurityDirectory } from '@/services/security-directory'
 import { StockPayload } from '@/types/stock'
 import FilePath from '@/utils/file'
 import { tableConfig } from '@/utils/table'
@@ -31,23 +31,17 @@ class Favorite {
     this.data = []
   }
 
-  initialize() {
+  async initialize() {
     if (this.action !== 'create') {
-      if (FilePath.stock.exist()) {
-        this.stocks = FilePath.stock.read()
-      }
-
       if (FilePath.favorite.exist()) {
         this.data = FilePath.favorite.read()?.stockCodes
       }
     }
-    this.execute()
+    await this.execute()
   }
 
-  execute() {
-    if (!FilePath.stock.exist()) {
-      displayFailed(STOCK_NOT_FOUND_FILE)
-    } else if (!FilePath.favorite.exist() && this.action !== 'create') {
+  async execute() {
+    if (!FilePath.favorite.exist() && this.action !== 'create') {
       displayFailed(FAVORITE_NOT_FOUND)
     } else if (this.action === 'create') {
       if (FilePath.favorite.exist()) {
@@ -58,6 +52,7 @@ class Favorite {
       }
     } else if (this.action === 'add') {
       if (this.code) {
+        this.stocks = await getSecurityDirectory()
         this.add(this.code.toUpperCase())
       }
     } else if (this.action === 'delete') {
@@ -65,9 +60,10 @@ class Favorite {
         this.delete(this.code.toUpperCase())
       }
     } else {
+      this.stocks = await getSecurityDirectory()
       const dataRows = this.data.map((stockCode) => {
         const stock = this.stocks[stockCode]
-        return [stock.name, stockCode]
+        return [stock?.name ?? '-', stockCode]
       })
       let stockInformation = [['公司簡稱', '股票代碼'], ...dataRows]
       console.log(table(stockInformation, tableConfig))

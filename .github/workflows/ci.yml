@@ -38,6 +38,7 @@ jobs:
 
       - run: yarn install --immutable
       - run: yarn test:coverage
+      - run: yarn test:e2e
 
       - uses: davelosert/vitest-coverage-report-action@v2
         if: always()

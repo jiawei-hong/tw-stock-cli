@@ -1,6 +1,5 @@
 import { program } from 'commander'
 
-import Crawler from './commands/crawler/handler'
 import Favorite from './commands/favorite/handler'
 import Indices from './commands/index/handler'
 import Institutional from './commands/institutional/handler'
@@ -67,11 +66,6 @@ function run() {
     .option('--losers', 'show top losers instead of gainers', false)
     .option('--volume', 'sort by volume', false)
     .action((options: RankOptionProps) => new Rank(options).initialize())
-
-  program
-    .command('crawler')
-    .description('update stock list from TWSE/TPEX')
-    .action(() => new Crawler().execute())
 
   const favorite = program
     .command('favorite')

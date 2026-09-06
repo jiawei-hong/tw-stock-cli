@@ -1,5 +1,5 @@
+import { getSecurityDirectory } from '@/services/security-directory'
 import { Category } from '@/types/stock'
-import FilePath from '@/utils/file'
 
 export const toUppercase = (value: string) => value?.toUpperCase()
 
@@ -27,40 +27,32 @@ export function getTaiwanDateFormat(date: string[], separator = '/') {
   return date.join(separator)
 }
 
-function getStockCategory(code: string): Category {
-  const stocks = FilePath.stock.read()
-  return stocks?.[code]?.category
-}
-
-function combineStockAndCategory(code: string) {
-  const category = getStockCategory(code)
-  return `${category}_${toUppercase(code)}.tw`
-}
-
-function transformStockToIncludeCategory({
+async function transformStockToIncludeCategory({
   stocks,
   listed,
 }: {
   stocks: string | string[]
   listed?: Category
-}): string {
+}): Promise<string> {
   if (Array.isArray(stocks)) {
+    const directory = await getSecurityDirectory()
     return stocks
-      .filter((code) => getStockCategory(code))
-      .map((code) => combineStockAndCategory(code))
+      .map(toUppercase)
+      .filter((code) => directory[code])
+      .map((code) => `${directory[code].category}_${code}.tw`)
       .join('|')
   }
 
   return `${listed}_${toUppercase(stocks)}.tw`
 }
 
-export function generateGetStockURL({
+export async function generateGetStockURL({
   stocks,
   listed,
 }: {
   stocks: string | string[]
   listed?: Category
-}): string {
+}): Promise<string> {
   return transformStockToIncludeCategory({
     stocks,
     listed,

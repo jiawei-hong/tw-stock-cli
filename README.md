@@ -19,14 +19,14 @@ npm install -g tw-stock
 tw-stock stock [stock_code]
 ```
 
-| Option | Description |
-| --- | --- |
-| `-l, --listed <listed>` | Market type: `tse` (default) or `otc` |
-| `-m, --multiple` | Search multiple stock codes (hyphen-separated) |
-| `-f, --favorite` | Search stocks from favorite list |
-| `-o, --oddLot` | Search odd-lot trading data |
-| `-d, --date <date>` | Search historical data (`YYYY-MM` or `YYYY-MM-DD`) |
-| `--details` | Show detailed stock data (default: `true`) |
+| Option                  | Description                                        |
+| ----------------------- | -------------------------------------------------- |
+| `-l, --listed <listed>` | Market type: `tse` (default) or `otc`              |
+| `-m, --multiple`        | Search multiple stock codes (hyphen-separated)     |
+| `-f, --favorite`        | Search stocks from favorite list                   |
+| `-o, --oddLot`          | Search odd-lot trading data                        |
+| `-d, --date <date>`     | Search historical data (`YYYY-MM` or `YYYY-MM-DD`) |
+| `--details`             | Show detailed stock data (default: `true`)         |
 
 **Examples:**
 
@@ -55,11 +55,11 @@ tw-stock index [code]
 
 Supported indices: `TAIEX`, `TWO`, `FRMSA`
 
-| Option | Description |
-| --- | --- |
-| `-m, --multiple` | Search multiple indices |
+| Option                 | Description                                   |
+| ---------------------- | --------------------------------------------- |
+| `-m, --multiple`       | Search multiple indices                       |
 | `-t, --time <time...>` | Specify time range (`HHMM` format, 0900–1330) |
-| `-c, --chart` | Display ASCII chart |
+| `-c, --chart`          | Display ASCII chart                           |
 
 **Examples:**
 
@@ -85,11 +85,11 @@ tw-stock institutional [stock_code]
 
 View daily buy/sell data from the three major institutional investors (三大法人買賣超). Without a stock code, displays the summary table.
 
-| Option | Description |
-| --- | --- |
+| Option                  | Description                           |
+| ----------------------- | ------------------------------------- |
 | `-l, --listed <listed>` | Market type: `tse` (default) or `otc` |
-| `-d, --date <date>` | Search specific date (`YYYY-MM-DD`) |
-| `-n, --number <number>` | Number of results to show |
+| `-d, --date <date>`     | Search specific date (`YYYY-MM-DD`)   |
+| `-n, --number <number>` | Number of results to show             |
 
 **Examples:**
 
@@ -112,13 +112,13 @@ tw-stock rank
 
 Show daily stock ranking by price change or volume (當日漲跌幅排行).
 
-| Option | Description |
-| --- | --- |
-| `-l, --listed <listed>` | Market type: `tse` (default) or `otc` |
-| `-d, --date <date>` | Search specific date (`YYYY-MM-DD`) |
+| Option                  | Description                               |
+| ----------------------- | ----------------------------------------- |
+| `-l, --listed <listed>` | Market type: `tse` (default) or `otc`     |
+| `-d, --date <date>`     | Search specific date (`YYYY-MM-DD`)       |
 | `-n, --number <number>` | Number of results to show (default: `10`) |
-| `--losers` | Show top losers instead of gainers |
-| `--volume` | Sort by volume |
+| `--losers`              | Show top losers instead of gainers        |
+| `--volume`              | Sort by volume                            |
 
 **Examples:**
 
@@ -134,14 +134,6 @@ tw-stock rank --volume -l otc
 
 # Show ranking for a specific date
 tw-stock rank -d 2025-01-15
-```
-
-### `crawler` — Update stock list
-
-Crawl and update the local stock list from TWSE/TPEX exchanges.
-
-```sh
-tw-stock crawler
 ```
 
 ### `favorite` — Manage favorite stocks
@@ -160,6 +152,22 @@ tw-stock favorite delete <code> # Remove a stock code
 tw-stock completion           # Setup shell tab-completion
 tw-stock completion --cleanup # Remove completion from shell profile
 ```
+
+## Development and verification
+
+Use Node from `.nvmrc` and the Yarn version declared in `package.json`.
+Install dependencies with `yarn install --immutable`.
+
+- `yarn test` runs unit tests.
+- `yarn lint` checks source formatting and imports.
+- `yarn test:e2e` builds the CLI and runs fixture-backed command workflows
+  in temporary directories. It does not require exchange connectivity.
+- `yarn test:live` builds the CLI and checks external market-data services.
+  Run it explicitly with network access; upstream errors fail the checks.
+
+PR checks include deterministic E2E tests. The **Live market data smoke tests**
+workflow can be started manually in GitHub Actions. External snapshots may
+represent the last trading session; an unavailable price is not a live quote.
 
 ## Screenshots
 
