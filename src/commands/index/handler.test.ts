@@ -136,7 +136,7 @@ describe('Indices', () => {
     })
 
     it('filters out invalid index codes and resolves unknown codes as stocks', async () => {
-      vi.mocked(generateGetStockURL).mockReturnValue('')
+      vi.mocked(generateGetStockURL).mockResolvedValue('')
       vi.mocked(fetchStockData).mockResolvedValue({
         stat: 'OK',
         msgArray: [],
@@ -153,7 +153,7 @@ describe('Indices', () => {
     })
 
     it('resolves regular stock codes via generateGetStockURL', async () => {
-      vi.mocked(generateGetStockURL).mockReturnValue('tse_2330.tw')
+      vi.mocked(generateGetStockURL).mockResolvedValue('tse_2330.tw')
       vi.mocked(fetchStockData).mockResolvedValue({
         stat: 'OK',
         msgArray: [],
@@ -171,7 +171,7 @@ describe('Indices', () => {
     })
 
     it('combines indices and stock codes in mixed query', async () => {
-      vi.mocked(generateGetStockURL).mockReturnValue('tse_2330.tw')
+      vi.mocked(generateGetStockURL).mockResolvedValue('tse_2330.tw')
       vi.mocked(fetchStockData).mockResolvedValue({
         stat: 'OK',
         msgArray: [],

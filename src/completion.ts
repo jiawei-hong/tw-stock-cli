@@ -14,7 +14,6 @@ completion.tree({
   index: ['TAIEX', 'TWO', 'FRMSA', '--multiple', '--time', '--chart'],
   institutional: ['--listed', '--date', '--number'],
   rank: ['--listed', '--date', '--number', '--losers', '--volume'],
-  crawler: [],
   favorite: ['create', 'add', 'delete', 'list'],
 })
 

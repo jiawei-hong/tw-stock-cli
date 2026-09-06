@@ -32,30 +32,6 @@ afterEach(() => {
   Object.keys(fsMock.__exists).forEach((k) => delete fsMock.__exists[k])
 })
 
-describe('FilePath.stock', () => {
-  it('read() parses JSON from stock.json', () => {
-    fsMock.__store['./stock.json'] = '{"2330":{"name":"TSMC","category":"tse"}}'
-    expect(FilePath.stock.read()).toEqual({
-      '2330': { name: 'TSMC', category: 'tse' },
-    })
-    expect(fsMock.readFileSync).toHaveBeenCalledWith('./stock.json', 'utf-8')
-  })
-
-  it('write() stringifies and writes to stock.json', () => {
-    FilePath.stock.write({ test: true })
-    expect(fsMock.writeFileSync).toHaveBeenCalledWith(
-      './stock.json',
-      '{"test":true}'
-    )
-  })
-
-  it('exist() checks stock.json existence', () => {
-    fsMock.__exists['./stock.json'] = true
-    expect(FilePath.stock.exist()).toBe(true)
-    expect(fsMock.existsSync).toHaveBeenCalledWith('./stock.json')
-  })
-})
-
 describe('FilePath.favorite', () => {
   it('read() parses JSON from favorite.json', () => {
     fsMock.__store['./favorite.json'] = '{"stockCodes":["2330"]}'
