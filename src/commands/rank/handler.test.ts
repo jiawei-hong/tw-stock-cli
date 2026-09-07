@@ -16,6 +16,31 @@ vi.mock('@/adapters/rank', () => ({
 
 let consoleSpy: ReturnType<typeof vi.spyOn>
 
+it('uses responsive output in a narrow terminal', async () => {
+  const originalColumns = process.stdout.columns
+  Object.defineProperty(process.stdout, 'columns', {
+    value: 24,
+    configurable: true,
+  })
+  try {
+    vi.mocked(fetchRankData).mockResolvedValue({} as any)
+    vi.mocked(adaptRankResponse).mockReturnValue([makeRow()])
+    await new Rank({}).execute()
+    expect(consoleSpy.mock.calls[0][0]).toContain('排名: 1')
+    expect(consoleSpy.mock.calls[0][0]).toContain('成交量:')
+    for (const [output] of consoleSpy.mock.calls) {
+      for (const line of String(output).split('\n')) {
+        expect(stringWidth(line)).toBeLessThanOrEqual(24)
+      }
+    }
+  } finally {
+    Object.defineProperty(process.stdout, 'columns', {
+      value: originalColumns,
+      configurable: true,
+    })
+  }
+})
+
 beforeEach(() => {
   consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 })
@@ -180,3 +205,4 @@ describe('Rank handler', () => {
     })
   })
 })
+import stringWidth from 'string-width'

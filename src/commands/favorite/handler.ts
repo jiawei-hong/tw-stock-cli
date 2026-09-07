@@ -1,5 +1,3 @@
-import { table } from 'table'
-
 import {
   FAVORITE_ADD_STOCK,
   FAVORITE_CREATE_FILE,
@@ -12,7 +10,7 @@ import {
 import { getMarketSymbols } from '@/services/market-symbols'
 import { StockPayload } from '@/types/stock'
 import FilePath from '@/utils/file'
-import { tableConfig } from '@/utils/table'
+import { responsiveTable } from '@/utils/table'
 import { displayFailed, displaySuccess } from '@/utils/text'
 
 type Action = 'create' | 'add' | 'delete' | 'list'
@@ -78,7 +76,7 @@ class Favorite {
         return [stock?.name ?? '-', stockCode]
       })
       let stockInformation = [['公司簡稱', '股票代碼'], ...dataRows]
-      console.log(table(stockInformation, tableConfig))
+      console.log(responsiveTable(stockInformation, 0))
     }
   }
 
