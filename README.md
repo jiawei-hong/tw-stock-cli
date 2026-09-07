@@ -51,6 +51,10 @@ Stock quote tables show the exchange trade date/time in Taipei time and a
 status: `今日成交` (trade dated today), `前期成交` (earlier session), or
 `無成交價` (price unavailable). Missing or invalid dates are marked explicitly.
 Today's date alone does not guarantee the quote is current; check its timestamp.
+When a quote table exceeds the terminal width, it switches to code, company,
+price, and status columns, with Taipei timestamps below. Terminals narrower than
+60 columns use stacked quote cards. Long names wrap instead of being truncated.
+Output without a reported terminal width keeps the requested table layout.
 
 ### `index` — Search market indices
 

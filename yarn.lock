@@ -2724,6 +2724,7 @@ __metadata:
     eslint-plugin-simple-import-sort: "npm:^8.0.0"
     omelette: "npm:^0.4.17"
     prettier: "npm:^2.5.1"
+    string-width: "npm:^4.2.3"
     table: "npm:^6.8.1"
     typescript: "npm:^4.7.4"
     vite: "npm:^7.3.1"
