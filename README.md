@@ -160,6 +160,8 @@ tw-stock completion --cleanup # Remove completion from shell profile
 
 ## Development and verification
 
+See [Project Improvement TODO](TODO.md) for prioritized work and completion criteria.
+
 Price lookups do not download the TDCC directory or require `stock.json`.
 Multiple-stock and favorite price queries resolve both markets through MIS.
 Favorite add/list commands fetch only the requested symbols from MIS. Empty
