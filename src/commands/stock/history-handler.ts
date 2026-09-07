@@ -1,6 +1,7 @@
 import { SOMETHING_WRONG, STOCK_NOT_FOUND } from '@/messages/stock'
 import type { FieldProps } from '@/types/field'
 import { Category, StockOptionProps, StockResponse } from '@/types/stock'
+import { getTableHeader, responsiveTable } from '@/utils/table'
 import { displayFailed } from '@/utils/text'
 
 import { BaseHandler } from '../base-handler'
@@ -82,6 +83,18 @@ class HistoryStock extends BaseHandler<StockOptionProps, HistoryRow> {
 
   protected formatRow(row: HistoryRow): string[] {
     return row.slice(0, 9)
+  }
+
+  protected display(rows: HistoryRow[]): void {
+    console.log(
+      responsiveTable(
+        [
+          getTableHeader(this.getFields()),
+          ...rows.map((row) => this.formatRow(row)),
+        ],
+        0
+      )
+    )
   }
 
   protected getNotFoundMessage(): string {
