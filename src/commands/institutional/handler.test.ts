@@ -19,6 +19,45 @@ vi.mock('@/adapters/institutional', () => ({
 
 let consoleSpy: ReturnType<typeof vi.spyOn>
 
+it('uses responsive output in a narrow terminal', async () => {
+  const originalColumns = process.stdout.columns
+  Object.defineProperty(process.stdout, 'columns', {
+    value: 24,
+    configurable: true,
+  })
+  try {
+    vi.mocked(fetchInstitutionalData).mockResolvedValue({
+      stat: 'OK',
+      data: [['自營商', '1,000', '500', '500']],
+    } as any)
+    await new Institutional('', {}).executeSummary()
+    expect(consoleSpy.mock.calls[0][0]).toContain('法人類別: 自營商')
+    expect(consoleSpy.mock.calls[0][0]).toContain('買賣差額:')
+    const handler = new Institutional('2330', {})
+    handler['display']([
+      {
+        code: '2330',
+        name: '台積電',
+        foreignNet: 100,
+        trustNet: 50,
+        dealerNet: -25,
+        totalNet: 125,
+      } as any,
+    ])
+    expect(consoleSpy.mock.calls[1][0]).toContain('代號: 2330')
+    for (const [output] of consoleSpy.mock.calls) {
+      for (const line of String(output).split('\n')) {
+        expect(stringWidth(line)).toBeLessThanOrEqual(24)
+      }
+    }
+  } finally {
+    Object.defineProperty(process.stdout, 'columns', {
+      value: originalColumns,
+      configurable: true,
+    })
+  }
+})
+
 beforeEach(() => {
   consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 })
@@ -227,3 +266,4 @@ describe('Institutional handler', () => {
     })
   })
 })
+import stringWidth from 'string-width'

@@ -29,6 +29,33 @@ const directory = {
 
 let consoleSpy: ReturnType<typeof vi.spyOn>
 
+it('uses responsive output in a narrow terminal', async () => {
+  const originalColumns = process.stdout.columns
+  Object.defineProperty(process.stdout, 'columns', {
+    value: 20,
+    configurable: true,
+  })
+  try {
+    vi.mocked(FilePath.favorite.exist).mockReturnValue(true)
+    vi.mocked(FilePath.favorite.read).mockReturnValue({
+      stockCodes: ['2330', '9999'],
+    })
+    await new Favorite('list').initialize()
+    expect(consoleSpy.mock.calls[0][0]).toContain('股票代碼: 2330')
+    expect(consoleSpy.mock.calls[0][0]).toContain('股票代碼: 9999')
+    for (const [output] of consoleSpy.mock.calls) {
+      for (const line of String(output).split('\n')) {
+        expect(stringWidth(line)).toBeLessThanOrEqual(20)
+      }
+    }
+  } finally {
+    Object.defineProperty(process.stdout, 'columns', {
+      value: originalColumns,
+      configurable: true,
+    })
+  }
+})
+
 beforeEach(() => {
   consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
   vi.mocked(getMarketSymbols).mockResolvedValue(directory)
@@ -153,3 +180,4 @@ describe('Favorite', () => {
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Offline'))
   })
 })
+import stringWidth from 'string-width'

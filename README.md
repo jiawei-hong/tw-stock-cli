@@ -56,6 +56,13 @@ price, and status columns, with Taipei timestamps below. Terminals narrower than
 60 columns use stacked quote cards. Long names wrap instead of being truncated.
 Output without a reported terminal width keeps the requested table layout.
 
+Favorite lists, rankings, and institutional summary/stock tables also adapt to
+terminal width: names wrap first, then rows become stacked cards if the other
+columns cannot fit. Every field is retained, including ranking metrics and
+institutional totals. Daily reports do not imply live quote freshness.
+See [representative terminal output](docs/terminal-output.md) for 40-column
+examples, unavailable names, and previous-session/missing-date quotes.
+
 ### `index` — Search market indices
 
 ```sh

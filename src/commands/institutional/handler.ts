@@ -1,5 +1,3 @@
-import { table } from 'table'
-
 import { adaptInstitutionalResponse } from '@/adapters/institutional'
 import {
   INSTITUTIONAL_NOT_FOUND,
@@ -16,7 +14,7 @@ import {
 import { Category } from '@/types/stock'
 import { getFormattedDate } from '@/utils/date'
 import { parseNumber } from '@/utils/number'
-import { getTableHeader, tableConfig } from '@/utils/table'
+import { getTableHeader, responsiveTable } from '@/utils/table'
 import { displayFailed } from '@/utils/text'
 
 import { BaseHandler } from '../base-handler'
@@ -65,7 +63,7 @@ class Institutional extends BaseHandler<
       ])
     }
 
-    console.log(table(tableData, tableConfig))
+    console.log(responsiveTable(tableData, 0))
   }
 
   protected buildUrl(date: string, category: Category): string {
@@ -88,6 +86,18 @@ class Institutional extends BaseHandler<
 
   protected getFields(): FieldProps[] {
     return Field.stock()
+  }
+
+  protected display(rows: InstitutionalStockRow[]): void {
+    console.log(
+      responsiveTable(
+        [
+          getTableHeader(this.getFields()),
+          ...rows.map((row) => this.formatRow(row)),
+        ],
+        1
+      )
+    )
   }
 
   protected formatRow(row: InstitutionalStockRow): string[] {

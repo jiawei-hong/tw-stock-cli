@@ -8,6 +8,7 @@ import {
   RankTseResponse,
 } from '@/types/rank'
 import { Category } from '@/types/stock'
+import { getTableHeader, responsiveTable } from '@/utils/table'
 import { displayFailed } from '@/utils/text'
 
 import { BaseHandler } from '../base-handler'
@@ -47,6 +48,18 @@ class Rank extends BaseHandler<RankOptionProps, RankRow> {
 
   protected getFields(): FieldProps[] {
     return Field.ranking()
+  }
+
+  protected display(rows: RankRow[]): void {
+    console.log(
+      responsiveTable(
+        [
+          getTableHeader(this.getFields()),
+          ...rows.map((row, index) => this.formatRow(row, index)),
+        ],
+        2
+      )
+    )
   }
 
   protected formatRow(row: RankRow, index: number): string[] {
