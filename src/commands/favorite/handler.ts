@@ -9,7 +9,7 @@ import {
   FAVORITE_NOT_FOUND_STOCK_IN_FILE,
   FAVORITE_STOCK_IS_EXIST,
 } from '@/messages/favorite'
-import { getSecurityDirectory } from '@/services/security-directory'
+import { getMarketSymbols } from '@/services/market-symbols'
 import { StockPayload } from '@/types/stock'
 import FilePath from '@/utils/file'
 import { tableConfig } from '@/utils/table'
@@ -37,7 +37,11 @@ class Favorite {
         this.data = FilePath.favorite.read()?.stockCodes
       }
     }
-    await this.execute()
+    try {
+      await this.execute()
+    } catch (error) {
+      displayFailed(String(error))
+    }
   }
 
   async execute() {
@@ -52,7 +56,10 @@ class Favorite {
       }
     } else if (this.action === 'add') {
       if (this.code) {
-        this.stocks = await getSecurityDirectory()
+        if (this.data.includes(this.code.toUpperCase())) {
+          return displayFailed(FAVORITE_STOCK_IS_EXIST)
+        }
+        this.stocks = await getMarketSymbols([this.code])
         this.add(this.code.toUpperCase())
       }
     } else if (this.action === 'delete') {
@@ -60,7 +67,12 @@ class Favorite {
         this.delete(this.code.toUpperCase())
       }
     } else {
-      this.stocks = await getSecurityDirectory()
+      try {
+        this.stocks = await getMarketSymbols(this.data)
+      } catch (error) {
+        displayFailed(`Names unavailable: ${String(error)}`)
+        this.stocks = {}
+      }
       const dataRows = this.data.map((stockCode) => {
         const stock = this.stocks[stockCode]
         return [stock?.name ?? '-', stockCode]
@@ -81,7 +93,9 @@ class Favorite {
       FilePath.favorite.write({ stockCodes: this.data })
       displaySuccess(FAVORITE_ADD_STOCK)
     } else {
-      displayFailed(FAVORITE_NOT_FOUND_STOCK_IN_FILE)
+      displayFailed(
+        'MIS could not resolve this stock code; favorite was not added.'
+      )
     }
   }
 

@@ -162,7 +162,10 @@ tw-stock completion --cleanup # Remove completion from shell profile
 
 Price lookups do not download the TDCC directory or require `stock.json`.
 Multiple-stock and favorite price queries resolve both markets through MIS.
-Favorite add/list commands still download TDCC metadata on each invocation.
+Favorite add/list commands fetch only the requested symbols from MIS. Empty
+lists and duplicate additions need no request. If names cannot be fetched,
+listing still shows saved codes; failed additions leave favorites unchanged.
+An unresolved MIS symbol cannot be added, even if it exists in another directory.
 
 Use Node from `.nvmrc` and the Yarn version declared in `package.json`.
 Install dependencies with `yarn install --immutable`.
