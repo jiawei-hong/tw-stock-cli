@@ -57,6 +57,17 @@ describe.sequential('built CLI', () => {
     expect(exists('stock.json')).toBe(false)
   })
 
+  it('manages favorites without TDCC and accepts unavailable prices', () => {
+    run(['favorite', 'create'])
+    const added = run(['favorite', 'add', '1101'], 'directory-failure')
+    expect(added.requests).toHaveLength(1)
+    expect(added.requests[0]).toContain('getStockInfo.jsp')
+    const listed = run(['favorite', 'list'], 'directory-failure')
+    expect(listed.output).toContain('Taiwan Cement')
+    expect(listed.requests).toHaveLength(1)
+    expect(readJson('favorite.json')).toEqual({ stockCodes: ['1101'] })
+  })
+
   it('routes mixed, favorite, and leading-zero symbols by their exchange', () => {
     const mixed = run(['stock', '2330-6547-0050-00679B', '--multiple'])
     expect(mixed.output).toContain('TSMC')

@@ -4,10 +4,9 @@ import {
   FAVORITE_DELETE_STOCK,
   FAVORITE_IS_EXIST,
   FAVORITE_NOT_FOUND,
-  FAVORITE_NOT_FOUND_STOCK_IN_FILE,
   FAVORITE_STOCK_IS_EXIST,
 } from '@/messages/favorite'
-import { getSecurityDirectory } from '@/services/security-directory'
+import { getMarketSymbols } from '@/services/market-symbols'
 import { Category } from '@/types/stock'
 import FilePath from '@/utils/file'
 
@@ -19,8 +18,8 @@ vi.mock('@/utils/file', () => ({
   },
 }))
 
-vi.mock('@/services/security-directory', () => ({
-  getSecurityDirectory: vi.fn(),
+vi.mock('@/services/market-symbols', () => ({
+  getMarketSymbols: vi.fn(),
 }))
 
 const directory = {
@@ -32,7 +31,7 @@ let consoleSpy: ReturnType<typeof vi.spyOn>
 
 beforeEach(() => {
   consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-  vi.mocked(getSecurityDirectory).mockResolvedValue(directory)
+  vi.mocked(getMarketSymbols).mockResolvedValue(directory)
 })
 
 afterEach(() => {
@@ -68,7 +67,7 @@ describe('Favorite', () => {
 
     await new Favorite('add', '2330').initialize()
 
-    expect(getSecurityDirectory).toHaveBeenCalledOnce()
+    expect(getMarketSymbols).toHaveBeenCalledWith(['2330'])
     expect(FilePath.favorite.write).toHaveBeenCalledWith({
       stockCodes: ['2330'],
     })
@@ -84,7 +83,7 @@ describe('Favorite', () => {
     await new Favorite('add', '9999').initialize()
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining(FAVORITE_NOT_FOUND_STOCK_IN_FILE)
+      expect.stringContaining('MIS could not resolve this stock code')
     )
   })
 
@@ -107,7 +106,7 @@ describe('Favorite', () => {
 
     await new Favorite('delete', '2330').initialize()
 
-    expect(getSecurityDirectory).not.toHaveBeenCalled()
+    expect(getMarketSymbols).not.toHaveBeenCalled()
     expect(FilePath.favorite.write).toHaveBeenCalledWith({
       stockCodes: ['6547'],
     })
@@ -122,7 +121,7 @@ describe('Favorite', () => {
 
     await new Favorite('list').initialize()
 
-    expect(getSecurityDirectory).toHaveBeenCalledOnce()
+    expect(getMarketSymbols).toHaveBeenCalledWith(['2330'])
     expect(consoleSpy).toHaveBeenCalled()
   })
 
@@ -134,5 +133,23 @@ describe('Favorite', () => {
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining(FAVORITE_NOT_FOUND)
     )
+  })
+
+  it('preserves saved codes and displays them when names cannot be fetched', async () => {
+    vi.mocked(FilePath.favorite.exist).mockReturnValue(true)
+    vi.mocked(FilePath.favorite.read).mockReturnValue({ stockCodes: ['2330'] })
+    vi.mocked(getMarketSymbols).mockRejectedValue(new Error('Offline'))
+    await new Favorite('list').initialize()
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('2330'))
+    expect(FilePath.favorite.write).not.toHaveBeenCalled()
+  })
+
+  it('does not write a favorite when lookup fails', async () => {
+    vi.mocked(FilePath.favorite.exist).mockReturnValue(true)
+    vi.mocked(FilePath.favorite.read).mockReturnValue({ stockCodes: [] })
+    vi.mocked(getMarketSymbols).mockRejectedValue(new Error('Offline'))
+    await new Favorite('add', '2330').initialize()
+    expect(FilePath.favorite.write).not.toHaveBeenCalled()
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Offline'))
   })
 })
