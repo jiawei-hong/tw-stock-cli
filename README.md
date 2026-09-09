@@ -2,10 +2,6 @@
 
 A command-line tool for quickly searching Taiwan stock market information, including real-time prices, market indices, and historical trading data.
 
-The `3.0.0-rc.1` release candidate removes the `crawler` command and the
-TDCC/local-directory runtime dependency. Read the [v3 migration notes](docs/migration-v3.md)
-before upgrading an existing installation.
-
 [![npm version](https://img.shields.io/npm/v/tw-stock)](https://www.npmjs.com/package/tw-stock)
 [![license](https://img.shields.io/npm/l/tw-stock)](./LICENSE)
 
@@ -172,50 +168,6 @@ tw-stock favorite delete <code> # Remove a stock code
 tw-stock completion           # Setup shell tab-completion
 tw-stock completion --cleanup # Remove completion from shell profile
 ```
-
-## Development and verification
-
-See [Project Improvement TODO](TODO.md) for prioritized work and completion criteria.
-
-Price lookups do not download the TDCC directory or require `stock.json`.
-Multiple-stock and favorite price queries resolve both markets through MIS.
-Multiple-stock requests deduplicate candidates and use MIS batches of up to 100
-candidates (each requested code contributes TSE and OTC candidates). Favorite
-name lookups use batches of up to 50 requested codes. Empty lists and duplicate
-additions need no request. If names cannot be fetched, listing still shows saved
-codes; failed additions leave favorites unchanged. An unresolved MIS symbol
-cannot be added, even if it exists in another directory.
-
-Quote results retain successful rows when a batch fails and warn about partial
-failures; a request with no usable result is fatal. Fatal failures exit with
-status 1, while partial results with warnings exit with status 0. Favorites are
-stored as `./favorite.json` in the current working directory, using
-`{ "stockCodes": ["2330"] }`. Writes are schema-validated and atomic. The old
-`stock.json` is ignored and may be manually deleted after checking whether
-another tool uses it. MIS coverage is limited to symbols it resolves for the
-requested market.
-
-Quote timestamps use Taipei time. Odd-lot output prefers MIS `tt` and falls back
-to `t`; either field can be absent or reflect a previous session. A numeric
-quote does not guarantee freshness. Output adapts to terminal width without
-dropping fields.
-
-See [migration notes](docs/migration-v3.md), [future feature evaluations](docs/future-features.md),
-and the [draft PR description](docs/pr-description.md) for release context.
-
-Use Node from `.nvmrc` and the Yarn version declared in `package.json`.
-Install dependencies with `yarn install --immutable`.
-
-- `yarn test` runs unit tests.
-- `yarn lint` checks source formatting and imports.
-- `yarn test:e2e` builds the CLI and runs fixture-backed command workflows
-  in temporary directories. It does not require exchange connectivity.
-- `yarn test:live` builds the CLI and checks external market-data services.
-  Run it explicitly with network access; upstream errors fail the checks.
-
-PR checks include deterministic E2E tests. The **Live market data smoke tests**
-workflow can be started manually in GitHub Actions. External snapshots may
-represent the last trading session; an unavailable price is not a live quote.
 
 ## Screenshots
 
