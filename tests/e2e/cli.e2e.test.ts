@@ -10,6 +10,7 @@ let workingDirectory: string
 let requestLog: string
 
 type RunResult = {
+  status: number | null
   output: string
   requests: string[]
 }
@@ -33,6 +34,10 @@ describe.sequential('built CLI', () => {
     expect(result.output).toContain('報價狀態')
     expect(result.requests.some((url) => url.includes('tdcc'))).toBe(false)
     expect(exists('stock.json')).toBe(false)
+  })
+
+  it('reports the package version', () => {
+    expect(run(['--version']).output.trim()).toBe('3.0.0-rc.1')
   })
 
   it('supports the favorite lifecycle without stock.json', () => {
@@ -117,7 +122,7 @@ describe.sequential('built CLI', () => {
     expect(result.output).toContain('無成交價')
     expect(result.output).toContain('2026-09-04 09:29:49')
     expect(result.output).not.toContain('09:30:00')
-    expect(result.output).not.toContain('INVALID')
+    expect(result.output).toContain('Warning: Unresolved symbols: INVALID')
     expect(result.output).toMatch(/1,000\.00\s*\|\s*123\s*\|/)
   })
 
@@ -127,7 +132,26 @@ describe.sequential('built CLI', () => {
       'success'
     )
     expect(result.output).toContain('Failure:')
+    expect(result.status).toBe(1)
     expect(result.requests).toHaveLength(1)
+  })
+
+  it('rejects malformed symbols before issuing a request', () => {
+    const result = runAllowFailure(['stock', '2330&json=1'], 'success')
+    expect(result.status).toBe(1)
+    expect(result.output).toContain('Invalid stock codes')
+    expect(result.requests).toHaveLength(0)
+  })
+
+  it('reports empty favorites without making network requests', () => {
+    writeFileSync(
+      path.join(workingDirectory, 'favorite.json'),
+      JSON.stringify({ stockCodes: [] })
+    )
+    const result = runAllowFailure(['stock', '--favorite'], 'success')
+    expect(result.status).toBe(1)
+    expect(result.output).toContain('favorites list is empty')
+    expect(result.requests).toHaveLength(0)
   })
 
   it('covers representative history, index, rank, and institutional flows', () => {
@@ -188,6 +212,7 @@ function run(args: string[], scenario = 'success'): RunResult {
   }
 
   return {
+    status: result.status,
     output: stripAnsi(output),
     requests: readFileSync(requestLog, 'utf8')
       .trim()
@@ -224,6 +249,7 @@ function runAllowFailure(args: string[], scenario: string): RunResult {
 
   if (result.error) throw result.error
   return {
+    status: result.status,
     output: stripAnsi(output),
     requests: readFileSync(requestLog, 'utf8')
       .trim()

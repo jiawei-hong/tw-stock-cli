@@ -3,7 +3,6 @@ import {
   INSTITUTIONAL_NOT_FOUND,
   INSTITUTIONAL_STOCK_NOT_FOUND,
 } from '@/messages/institutional'
-import { Category } from '@/types/stock'
 
 import { fetchInstitutionalData } from './api'
 import Field from './field'
@@ -259,7 +258,7 @@ describe('Institutional handler', () => {
         dealerNet: 50,
         totalNet: 650,
       }
-      const result = handler['formatRow'](row, 0)
+      const result = handler['formatRow'](row)
       expect(result).toHaveLength(6)
       expect(result[0]).toBe('2330')
       expect(result[1]).toBe('TSMC')

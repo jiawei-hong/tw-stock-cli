@@ -1,222 +1,216 @@
 import { execFile } from 'node:child_process'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { promisify } from 'node:util'
 
 const execFileAsync = promisify(execFile)
-const projectRoot = path.resolve(__dirname, '../..')
-const cliPath = path.join(projectRoot, 'build/index.js')
-
-const directoryEndpoint = 'https://openapi.tdcc.com.tw/v1/opendata/1-1'
-
-type Category = 'tse' | 'otc'
+const cliPath = path.resolve(__dirname, '../../build/index.js')
+const symbols = [
+  { code: '2330', category: 'tse', market: '上市' },
+  { code: '6547', category: 'otc', market: '上櫃' },
+] as const
+const numericPrice = /^\d+(?:\.\d+)?$/
+const tradeTime = /^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/
 type JsonRecord = Record<string, unknown>
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function getField(row: JsonRecord, key: string): string {
-  const value = row[key] ?? row[`\ufeff${key}`]
-  return typeof value === 'string' ? value.trim() : ''
-}
-
-async function fetchJson(url: string): Promise<unknown> {
-  let response: Response
-
-  try {
-    response = await fetch(url, {
-      headers: { accept: 'application/json' },
-      signal: AbortSignal.timeout(20_000),
-    })
-  } catch (error) {
-    throw new Error(`Network request failed for ${url}: ${String(error)}`)
-  }
-
-  if (!response.ok) {
-    throw new Error(`${url} returned HTTP ${response.status}`)
-  }
-
-  try {
-    return await response.json()
-  } catch (error) {
-    throw new Error(`${url} returned malformed JSON: ${String(error)}`)
-  }
-}
-
-function requireNonEmptyArray(value: unknown, source: string): JsonRecord[] {
-  if (!Array.isArray(value) || value.length === 0 || !value.every(isRecord)) {
-    throw new Error(`${source} response is not a non-empty object array`)
-  }
-
-  return value
-}
-
-function assertDirectoryContract(rows: JsonRecord[]): void {
-  const requiredFields = ['證券代號', '證券名稱', '市場別', '證券狀態']
-  const supportedRows = rows.filter((row) =>
-    ['上市', '上櫃'].includes(getField(row, '市場別')) &&
-    getField(row, '證券狀態') === '正常'
+function validDate(value: unknown): value is string {
+  if (typeof value !== 'string' || !/^\d{8}$/.test(value)) return false
+  const date = `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6)}`
+  const parsed = new Date(`${date}T00:00:00Z`)
+  return (
+    Number.isFinite(parsed.getTime()) &&
+    parsed.toISOString().slice(0, 10) === date
   )
-  for (const [index, row] of supportedRows.entries()) {
-    for (const fieldName of requiredFields) {
-      expect(
-        getField(row, fieldName).length > 0,
-        `TDCC row ${index} has invalid ${fieldName}`
-      ).toBe(true)
-    }
-  }
 }
 
-function selectSymbol(rows: JsonRecord[], category: Category): string {
-  const market = category === 'tse' ? '上市' : '上櫃'
-  const entry = rows.find(
-    (row) =>
-      getField(row, '市場別') === market &&
-      getField(row, '證券狀態') === '正常' &&
-      getField(row, '證券代號').length > 0 &&
-      getField(row, '證券名稱').length > 0
-  )
-
-  if (!entry) {
-    throw new Error(`TDCC contains no valid ${category} symbol`)
-  }
-
-  return getField(entry, '證券代號')
-}
-
-function taipeiDate(now = new Date()): string {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Taipei',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(now)
-  const part = (type: Intl.DateTimeFormatPartTypes) =>
-    parts.find((value) => value.type === type)?.value
-
-  return `${part('year')}${part('month')}${part('day')}`
-}
-
-function parseMisQueryTime(queryTime: JsonRecord): number {
-  const date = queryTime.sysDate
-  const time = queryTime.sysTime
-
-  if (
-    typeof date !== 'string' ||
-    !/^\d{8}$/.test(date) ||
-    typeof time !== 'string' ||
-    !/^\d{2}:\d{2}:\d{2}$/.test(time)
-  ) {
-    throw new Error('MIS queryTime date/time contract is malformed')
-  }
-
-  const isoDate = `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6)}`
-  return Date.parse(`${isoDate}T${time}+08:00`)
-}
-
-function validateMisQuote(
-  payload: unknown,
-  code: string,
-  category: Category
-): 'current' | 'previous-session' | 'unavailable' {
-  if (!isRecord(payload)) {
-    throw new Error('MIS response is not an object')
-  }
-  if (payload.rtcode !== '0000' || !isRecord(payload.queryTime)) {
-    throw new Error(`MIS response failed: ${JSON.stringify(payload)}`)
-  }
-
-  const queryTimestamp = parseMisQueryTime(payload.queryTime)
-  expect(queryTimestamp).toBeLessThanOrEqual(Date.now() + 10 * 60 * 1000)
-  expect(Date.now() - queryTimestamp).toBeLessThan(7 * 24 * 60 * 60 * 1000)
-
-  const rows = requireNonEmptyArray(payload.msgArray, 'MIS')
-  const quote = rows.find((row) => row.c === code && row.ex === category)
-  if (!quote) {
-    throw new Error(`MIS response does not contain ${category}_${code}`)
-  }
-
-  if (
-    typeof quote.d !== 'string' ||
-    !/^\d{8}$/.test(quote.d) ||
-    typeof quote.t !== 'string' ||
-    !/^\d{2}:\d{2}:\d{2}$/.test(quote.t)
-  ) {
-    throw new Error(`MIS quote date/time is malformed for ${category}_${code}`)
-  }
-
-  const price = quote.z
-  if (price === '-' || price === '') {
-    return 'unavailable'
-  }
-  if (typeof price !== 'string' || !/^\d+(\.\d+)?$/.test(price)) {
-    throw new Error(`MIS price is malformed for ${category}_${code}`)
-  }
-  return quote.d === taipeiDate() ? 'current' : 'previous-session'
-}
-
-describe('live market smoke test', () => {
-  let cwd: string | undefined
-  let symbols: Record<Category, string>
-
-  afterAll(async () => {
-    if (cwd) {
-      await rm(cwd, { recursive: true, force: true })
-    }
+async function fetchMixedQuotes(): Promise<JsonRecord[]> {
+  const url = new URL('https://mis.twse.com.tw/stock/api/getStockInfo.jsp')
+  url.search = new URLSearchParams({
+    ex_ch: symbols
+      .flatMap(({ code }) => [`tse_${code}.tw`, `otc_${code}.tw`])
+      .join('|'),
+    json: '1',
+    delay: '0',
+  }).toString()
+  const response = await fetch(url, {
+    headers: { accept: 'application/json' },
+    signal: AbortSignal.timeout(20_000),
   })
-
-  it('validates TDCC and selects current listed and OTC symbols', async () => {
-    const rows = requireNonEmptyArray(
-      await fetchJson(directoryEndpoint),
-      'TDCC'
+  expect(response.ok, `MIS returned HTTP ${response.status}`).toBe(true)
+  const payload: unknown = await response.json()
+  if (
+    !isRecord(payload) ||
+    payload.rtcode !== '0000' ||
+    !isRecord(payload.queryTime)
+  ) {
+    throw new Error(`Invalid MIS response: ${JSON.stringify(payload)}`)
+  }
+  expect(validDate(payload.queryTime.sysDate), 'MIS server date').toBe(true)
+  expect(payload.queryTime.sysTime).toMatch(tradeTime)
+  if (!Array.isArray(payload.msgArray) || !payload.msgArray.every(isRecord)) {
+    throw new Error('MIS msgArray must contain objects')
+  }
+  const rows = payload.msgArray
+  const queryTime = payload.queryTime
+  return symbols.map(({ code, category }) => {
+    const matches = rows.filter(
+      (row: JsonRecord) => row.c === code && row.ex === category
     )
-    assertDirectoryContract(rows)
-    cwd = await mkdtemp(path.join(tmpdir(), 'tw-stock-live-'))
-    symbols = {
-      tse: selectSymbol(rows, 'tse'),
-      otc: selectSymbol(rows, 'otc'),
+    expect(matches, `MIS quote for ${category}_${code}`).toHaveLength(1)
+    const quote = matches[0] as JsonRecord
+    expect(typeof quote.n).toBe('string')
+    expect((quote.n as string).trim()).not.toBe('')
+    expect(
+      quote.z == null ||
+        quote.z === '' ||
+        quote.z === '-' ||
+        (typeof quote.z === 'string' && numericPrice.test(quote.z)),
+      `MIS price for ${category}_${code}`
+    ).toBe(true)
+    const time = quote.tt ?? quote.t
+    expect(
+      quote.d == null ||
+        quote.d === '' ||
+        quote.d === '-' ||
+        validDate(quote.d),
+      `MIS trade date for ${category}_${code}`
+    ).toBe(true)
+    expect(
+      time == null ||
+        time === '' ||
+        time === '-' ||
+        (typeof time === 'string' && tradeTime.test(time)),
+      `MIS trade time for ${category}_${code}`
+    ).toBe(true)
+    console.info(
+      `${category}_${code}: name=${quote.n}, price=${quote.z ?? '-'}, date=${
+        quote.d ?? '-'
+      }, tradeTime=${time ?? '-'}, server=${queryTime.sysDate} ${
+        queryTime.sysTime
+      }`
+    )
+    return quote
+  })
+}
+
+async function runCli(cwd: string, args: string[]): Promise<string> {
+  const env: NodeJS.ProcessEnv = { ...process.env, TERM: 'dumb' }
+  delete env.NODE_OPTIONS
+  delete env.NODE_PATH
+  const result = await execFileAsync(process.execPath, [cliPath, ...args], {
+    cwd,
+    env,
+    timeout: 30_000,
+    killSignal: 'SIGKILL',
+    maxBuffer: 1024 * 1024,
+  })
+  const output = `${result.stdout}${result.stderr}`.replace(
+    /\u001b\[[0-9;]*m/g,
+    ''
+  )
+  expect(output, `CLI ${args.join(' ')}`).not.toContain('Failure:')
+  return output
+}
+
+function assertQuoteOutput(output: string, quotes: JsonRecord[]): void {
+  expect(output).toContain('成交時間 (台北)')
+  expect(output).toContain('報價狀態')
+  for (const [index, { code, market }] of symbols.entries()) {
+    const rows = output
+      .split('\n')
+      .map((line) =>
+        line
+          .split('|')
+          .slice(1, -1)
+          .map((cell) => cell.trim())
+      )
+      .filter((cells) => cells[0] === code)
+    expect(rows, `CLI row for ${code}`).toHaveLength(1)
+    const cells = rows[0]
+    expect(cells[1]).toBe(market)
+    expect(cells[2]).toBe((quotes[index].n as string).trim())
+    const price = cells[3].replace(/,/g, '')
+    const timestamp = cells[12]
+    const status = cells[13]
+    expect(timestamp).toMatch(
+      /^(?:-|\d{4}-\d{2}-\d{2} (?:-|(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d))$/
+    )
+    if (timestamp !== '-') {
+      expect(validDate(timestamp.slice(0, 10).replace(/-/g, ''))).toBe(true)
     }
+    if (price === '-' || price === '') {
+      expect(status).toBe('無成交價')
+    } else {
+      expect(price).toMatch(numericPrice)
+      expect(
+        timestamp === '-' ? ['日期未知'] : ['今日成交', '前期成交', '日期異常']
+      ).toContain(status)
+    }
+    console.info(
+      `CLI ${code}: price=${
+        price || '-'
+      }, timestamp=${timestamp}, status=${status}`
+    )
+  }
+}
+
+describe('live MIS and built CLI workflows', () => {
+  let cwd: string
+
+  beforeEach(async () => {
+    cwd = await mkdtemp(path.join(tmpdir(), 'tw-stock-live-'))
   })
 
-  it.each(['tse', 'otc'] as const)(
-    'quotes a downloaded %s symbol through MIS and the CLI',
-    async (category) => {
-      if (!cwd || !symbols) {
-        throw new Error('TDCC smoke test did not produce its test context')
-      }
+  afterEach(async () => {
+    if (cwd) await rm(cwd, { recursive: true, force: true })
+  })
 
-      const code = symbols[category]
-      const quoteUrl =
-        'https://mis.twse.com.tw/stock/api/getStockInfo.jsp?' +
-        new URLSearchParams({
-          ex_ch: `${category}_${code}.tw`,
-          json: '1',
-          delay: '0',
-        })
-      const payload = await fetchJson(quoteUrl)
-      const availability = validateMisQuote(payload, code, category)
-      console.info(`${category}_${code}: ${availability}`)
+  it('resolves both markets in one direct MIS request and quotes them with --multiple', async () => {
+    const quotes = await fetchMixedQuotes()
+    assertQuoteOutput(
+      await runCli(cwd, ['stock', '2330-6547', '--multiple']),
+      quotes
+    )
+    expect(await readdir(cwd)).toEqual([])
+  }, 60_000)
 
-      const childEnv = { ...process.env, TERM: 'dumb' }
-      delete childEnv.NODE_OPTIONS
-      delete childEnv.NODE_PATH
-
-      const cliQuote = await execFileAsync(
-        process.execPath,
-        [cliPath, 'stock', code, '--listed', category],
-        {
-          cwd,
-          env: childEnv,
-          timeout: 30_000,
-        }
-      )
-      expect(cliQuote.stdout).toContain(code)
-      expect(cliQuote.stdout).not.toContain('Failure:')
-      expect(['current', 'previous-session', 'unavailable']).toContain(
-        availability
+  it('creates, adds, lists, quotes, and deletes mixed-market favorites', async () => {
+    const quotes = await fetchMixedQuotes()
+    const favoritePath = path.join(cwd, 'favorite.json')
+    expect(await runCli(cwd, ['favorite', 'create'])).toContain(
+      'Create favorite file is created!'
+    )
+    expect(JSON.parse(await readFile(favoritePath, 'utf8'))).toEqual({
+      stockCodes: [],
+    })
+    for (const { code } of symbols) {
+      expect(await runCli(cwd, ['favorite', 'add', code])).toContain(
+        'added to the favorite list'
       )
     }
-  )
+    const saved = await readFile(favoritePath, 'utf8')
+    expect(JSON.parse(saved)).toEqual({
+      stockCodes: symbols.map(({ code }) => code),
+    })
+    const listed = await runCli(cwd, ['favorite', 'list'])
+    for (const quote of quotes) {
+      expect(listed).toContain((quote.n as string).trim())
+      expect(listed).toContain(quote.c)
+    }
+    expect(await readFile(favoritePath, 'utf8')).toBe(saved)
+    assertQuoteOutput(await runCli(cwd, ['stock', '--favorite']), quotes)
+    expect(await readFile(favoritePath, 'utf8')).toBe(saved)
+    expect(await runCli(cwd, ['favorite', 'delete', '2330'])).toContain(
+      'removed from favorite list'
+    )
+    expect(JSON.parse(await readFile(favoritePath, 'utf8'))).toEqual({
+      stockCodes: ['6547'],
+    })
+    expect(await readdir(cwd)).toEqual(['favorite.json'])
+  }, 240_000)
 })

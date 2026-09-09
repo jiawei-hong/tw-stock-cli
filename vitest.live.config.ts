@@ -13,7 +13,8 @@ export default defineConfig({
     globals: true,
     include: ['tests/live/**/*.test.ts'],
     fileParallelism: false,
-    testTimeout: 120_000,
-    hookTimeout: 120_000,
+    testTimeout: 60_000,
+    hookTimeout: 10_000,
+    retry: 0,
   },
 })

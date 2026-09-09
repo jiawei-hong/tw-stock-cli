@@ -33,6 +33,19 @@ async function transformStockToIncludeCategory({
   stocks: string | string[]
   listed?: Category
 }): Promise<string> {
+  const codes = Array.isArray(stocks) ? stocks : [stocks]
+  const invalid = codes.filter(
+    (code) => typeof code !== 'string' || !/^[A-Za-z0-9]{1,16}$/.test(code)
+  )
+  if (invalid.length) {
+    throw new Error(
+      `Invalid stock codes: ${invalid
+        .map((code) => (typeof code === 'string' && code ? code : '(empty)'))
+        .join(', ')}`
+    )
+  }
+  if (listed && ![Category.TSE, Category.OTC].includes(listed))
+    throw new Error(`Invalid market: ${listed}`)
   if (Array.isArray(stocks)) {
     return [...new Set(stocks.map(toUppercase).filter(Boolean))]
       .flatMap((code) => [`tse_${code}.tw`, `otc_${code}.tw`])

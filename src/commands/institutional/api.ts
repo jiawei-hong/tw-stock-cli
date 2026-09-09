@@ -2,14 +2,12 @@ import {
   InstitutionalOtcResponse,
   InstitutionalSummaryResponse,
 } from '@/types/institutional'
-import { displayFailed } from '@/utils/text'
+import { requestJson } from '@/utils/http'
 
 function fetchInstitutionalData<
   T extends InstitutionalSummaryResponse | InstitutionalOtcResponse
 >(url: string): Promise<T> {
-  return fetch(url)
-    .then((res) => res.json())
-    .catch((err) => displayFailed(err))
+  return requestJson<T>(url)
 }
 
 export { fetchInstitutionalData }

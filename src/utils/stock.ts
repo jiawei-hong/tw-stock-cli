@@ -4,6 +4,13 @@ export function getStockUpsAndDownsPercentage(
   yesterdayPrice: string,
   currentPrice: string
 ): string {
+  if (
+    !/^\d+(?:\.\d+)?$/.test(yesterdayPrice ?? '') ||
+    !/^\d+(?:\.\d+)?$/.test(currentPrice ?? '') ||
+    parseFloat(yesterdayPrice) === 0
+  ) {
+    return getDisplayActionText('-', Status.success)
+  }
   const dec = getDecimalString(
     convertToPercentage(
       ((parseFloat(currentPrice) - parseFloat(yesterdayPrice)) /

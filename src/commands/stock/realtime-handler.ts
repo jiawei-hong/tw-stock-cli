@@ -1,6 +1,5 @@
 import { FAVORITE_NOT_FOUND } from '@/messages/favorite'
 import {
-  SOMETHING_WRONG,
   STOCK_NOT_FOUND,
   STOCK_SEARCH_BUT_NOT_GIVE_CODE,
 } from '@/messages/stock'
@@ -49,7 +48,7 @@ class RealtimeStock {
   async execute() {
     const query = await generateGetStockURL(this.getStocks())
     if (!query) {
-      return displayFailed(SOMETHING_WRONG)
+      return displayFailed('Your favorites list is empty; add a stock first.')
     }
     const url = `${this.prefix}${query}`
 

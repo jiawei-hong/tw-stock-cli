@@ -49,6 +49,6 @@ describe('getMarketSymbols', () => {
     { ok: true, json: async () => ({ rtcode: '0000' }) },
   ])('rejects failed or invalid upstream responses', async (response) => {
     mockFetch.mockResolvedValue(response)
-    await expect(getMarketSymbols(['2330'])).rejects.toThrow(/MIS/)
+    await expect(getMarketSymbols(['2330'])).rejects.toThrow(/mis/i)
   })
 })

@@ -13,7 +13,7 @@ const stockRows = {
 }
 
 globalThis.fetch = async (input) => {
-  const url = String(input)
+  const url = decodeURIComponent(String(input))
   if (requestLog) fs.appendFileSync(requestLog, `${url}\n`)
 
   if (isDirectoryUrl(url)) {
@@ -145,6 +145,7 @@ globalThis.fetch = async (input) => {
 function stock(code, name, exchange, price) {
   return {
     c: code,
+    ch: code === 'TAIEX' ? 't00.tw' : `${code}.tw`,
     n: name,
     nf: name,
     ex: exchange,

@@ -71,14 +71,31 @@ class Indices {
     const codes = this.code.split('-').map((code) => toUppercase(code))
 
     const indexKeys = Object.keys(INDICES_MAP)
-    const indexTickers = codes
-      .filter((code) => indexKeys.includes(code))
-      .map((code) => INDICES_MAP[code as keyof TIndices])
-
-    const stockCodes = codes.filter((code) => !indexKeys.includes(code))
+    const stockCodes = [
+      ...new Set(codes.filter((code) => !indexKeys.includes(code))),
+    ]
     const stockTickers = await generateGetStockURL({ stocks: stockCodes })
-
-    const allTickers = [indexTickers.join('|'), stockTickers]
+    const stockTickerGroups = stockTickers
+      ? stockTickers.split('|').reduce<string[][]>((groups, ticker, index) => {
+          const groupIndex = Math.floor(index / 2)
+          groups[groupIndex] ??= []
+          groups[groupIndex].push(ticker)
+          return groups
+        }, [])
+      : []
+    const stockTickerByCode = new Map(
+      stockCodes.map((code, index) => [
+        code,
+        stockTickerGroups[index]?.join('|') ?? '',
+      ])
+    )
+    const allTickers = codes
+      .map((code) => {
+        if (indexKeys.includes(code)) {
+          return INDICES_MAP[code as keyof TIndices]
+        }
+        return stockTickerByCode.get(code) ?? ''
+      })
       .filter(Boolean)
       .join('|')
 
