@@ -102,6 +102,34 @@ describe.sequential('built CLI', () => {
     )
   })
 
+  it('resolves odd-lot markets and retains unavailable prices and trade times', () => {
+    const result = run([
+      'stock',
+      '2330-6547-1101-INVALID',
+      '--multiple',
+      '--oddLot',
+    ])
+    expect(result.requests).toHaveLength(1)
+    expect(result.requests[0]).toContain('getOddInfo.jsp')
+    expect(result.output).toContain('TSMC')
+    expect(result.output).toContain('Medigen')
+    expect(result.output).toContain('Taiwan Cement')
+    expect(result.output).toContain('無成交價')
+    expect(result.output).toContain('2026-09-04 09:29:49')
+    expect(result.output).not.toContain('09:30:00')
+    expect(result.output).not.toContain('INVALID')
+    expect(result.output).toMatch(/1,000\.00\s*\|\s*123\s*\|/)
+  })
+
+  it('reports no matches when both odd-lot markets return placeholders', () => {
+    const result = runAllowFailure(
+      ['stock', 'INVALID', '--multiple', '--oddLot'],
+      'success'
+    )
+    expect(result.output).toContain('Failure:')
+    expect(result.requests).toHaveLength(1)
+  })
+
   it('covers representative history, index, rank, and institutional flows', () => {
     const history = run(['stock', '2330', '--date', '2026-09'])
     expect(history.output).toContain('115/09/07')

@@ -11,8 +11,9 @@ function quoteDate(value: string): string | undefined {
 export function quoteTimestamp(stock: TStock): string {
   const date = quoteDate(stock.d)
   if (!date) return '-'
-  const time = /^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/.test(stock.t ?? '')
-    ? stock.t
+  const tradeTime = stock.tt ?? stock.t
+  const time = /^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/.test(tradeTime ?? '')
+    ? tradeTime
     : '-'
   return `${date} ${time}`
 }
