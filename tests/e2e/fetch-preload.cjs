@@ -35,7 +35,10 @@ globalThis.fetch = async (input) => {
         rtcode: '0000',
         msgArray: symbols.map((match) => {
           const row = stockRows[match[2].toUpperCase()]
-          return row?.ex === match[1] ? row : { c: '', z: '-', tv: '-', s: '-' }
+          if (row?.ex !== match[1]) return { c: '', tv: '-', s: '-' }
+          return url.includes('getOddInfo.jsp')
+            ? { ...row, tt: '09:29:49', t: '09:30:00', s: '123', tv: '-' }
+            : row
         }),
       },
     })

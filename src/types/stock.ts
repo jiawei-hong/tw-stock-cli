@@ -1,4 +1,5 @@
 export type TStock = {
+  tt?: string
   tv: string
   ps: string
   pz: string
