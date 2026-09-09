@@ -1,5 +1,6 @@
 import { program } from 'commander'
 
+import packageJson from '../package.json'
 import Favorite from './commands/favorite/handler'
 import Indices from './commands/index/handler'
 import Institutional from './commands/institutional/handler'
@@ -10,11 +11,13 @@ import { IndexOptionProps } from './types/indices'
 import { InstitutionalOptionProps } from './types/institutional'
 import { RankOptionProps } from './types/rank'
 import { Category, StockOptionProps } from './types/stock'
+import { displayFailed, enableFailureExitCode } from './utils/text'
 
 function run() {
+  enableFailureExitCode()
   completion.init()
 
-  program.name('tw-stock').version('2.2.0')
+  program.name('tw-stock').version(packageJson.version)
 
   program
     .command('stock')
@@ -106,7 +109,9 @@ function run() {
       }
     })
 
-  program.parse(process.argv)
+  program
+    .parseAsync(process.argv)
+    .catch((error) => displayFailed(String(error)))
 }
 
 run()

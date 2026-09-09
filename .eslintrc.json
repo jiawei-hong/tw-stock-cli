@@ -11,6 +11,14 @@
     "requireConfigFile": false
   },
   "plugins": ["prettier", "simple-import-sort"],
+  "overrides": [
+    {
+      "files": ["**/*.cjs"],
+      "parserOptions": {
+        "sourceType": "script"
+      }
+    }
+  ],
   "rules": {
     "prettier/prettier": "error",
     "simple-import-sort/imports": "error",

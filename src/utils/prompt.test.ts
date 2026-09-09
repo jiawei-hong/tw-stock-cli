@@ -12,26 +12,26 @@ afterEach(() => {
 
 describe('getSelectedIndex', () => {
   it('returns TSE when selected', async () => {
-    vi.mocked(cliSelect).mockResolvedValue({
+    vi.mocked(cliSelect).mockImplementation(async () => ({
       id: 0,
       value: 'TSE' as any,
-    })
+    }))
     expect(await getSelectedIndex()).toBe('TSE')
   })
 
   it('returns OTC when selected', async () => {
-    vi.mocked(cliSelect).mockResolvedValue({
+    vi.mocked(cliSelect).mockImplementation(async () => ({
       id: 1,
       value: 'OTC' as any,
-    })
+    }))
     expect(await getSelectedIndex()).toBe('OTC')
   })
 
   it('returns FRMSA when selected', async () => {
-    vi.mocked(cliSelect).mockResolvedValue({
+    vi.mocked(cliSelect).mockImplementation(async () => ({
       id: 2,
       value: 'FRMSA' as any,
-    })
+    }))
     expect(await getSelectedIndex()).toBe('FRMSA')
   })
 

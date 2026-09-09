@@ -1,21 +1,23 @@
 {
   "compilerOptions": {
-    "module": "es6",
+    "module": "esnext",
     "target": "es2022",
     "allowJs": true,
     "strict": true,
     "outDir": "./build",
     "noImplicitAny": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true ,
-    "moduleResolution": "node",
+    "noUnusedParameters": true,
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     },
-    "typeRoots": ["./node_modules/@types"],
-    "types": ["vitest/globals"]
+    "types": ["node", "vitest/globals"]
   },
-  "include": ["./src/**/*"],
+  "include": ["./src/**/*", "./tests/**/*", "./*.config.ts"],
   "exclude": ["./node_modules"]
 }

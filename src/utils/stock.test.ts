@@ -133,4 +133,12 @@ describe('getStockUpsAndDownsPercentage', () => {
     const result = getStockUpsAndDownsPercentage('100', '100')
     expect(result).toContain('0%')
   })
+
+  it.each(['-', '', 'not-a-price'])(
+    'does not emit NaN for unavailable price %j',
+    (price) => {
+      expect(getStockUpsAndDownsPercentage('100', price)).toContain('-')
+      expect(getStockUpsAndDownsPercentage('100', price)).not.toContain('NaN')
+    }
+  )
 })

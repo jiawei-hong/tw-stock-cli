@@ -11,7 +11,7 @@ import { getMarketSymbols } from '@/services/market-symbols'
 import { StockPayload } from '@/types/stock'
 import FilePath from '@/utils/file'
 import { responsiveTable } from '@/utils/table'
-import { displayFailed, displaySuccess } from '@/utils/text'
+import { displayFailed, displaySuccess, displayWarning } from '@/utils/text'
 
 type Action = 'create' | 'add' | 'delete' | 'list'
 
@@ -68,7 +68,7 @@ class Favorite {
       try {
         this.stocks = await getMarketSymbols(this.data)
       } catch (error) {
-        displayFailed(`Names unavailable: ${String(error)}`)
+        displayWarning(`Names unavailable: ${String(error)}`)
         this.stocks = {}
       }
       const dataRows = this.data.map((stockCode) => {

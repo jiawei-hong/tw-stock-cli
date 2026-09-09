@@ -1,12 +1,10 @@
 import { RankOtcResponse, RankTseResponse } from '@/types/rank'
-import { displayFailed } from '@/utils/text'
+import { requestJson } from '@/utils/http'
 
 function fetchRankData<T extends RankTseResponse | RankOtcResponse>(
   url: string
 ): Promise<T> {
-  return fetch(url)
-    .then((res) => res.json())
-    .catch((err) => displayFailed(err))
+  return requestJson<T>(url)
 }
 
 export { fetchRankData }
