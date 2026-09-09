@@ -37,7 +37,7 @@ describe.sequential('built CLI', () => {
   })
 
   it('reports the package version', () => {
-    expect(run(['--version']).output.trim()).toBe('3.0.0-rc.1')
+    expect(run(['--version']).output.trim()).toBe('2.3.0')
   })
 
   it('supports the favorite lifecycle without stock.json', () => {
