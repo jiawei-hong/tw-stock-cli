@@ -22,12 +22,18 @@ export default defineConfig({
     },
     globals: true,
     environment: 'node',
-    include: ['src/**/*.test.ts'],
+    include: ['tests/unit/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'json-summary', 'lcov'],
       include: ['src/**/*.ts'],
-      exclude: ['src/**/*.test.ts', 'src/index.ts'],
+      exclude: ['src/index.ts'],
+      thresholds: {
+        branches: 80,
+        functions: 90,
+        lines: 90,
+        statements: 90,
+      },
     },
   },
 })

@@ -19,8 +19,8 @@ class RealtimeStock {
   private prefix: string
   private options: StockOptionProps
 
-  constructor(code: string, options: StockOptionProps) {
-    this.code = code
+  constructor(code: string | undefined, options: StockOptionProps) {
+    this.code = code ?? ''
     this.prefix = getStock(options.oddLot || false)
     this.options = options
   }
@@ -56,15 +56,26 @@ class RealtimeStock {
     const stocks = extractStockData(response)
 
     if (typeof stocks === 'string') {
-      return displayFailed(stocks)
+      return displayFailed(this.getUnavailableMessage(stocks))
     }
 
     if (!stocks || stocks.length === 0) {
-      return displayFailed(STOCK_NOT_FOUND)
+      return displayFailed(this.getUnavailableMessage(STOCK_NOT_FOUND))
     }
 
     const fields = Field.basic(this.options)
     renderStockTable(stocks as TStock[], fields)
+  }
+
+  private getUnavailableMessage(reason: string): string {
+    if (this.options.multiple || this.options.favorite || !this.code) {
+      return reason
+    }
+
+    const market = this.options.listed
+      ? ` on ${this.options.listed.toUpperCase()}`
+      : ' on TSE or OTC'
+    return `${reason} No current quote matched "${this.code}"${market}. Try tw-stock stock --search ${this.code} to verify the symbol or company name.`
   }
 }
 

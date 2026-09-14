@@ -103,6 +103,7 @@ export type StockOptionProps = {
   favorite?: boolean
   oddLot?: boolean
   date?: string
+  search?: string
   type?: string
   details?: boolean
 }

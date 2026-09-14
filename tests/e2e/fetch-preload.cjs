@@ -2,6 +2,14 @@ const fs = require('node:fs')
 
 const scenario = process.env.TW_STOCK_E2E_SCENARIO || 'success'
 const requestLog = process.env.TW_STOCK_E2E_REQUEST_LOG
+const terminalColumns = Number(process.env.TW_STOCK_E2E_COLUMNS)
+
+if (Number.isFinite(terminalColumns) && terminalColumns > 0) {
+  Object.defineProperty(process.stdout, 'columns', {
+    configurable: true,
+    value: terminalColumns,
+  })
+}
 
 const stockRows = {
   2330: stock('2330', 'TSMC', 'tse', '1000.00'),

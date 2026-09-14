@@ -3,7 +3,9 @@
   "version": "2.3.0",
   "description": "This is a search tw stock price with command",
   "main": "build/index.js",
-  "bin": "build/index.js",
+  "bin": {
+    "tw-stock": "build/index.js"
+  },
   "files": [
     "build"
   ],

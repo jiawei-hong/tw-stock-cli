@@ -21,12 +21,17 @@ function run() {
 
   program
     .command('stock')
-    .description('search stock information')
-    .argument('[stock_code]', 'stock code')
-    .option('-l --listed <listed>', 'market type (tse or otc)', Category.TSE)
+    .description('show realtime or historical stock information')
+    .argument('[stock_code]', 'stock code (for example, 2330)')
+    .option('-l, --listed <listed>', 'market override (tse or otc)')
     .option('-m --multiple', 'search multiple stocks', false)
     .option('-f --favorite', 'search from favorite list')
-    .option('-o --oddLot', 'search odd-lot trading', false)
+    .option('-o, --odd-lot', 'search odd-lot trading', false)
+    .option('--oddLot', 'legacy alias for --odd-lot', false)
+    .option(
+      '-s, --search <code-or-name>',
+      'find stocks by code or company name'
+    )
     .option(
       '-d --date <date>',
       'search historical data (YYYY-MM or YYYY-MM-DD)'

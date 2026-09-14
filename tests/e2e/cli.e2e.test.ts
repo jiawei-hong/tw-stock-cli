@@ -1,7 +1,15 @@
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
+
+import stringWidth from 'string-width'
 
 const repositoryRoot = path.resolve(__dirname, '../..')
 const cliPath = path.join(repositoryRoot, 'build/index.js')
@@ -38,6 +46,58 @@ describe.sequential('built CLI', () => {
 
   it('reports the package version', () => {
     expect(run(['--version']).output.trim()).toBe('2.3.0')
+  })
+
+  it('searches the security directory by company name', () => {
+    const result = run(['stock', '--search', 'TSMC'])
+
+    expect(result.output).toContain('2330')
+    expect(result.output).toContain('TSMC')
+    expect(result.output).toContain('上市 (TSE)')
+    expect(result.requests).toHaveLength(1)
+    expect(result.requests[0]).toContain('openapi.tdcc.com.tw')
+  })
+
+  it('auto-resolves a single OTC symbol when no market is specified', () => {
+    const result = run(['stock', '6547'])
+
+    expect(result.output).toContain('Medigen')
+    expect(result.requests[0]).toContain('tse_6547.tw|otc_6547.tw')
+  })
+
+  it('renders stock quotes within a narrow terminal', () => {
+    const result = run(['stock', '2330'], 'success', { columns: 40 })
+
+    expect(result.output).toContain('代號: 2330')
+    expect(result.output).toContain('公司: TSMC')
+    expect(result.output).toContain('成交價: 1,000.00')
+    expect(
+      result.output.split('\n').every((line) => stringWidth(line) <= 40)
+    ).toBe(true)
+  })
+
+  it('sets up and cleans completion in an isolated shell profile', () => {
+    const home = path.join(workingDirectory, 'home')
+    const initFile = path.join(home, '.zshrc')
+    mkdirSync(home)
+
+    const setup = run(['completion'], 'success', {
+      home,
+      shell: '/bin/zsh',
+    })
+    expect(setup.output).toBe('')
+    expect(readFileSync(initFile, 'utf8')).toContain(
+      '# begin tw-stock completion'
+    )
+
+    const cleanup = run(['completion', '--cleanup'], 'success', {
+      home,
+      shell: '/bin/zsh',
+    })
+    expect(cleanup.output).toBe('')
+    expect(readFileSync(initFile, 'utf8')).not.toContain(
+      '# begin tw-stock completion'
+    )
   })
 
   it('supports the favorite lifecycle without stock.json', () => {
@@ -185,7 +245,17 @@ describe.sequential('built CLI', () => {
   })
 })
 
-function run(args: string[], scenario = 'success'): RunResult {
+type RunOptions = {
+  columns?: number
+  home?: string
+  shell?: string
+}
+
+function run(
+  args: string[],
+  scenario = 'success',
+  options: RunOptions = {}
+): RunResult {
   writeFileSync(requestLog, '')
   const result = spawnSync(
     process.execPath,
@@ -198,6 +268,11 @@ function run(args: string[], scenario = 'success'): RunResult {
         ...process.env,
         TW_STOCK_E2E_REQUEST_LOG: requestLog,
         TW_STOCK_E2E_SCENARIO: scenario,
+        ...(options.columns === undefined
+          ? {}
+          : { TW_STOCK_E2E_COLUMNS: String(options.columns) }),
+        ...(options.home === undefined ? {} : { HOME: options.home }),
+        ...(options.shell === undefined ? {} : { SHELL: options.shell }),
       },
     }
   )

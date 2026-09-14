@@ -24,7 +24,8 @@ tw-stock stock [stock_code]
 | `-l, --listed <listed>` | Market type: `tse` (default) or `otc`              |
 | `-m, --multiple`        | Search multiple stock codes (hyphen-separated)     |
 | `-f, --favorite`        | Search stocks from favorite list                   |
-| `-o, --oddLot`          | Search odd-lot trading data                        |
+| `-o, --odd-lot`         | Search odd-lot trading data (`--oddLot` also works) |
+| `-s, --search <query>`  | Find active stocks by code or company name         |
 | `-d, --date <date>`     | Search historical data (`YYYY-MM` or `YYYY-MM-DD`) |
 | `--details`             | Show detailed stock data (default: `true`)         |
 
@@ -34,8 +35,11 @@ tw-stock stock [stock_code]
 # Search a single TSE stock
 tw-stock stock 2330
 
-# Search an OTC stock
-tw-stock stock 6488 -l otc
+# Search an OTC stock (market is detected automatically)
+tw-stock stock 6488
+
+# Find stocks by company name
+tw-stock stock --search 台積電
 
 # Search multiple stocks
 tw-stock stock 2330-2317-2454 -m
@@ -56,12 +60,17 @@ price, and status columns, with Taipei timestamps below. Terminals narrower than
 60 columns use stacked quote cards. Long names wrap instead of being truncated.
 Output without a reported terminal width keeps the requested table layout.
 
+Live quotes come from TWSE MIS and may be unavailable, delayed, or from the
+previous trading session outside market hours. Historical, ranking, and
+institutional data come from TWSE or TPEx endpoints. Name search uses TDCC's
+active-security directory and keeps it only in memory for five minutes; the CLI
+does not create `stock.json`. Upstream services do not publish a guaranteed
+client rate limit, so avoid rapid polling and retry after transient failures.
+
 Favorite lists, rankings, and institutional summary/stock tables also adapt to
 terminal width: names wrap first, then rows become stacked cards if the other
 columns cannot fit. Every field is retained, including ranking metrics and
 institutional totals. Daily reports do not imply live quote freshness.
-See [representative terminal output](docs/terminal-output.md) for 40-column
-examples, unavailable names, and previous-session/missing-date quotes.
 
 ### `index` — Search market indices
 

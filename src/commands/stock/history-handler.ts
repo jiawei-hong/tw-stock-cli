@@ -17,9 +17,9 @@ class HistoryStock extends BaseHandler<StockOptionProps, HistoryRow> {
   private parsedDate: string[] = []
   private dateExistDay: boolean = false
 
-  constructor(code: string, options: StockOptionProps) {
+  constructor(code: string | undefined, options: StockOptionProps) {
     super(options)
-    this.code = code
+    this.code = code ?? ''
   }
 
   initialize() {

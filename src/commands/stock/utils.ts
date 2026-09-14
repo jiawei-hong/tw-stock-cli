@@ -41,7 +41,7 @@ async function transformStockToIncludeCategory({
     throw new Error(
       `Invalid stock codes: ${invalid
         .map((code) => (typeof code === 'string' && code ? code : '(empty)'))
-        .join(', ')}`
+        .join(', ')}. Use --search <code-or-name> to find a stock by name.`
     )
   }
   if (listed && ![Category.TSE, Category.OTC].includes(listed))
@@ -52,7 +52,10 @@ async function transformStockToIncludeCategory({
       .join('|')
   }
 
-  return `${listed}_${toUppercase(stocks)}.tw`
+  const code = toUppercase(stocks)
+  if (!listed) return `tse_${code}.tw|otc_${code}.tw`
+
+  return `${listed}_${code}.tw`
 }
 
 export async function generateGetStockURL({
