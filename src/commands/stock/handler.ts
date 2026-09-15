@@ -8,6 +8,14 @@ class Stock {
   private handler: RealtimeStock | HistoryStock | SearchStock
 
   constructor(code: string | undefined, options: StockOptionProps) {
+    if (
+      options.watch !== undefined &&
+      (options.date || options.search !== undefined)
+    ) {
+      throw new Error(
+        '--watch only supports realtime quotes; remove --date or --search'
+      )
+    }
     if (options.search !== undefined) {
       this.handler = new SearchStock(options.search, options)
     } else if (options.date) {

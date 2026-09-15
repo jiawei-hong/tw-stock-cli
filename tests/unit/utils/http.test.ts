@@ -1,6 +1,19 @@
 import { requestJson } from '@/utils/http'
 
 describe('requestJson', () => {
+  it('does not retry a caller-cancelled request', async () => {
+    const controller = new AbortController()
+    const fetchMock = vi.fn().mockImplementation(async () => {
+      controller.abort()
+      throw new Error('cancelled')
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    await expect(
+      requestJson('https://example.com/data', { signal: controller.signal })
+    ).rejects.toThrow()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
   afterEach(() => {
     vi.restoreAllMocks()
     vi.unstubAllGlobals()

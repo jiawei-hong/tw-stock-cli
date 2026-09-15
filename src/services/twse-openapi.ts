@@ -4,7 +4,12 @@ const TWSE_OPENAPI_URL = 'https://openapi.twse.com.tw/v1'
 
 export async function getTwseOpenData<T>(path: string): Promise<T[]> {
   const data = await requestJson<unknown>(`${TWSE_OPENAPI_URL}/${path}`)
-  if (!Array.isArray(data)) throw new Error('Invalid TWSE OpenAPI response')
+  if (
+    !Array.isArray(data) ||
+    data.some((row) => !row || typeof row !== 'object' || Array.isArray(row))
+  ) {
+    throw new Error('Invalid TWSE OpenAPI response')
+  }
   return data as T[]
 }
 

@@ -43,6 +43,76 @@ afterEach(() => {
 
 describe('Stock', () => {
   describe('watchQuotes', () => {
+    it('cleans process signal listeners after cancelling an active request', async () => {
+      const beforeInterrupt = process.listenerCount('SIGINT')
+      const beforeTerminate = process.listenerCount('SIGTERM')
+      vi.mocked(getStockData).mockImplementationOnce(
+        (_url, signal) =>
+          new Promise((_resolve, reject) => {
+            signal?.addEventListener('abort', () => reject(signal.reason), {
+              once: true,
+            })
+          })
+      )
+      const watching = new RealtimeStock('2330', { watch: 5 }).watch()
+      await vi.waitFor(() => expect(getStockData).toHaveBeenCalled())
+      process.emit('SIGINT')
+      await watching
+      expect(process.listenerCount('SIGINT')).toBe(beforeInterrupt)
+      expect(process.listenerCount('SIGTERM')).toBe(beforeTerminate)
+    })
+
+    it('recovers after an outage and resets its polling delay', async () => {
+      const controller = new AbortController()
+      const refresh = vi
+        .fn()
+        .mockRejectedValueOnce(new Error('offline'))
+        .mockResolvedValue(undefined)
+      const warn = vi.fn()
+      const sleep = vi
+        .fn()
+        .mockResolvedValueOnce(undefined)
+        .mockImplementationOnce(async () => controller.abort())
+      await watchQuotes(refresh, 5_000, {
+        signal: controller.signal,
+        sleep,
+        warn,
+      })
+      expect(refresh).toHaveBeenCalledTimes(2)
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('offline'))
+      expect(sleep.mock.calls.map(([milliseconds]) => milliseconds)).toEqual([
+        10_000, 5_000,
+      ])
+    })
+
+    it('cancels a pending timer without another refresh', async () => {
+      const controller = new AbortController()
+      const refresh = vi.fn().mockResolvedValue(undefined)
+      const watching = watchQuotes(refresh, 5_000, {
+        signal: controller.signal,
+      })
+      await Promise.resolve()
+      controller.abort()
+      await watching
+      expect(refresh).toHaveBeenCalledTimes(1)
+    })
+
+    it('rejects invalid intervals before refreshing', async () => {
+      const refresh = vi.fn()
+      await expect(watchQuotes(refresh, Infinity)).rejects.toThrow('interval')
+      await expect(watchQuotes(refresh, 1)).rejects.toThrow('interval')
+      expect(refresh).not.toHaveBeenCalled()
+    })
+
+    it('rejects historical and search watch combinations', () => {
+      expect(() => new Stock('2330', { date: '2026-09', watch: 5 })).toThrow(
+        'realtime'
+      )
+      expect(() => new Stock(undefined, { search: 'TSMC', watch: 5 })).toThrow(
+        'realtime'
+      )
+    })
+
     it('refreshes repeatedly and clears only after the first TTY render', async () => {
       const refresh = vi.fn().mockResolvedValue(undefined)
       const clear = vi.fn()

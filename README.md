@@ -55,6 +55,12 @@ tw-stock stock 2330 -d 2025-01-15
 tw-stock stock 2330 --watch 5
 ```
 
+Watch mode waits at least the configured interval after each refresh. Failed
+refreshes retry with a longer delay (up to 60 seconds, or the configured interval
+if longer). Ctrl+C stops polling and cancels active requests. Piped output is
+appended without clearing the screen. `--watch` cannot be combined with `--date`
+or `--search`. The interval is a client setting, not an exchange rate-limit guarantee.
+
 Stock quote tables show the exchange trade date/time in Taipei time and a
 status: `今日成交` (trade dated today), `前期成交` (earlier session), or
 `無成交價` (price unavailable). Missing or invalid dates are marked explicitly.
@@ -186,20 +192,28 @@ tw-stock completion --cleanup # Remove completion from shell profile
 
 ```sh
 tw-stock events 2330 --month 2026-09
+tw-stock events 6488 --listed otc --month 2026-09
 ```
 
-Shows TWSE holidays, ex-dividend dates, and disposition securities. Omit the
-stock code to view market-wide events.
+Shows market-calendar entries, ex-dividend dates, attention announcements,
+dispositions, and trading suspensions. Use `--listed otc` for TPEx; the default
+is TWSE. Omit the stock code to view market-wide events. Month filtering includes
+periods overlapping that month. These endpoints expose published records, not a
+complete historical archive; an empty result does not prove there were no events.
 
 ### `fundamentals` — Company fundamentals
 
 ```sh
 tw-stock fundamentals 2330
+tw-stock fundamentals 6488 --listed otc
 ```
 
-Shows TWSE valuation ratios, latest monthly revenue, year-over-year growth, and
-basic EPS. Each value includes its source period so differently timed datasets
-are not mistaken for live data.
+Shows valuation ratios, latest monthly revenue, year-over-year growth, and
+cumulative basic EPS. Use `--listed otc` for TPEx; the default is TWSE. EPS is
+year-to-date through the reported quarter, not a standalone quarter or trailing
+twelve-month value. Each metric includes its source period. Missing values stay
+unavailable; a failed data source is reported while other available data remains
+visible. Event and fundamental tables adapt to terminal width.
 
 ## Screenshots
 

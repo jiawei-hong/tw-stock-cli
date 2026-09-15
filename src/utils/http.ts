@@ -1,3 +1,5 @@
+import { setTimeout as delay } from 'node:timers/promises'
+
 const DEFAULT_TIMEOUT_MS = 15_000
 const DEFAULT_MAX_RETRIES = 2
 const MAX_ALLOWED_RETRIES = 3
@@ -9,6 +11,7 @@ export type RequestJsonOptions = {
   maxRetries?: number
   retryDelayMs?: number
   sleep?: (delayMs: number) => Promise<void>
+  signal?: AbortSignal
 }
 
 class HttpStatusError extends Error {
@@ -74,10 +77,6 @@ function normalizeRetryDelay(retryDelayMs: number | undefined): number {
   return Math.min(MAX_RETRY_DELAY_MS, retryDelayMs)
 }
 
-function wait(delayMs: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, delayMs))
-}
-
 export async function requestJson<T>(
   url: string,
   options: RequestJsonOptions = {}
@@ -85,11 +84,17 @@ export async function requestJson<T>(
   const maxRetries = normalizeRetries(options.maxRetries)
   const timeoutMs = normalizeTimeout(options.timeoutMs)
   const retryDelayMs = normalizeRetryDelay(options.retryDelayMs)
-  const sleep = options.sleep ?? wait
+  const sleep =
+    options.sleep ??
+    ((delayMs: number) => delay(delayMs, undefined, { signal: options.signal }))
   let lastError: unknown
 
   for (let retry = 0; retry <= maxRetries; retry += 1) {
-    const signal = AbortSignal.timeout(timeoutMs)
+    options.signal?.throwIfAborted()
+    const timeoutSignal = AbortSignal.timeout(timeoutMs)
+    const signal = options.signal
+      ? AbortSignal.any([options.signal, timeoutSignal])
+      : timeoutSignal
     let responseReceived = false
 
     try {
@@ -105,6 +110,7 @@ export async function requestJson<T>(
       }
       return data as T
     } catch (error) {
+      options.signal?.throwIfAborted()
       lastError = error
       if (
         retry === maxRetries ||

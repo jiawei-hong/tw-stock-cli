@@ -21,3 +21,13 @@ it('validates TWSE OpenAPI arrays', async () => {
     'Invalid TWSE OpenAPI response'
   )
 })
+
+it.each([[null], [1], [['invalid']]])(
+  'rejects invalid API records %j',
+  async (record) => {
+    vi.mocked(requestJson).mockResolvedValueOnce([record])
+    await expect(getTwseOpenData('example')).rejects.toThrow(
+      'Invalid TWSE OpenAPI response'
+    )
+  }
+)

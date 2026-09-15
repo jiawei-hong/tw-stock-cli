@@ -123,18 +123,35 @@ function run() {
 
   program
     .command('events')
-    .description('show TWSE holidays, dividends, and dispositions')
+    .description('show market calendar, dividends, and trading announcements')
     .argument('[stock_code]', 'optional stock code')
     .option('-m, --month <month>', 'filter by month (YYYY-MM)')
-    .action((code: string | undefined, options: { month?: string }) =>
-      new Events(code, options.month).initialize()
+    .option(
+      '-l, --listed <market>',
+      'market (tse or otc)',
+      parseMarket,
+      Category.TSE
+    )
+    .action(
+      (
+        code: string | undefined,
+        options: { month?: string; listed: Category }
+      ) => new Events(code, options.month, options.listed).initialize()
     )
 
   program
     .command('fundamentals')
-    .description('show TWSE valuation, revenue, and EPS data')
+    .description('show valuation, revenue, and cumulative EPS data')
     .argument('<stock_code>', 'stock code')
-    .action((code: string) => new Fundamentals(code).initialize())
+    .option(
+      '-l, --listed <market>',
+      'market (tse or otc)',
+      parseMarket,
+      Category.TSE
+    )
+    .action((code: string, options: { listed: Category }) =>
+      new Fundamentals(code, options.listed).initialize()
+    )
 
   program
     .parseAsync(process.argv)
@@ -143,10 +160,17 @@ function run() {
 
 function parseWatchInterval(value: string): number {
   const seconds = Number(value)
-  if (!Number.isFinite(seconds) || seconds < 5) {
+  if (!Number.isFinite(seconds) || seconds < 5 || seconds > 2_147_483) {
     throw new InvalidArgumentError('watch interval must be at least 5 seconds')
   }
   return seconds
+}
+
+function parseMarket(value: string): Category {
+  if (value !== Category.TSE && value !== Category.OTC) {
+    throw new InvalidArgumentError('market must be tse or otc')
+  }
+  return value
 }
 
 run()

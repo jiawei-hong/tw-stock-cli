@@ -24,6 +24,83 @@ globalThis.fetch = async (input) => {
   const url = decodeURIComponent(String(input))
   if (requestLog) fs.appendFileSync(requestLog, `${url}\n`)
 
+  if (url.includes('/tpex_exright_prepost')) {
+    return fixtureResponse({
+      json: [
+        {
+          ExRrightsExDividendDate: '1150918',
+          SecuritiesCompanyCode: '6488',
+          CompanyName: 'GlobalWafers',
+          ExRrightsExDividend: '息',
+          CashDividend: '5',
+          StockDividendRatio: '',
+        },
+      ],
+    })
+  }
+
+  if (
+    url.includes('/tpex_disposal_information') ||
+    url.includes('/tpex_trading_warning_information') ||
+    url.includes('/tpex_spendi_history')
+  ) {
+    return fixtureResponse({ json: [] })
+  }
+
+  if (url.includes('/tpex_mainboard_peratio_analysis')) {
+    return fixtureResponse({
+      json: [
+        {
+          Date: '1150915',
+          SecuritiesCompanyCode: '6488',
+          CompanyName: 'GlobalWafers',
+          PriceEarningRatio: '15',
+          YieldRatio: '4',
+          PriceBookRatio: '2',
+        },
+      ],
+    })
+  }
+
+  if (url.includes('/mopsfin_t187ap05_O')) {
+    return fixtureResponse({
+      json: [
+        {
+          公司代號: '6488',
+          公司名稱: 'GlobalWafers',
+          資料年月: '11508',
+          '營業收入-當月營收': '5000',
+          '營業收入-去年同月增減(%)': '12',
+        },
+      ],
+    })
+  }
+
+  if (url.includes('/mopsfin_t187ap06_O_ci')) {
+    return fixtureResponse({
+      json: [
+        {
+          公司代號: '6488',
+          公司名稱: 'GlobalWafers',
+          年度: '115',
+          季別: '2',
+          '基本每股盈餘（元）': '18',
+        },
+      ],
+    })
+  }
+
+  if (/t187ap06_[LO]_(basi|bd|fh|ins|mim)/.test(url)) {
+    return fixtureResponse({ json: [] })
+  }
+
+  if (
+    scenario === 'valuation-failure' &&
+    url.includes('/exchangeReport/BWIBBU_ALL')
+  ) {
+    return fixtureResponse({ json: { invalid: true } })
+  }
+
   if (isDirectoryUrl(url)) {
     if (scenario === 'directory-failure') {
       throw new Error('fixture TPEx outage')
@@ -76,7 +153,16 @@ globalThis.fetch = async (input) => {
   if (url.includes('/holidaySchedule/holidaySchedule')) {
     return fixtureResponse({
       json: [
-        { Name: 'Mid-Autumn Festival', Date: '1150925', Description: 'Closed' },
+        {
+          Name: 'Mid-Autumn Festival',
+          Date: '1150925',
+          Description: '依規定放假1日。',
+        },
+        {
+          Name: '國曆新年開始交易日',
+          Date: '1150102',
+          Description: '國曆新年開始交易。',
+        },
       ],
     })
   }
@@ -97,15 +183,50 @@ globalThis.fetch = async (input) => {
   }
 
   if (url.includes('/announcement/punish')) {
-    return fixtureResponse({ json: [] })
+    return fixtureResponse({
+      json: [
+        {
+          Code: '2330',
+          Name: 'Cross-month disposition',
+          DispositionPeriod: '115/08/28～115/09/05',
+          ReasonsOfDisposition: 'fixture',
+          DispositionMeasures: '處置',
+        },
+        {
+          Code: '2330',
+          Name: 'Expired disposition',
+          DispositionPeriod: '115/07/01～115/07/10',
+          ReasonsOfDisposition: 'fixture',
+          DispositionMeasures: '處置',
+        },
+      ],
+    })
   }
 
   if (url.includes('/announcement/notice')) {
-    return fixtureResponse({ json: [] })
+    return fixtureResponse({
+      json: [
+        {
+          Code: '2330',
+          Name: 'Expired notice',
+          Date: '1150701',
+          TradingInfoForAttention: 'fixture',
+        },
+      ],
+    })
   }
 
   if (url.includes('/exchangeReport/TWTAWU')) {
-    return fixtureResponse({ json: [] })
+    return fixtureResponse({
+      json: [
+        {
+          Code: '2330',
+          Name: 'Expired halt',
+          TradingHaltDate: '1150701',
+          TradingResumptionDate: '1150702',
+        },
+      ],
+    })
   }
 
   if (url.includes('/exchangeReport/BWIBBU_ALL')) {

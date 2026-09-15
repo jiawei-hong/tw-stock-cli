@@ -1,4 +1,4 @@
-import { spawnSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import {
   mkdirSync,
   mkdtempSync,
@@ -55,11 +55,84 @@ describe.sequential('built CLI', () => {
     expect(result.requests).toHaveLength(0)
   })
 
+  it('polls repeatedly and exits cleanly on SIGINT without clearing piped output', async () => {
+    const child = spawn(
+      process.execPath,
+      ['--require', preloadPath, cliPath, 'stock', '2330', '--watch', '5'],
+      {
+        cwd: workingDirectory,
+        env: {
+          ...process.env,
+          TW_STOCK_E2E_REQUEST_LOG: requestLog,
+          TW_STOCK_E2E_SCENARIO: 'success',
+        },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      }
+    )
+    const timeout = setTimeout(() => child.kill('SIGKILL'), 10_000)
+    let output = ''
+    const finished = new Promise<number | null>((resolve, reject) => {
+      child.on('error', reject)
+      child.on('exit', resolve)
+    })
+    child.stdout.on('data', (chunk) => {
+      output += chunk.toString()
+      if ((output.match(/TSMC/g) ?? []).length >= 2) child.kill('SIGINT')
+    })
+    try {
+      expect(await finished).toBe(0)
+      expect((output.match(/TSMC/g) ?? []).length).toBe(2)
+      expect(output).not.toContain('\u001b[2J')
+      expect(readFileSync(requestLog, 'utf8').trim().split('\n')).toHaveLength(
+        2
+      )
+    } finally {
+      clearTimeout(timeout)
+      child.kill('SIGKILL')
+    }
+  }, 12_000)
+
+  it('rejects conflicting watch options before requesting data', () => {
+    const result = runAllowFailure(
+      ['stock', '2330', '--watch', '5', '--date', '2026-09'],
+      'success'
+    )
+    expect(result.status).toBe(1)
+    expect(result.requests).toHaveLength(0)
+  })
+
   it('shows market events from TWSE OpenAPI', () => {
     const result = run(['events', '2330', '--month', '2026-09'])
     expect(result.output).toContain('Mid-Autumn Festival')
     expect(result.output).toContain('TSMC')
+    expect(result.output).toContain('Cross-month disposition')
+    expect(result.output).not.toContain('Expired')
     expect(result.requests).toHaveLength(5)
+  })
+
+  it('rejects malformed event months and unsupported markets without HTTP', () => {
+    for (const args of [
+      ['events', '--month', '2026-13'],
+      ['fundamentals', '2330', '--listed', 'invalid'],
+    ]) {
+      const result = runAllowFailure(args, 'success')
+      expect(result.status).toBe(1)
+      expect(result.requests).toHaveLength(0)
+    }
+  })
+
+  it('uses TPEx events and fits the complete report into a narrow terminal', () => {
+    const otc = run(['events', '6488', '--listed', 'otc', '--month', '2026-09'])
+    expect(otc.output).toContain('GlobalWafers')
+    expect(
+      otc.requests.filter((url) => url.includes('tpex.org.tw'))
+    ).toHaveLength(4)
+    const narrow = run(['events', '2330', '--month', '2026-09'], 'success', {
+      columns: 40,
+    })
+    expect(
+      narrow.output.split('\n').every((line) => stringWidth(line) <= 40)
+    ).toBe(true)
   })
 
   it('shows TWSE valuation, revenue, and EPS', () => {
@@ -68,6 +141,23 @@ describe.sequential('built CLI', () => {
     expect(result.output).toContain('TSMC')
     expect(result.output).toContain('20')
     expect(result.requests).toHaveLength(3)
+  })
+
+  it('loads OTC fundamentals from TPEx and preserves data after partial failure', () => {
+    const otc = run(['fundamentals', '6488', '--listed', 'otc'])
+    expect(otc.output).toContain('GlobalWafers')
+    expect(otc.requests.every((url) => url.includes('tpex.org.tw'))).toBe(true)
+    const partial = run(['fundamentals', '2330'], 'valuation-failure')
+    expect(partial.output).toContain('TSMC')
+    expect(partial.output).toContain('Warning:')
+    expect(partial.output).toContain('1000')
+  })
+
+  it('fits fundamental tables into a narrow terminal', () => {
+    const result = run(['fundamentals', '2330'], 'success', { columns: 40 })
+    expect(
+      result.output.split('\n').every((line) => stringWidth(line) <= 40)
+    ).toBe(true)
   })
 
   it('searches the security directory by company name', () => {

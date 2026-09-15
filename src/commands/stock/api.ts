@@ -15,10 +15,13 @@ function matchesTicker(row: TStock, ticker: string): boolean {
   )
 }
 
-async function getStock(url: string): Promise<StockResponse> {
+async function getStock(
+  url: string,
+  signal?: AbortSignal
+): Promise<StockResponse> {
   const parsed = new URL(url)
   const query = parsed.searchParams.get('ex_ch')
-  if (query === null) return requestJson<StockResponse>(url)
+  if (query === null) return requestJson<StockResponse>(url, { signal })
   if (!query.trim()) {
     return {
       stat: 'OK',
@@ -30,12 +33,14 @@ async function getStock(url: string): Promise<StockResponse> {
   const rows: TStock[] = []
   const problems: string[] = []
   for (let offset = 0; offset < tickers.length; offset += 100) {
+    signal?.throwIfAborted()
     const batch = tickers.slice(offset, offset + 100)
     const batchUrl = new URL(url)
     batchUrl.searchParams.set('ex_ch', batch.join('|'))
     try {
       const data = await requestJson<StockResponse>(
-        tickers.length <= 100 ? url : batchUrl.toString()
+        tickers.length <= 100 ? url : batchUrl.toString(),
+        { signal }
       )
       if (!('msgArray' in data) || !Array.isArray(data.msgArray))
         throw new Error('Invalid MIS quote response')
@@ -48,6 +53,7 @@ async function getStock(url: string): Promise<StockResponse> {
         }
       }
     } catch (error) {
+      signal?.throwIfAborted()
       problems.push(`${batch.join(', ')}: ${String(error)}`)
     }
   }
