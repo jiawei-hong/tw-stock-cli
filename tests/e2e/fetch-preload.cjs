@@ -73,6 +73,84 @@ globalThis.fetch = async (input) => {
     })
   }
 
+  if (url.includes('/holidaySchedule/holidaySchedule')) {
+    return fixtureResponse({
+      json: [
+        { Name: 'Mid-Autumn Festival', Date: '1150925', Description: 'Closed' },
+      ],
+    })
+  }
+
+  if (url.includes('/exchangeReport/TWT48U_ALL')) {
+    return fixtureResponse({
+      json: [
+        {
+          Date: '1150918',
+          Code: '2330',
+          Name: 'TSMC',
+          Exdividend: '息',
+          CashDividend: '5',
+          StockDividendRatio: '',
+        },
+      ],
+    })
+  }
+
+  if (url.includes('/announcement/punish')) {
+    return fixtureResponse({ json: [] })
+  }
+
+  if (url.includes('/announcement/notice')) {
+    return fixtureResponse({ json: [] })
+  }
+
+  if (url.includes('/exchangeReport/TWTAWU')) {
+    return fixtureResponse({ json: [] })
+  }
+
+  if (url.includes('/exchangeReport/BWIBBU_ALL')) {
+    return fixtureResponse({
+      json: [
+        {
+          Date: '1150915',
+          Code: '2330',
+          Name: 'TSMC',
+          PEratio: '25',
+          DividendYield: '2',
+          PBratio: '7',
+        },
+      ],
+    })
+  }
+
+  if (url.includes('/opendata/t187ap05_L')) {
+    return fixtureResponse({
+      json: [
+        {
+          公司代號: '2330',
+          公司名稱: 'TSMC',
+          資料年月: '11508',
+          '營業收入-當月營收': '1000',
+          '營業收入-去年同月增減(%)': '10',
+        },
+      ],
+    })
+  }
+
+  if (url.includes('/opendata/t187ap06_L_ci')) {
+    return fixtureResponse({
+      json: [
+        {
+          公司代號: '2330',
+          公司名稱: 'TSMC',
+          年度: '115',
+          季別: '2',
+          '基本每股盈餘（元）': '20',
+        },
+      ],
+    })
+  }
+
   if (url.includes('/afterTrading/MI_INDEX')) {
     return fixtureResponse({
       json: {
@@ -211,7 +289,6 @@ function institutionalRows(key) {
 function isDirectoryUrl(url) {
   return (
     url.includes('isin/C_public.jsp') ||
-    url.includes('openapi.twse.com.tw') ||
     url.includes('openapi.tdcc.com.tw') ||
     url.includes('/openapi/v1/')
   )

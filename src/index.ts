@@ -1,7 +1,9 @@
-import { program } from 'commander'
+import { InvalidArgumentError, program } from 'commander'
 
 import packageJson from '../package.json'
+import Events from './commands/events/handler'
 import Favorite from './commands/favorite/handler'
+import Fundamentals from './commands/fundamentals/handler'
 import Indices from './commands/index/handler'
 import Institutional from './commands/institutional/handler'
 import Rank from './commands/rank/handler'
@@ -37,6 +39,11 @@ function run() {
       'search historical data (YYYY-MM or YYYY-MM-DD)'
     )
     .option('--details', 'show detailed stock data', true)
+    .option(
+      '-w, --watch <seconds>',
+      'refresh realtime quotes every 5 seconds or more',
+      parseWatchInterval
+    )
     .action((code: string, options: StockOptionProps) =>
       new Stock(code, options).initialize()
     )
@@ -115,8 +122,31 @@ function run() {
     })
 
   program
+    .command('events')
+    .description('show TWSE holidays, dividends, and dispositions')
+    .argument('[stock_code]', 'optional stock code')
+    .option('-m, --month <month>', 'filter by month (YYYY-MM)')
+    .action((code: string | undefined, options: { month?: string }) =>
+      new Events(code, options.month).initialize()
+    )
+
+  program
+    .command('fundamentals')
+    .description('show TWSE valuation, revenue, and EPS data')
+    .argument('<stock_code>', 'stock code')
+    .action((code: string) => new Fundamentals(code).initialize())
+
+  program
     .parseAsync(process.argv)
     .catch((error) => displayFailed(String(error)))
+}
+
+function parseWatchInterval(value: string): number {
+  const seconds = Number(value)
+  if (!Number.isFinite(seconds) || seconds < 5) {
+    throw new InvalidArgumentError('watch interval must be at least 5 seconds')
+  }
+  return seconds
 }
 
 run()

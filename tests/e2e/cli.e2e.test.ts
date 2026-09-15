@@ -48,6 +48,28 @@ describe.sequential('built CLI', () => {
     expect(run(['--version']).output.trim()).toBe('2.5.0')
   })
 
+  it('rejects watch intervals below five seconds', () => {
+    const result = runAllowFailure(['stock', '2330', '--watch', '1'], 'success')
+    expect(result.status).toBe(1)
+    expect(result.output).toContain('watch interval must be at least 5 seconds')
+    expect(result.requests).toHaveLength(0)
+  })
+
+  it('shows market events from TWSE OpenAPI', () => {
+    const result = run(['events', '2330', '--month', '2026-09'])
+    expect(result.output).toContain('Mid-Autumn Festival')
+    expect(result.output).toContain('TSMC')
+    expect(result.requests).toHaveLength(5)
+  })
+
+  it('shows TWSE valuation, revenue, and EPS', () => {
+    const result = run(['fundamentals', '2330'])
+    expect(result.output).toContain('本益比')
+    expect(result.output).toContain('TSMC')
+    expect(result.output).toContain('20')
+    expect(result.requests).toHaveLength(3)
+  })
+
   it('searches the security directory by company name', () => {
     const result = run(['stock', '--search', 'TSMC'])
 

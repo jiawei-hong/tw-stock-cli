@@ -1,6 +1,6 @@
 import { getStock as getStockData } from '@/commands/stock/api'
 import Stock from '@/commands/stock/handler'
-import RealtimeStock from '@/commands/stock/realtime-handler'
+import RealtimeStock, { watchQuotes } from '@/commands/stock/realtime-handler'
 import { extractStockData } from '@/commands/stock/response'
 import SearchStock from '@/commands/stock/search-handler'
 import { FAVORITE_NOT_FOUND } from '@/messages/favorite'
@@ -42,6 +42,41 @@ afterEach(() => {
 })
 
 describe('Stock', () => {
+  describe('watchQuotes', () => {
+    it('refreshes repeatedly and clears only after the first TTY render', async () => {
+      const refresh = vi.fn().mockResolvedValue(undefined)
+      const clear = vi.fn()
+      const stopped = new Error('stopped')
+      const sleep = vi
+        .fn()
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(stopped)
+
+      await expect(
+        watchQuotes(refresh, 5_000, { clear, isTTY: true, sleep })
+      ).rejects.toBe(stopped)
+
+      expect(refresh).toHaveBeenCalledTimes(2)
+      expect(clear).toHaveBeenCalledTimes(1)
+      expect(sleep).toHaveBeenNthCalledWith(1, 5_000)
+    })
+
+    it('does not clear output outside a TTY', async () => {
+      const stopped = new Error('stopped')
+      const clear = vi.fn()
+
+      await expect(
+        watchQuotes(vi.fn().mockResolvedValue(undefined), 5_000, {
+          clear,
+          isTTY: false,
+          sleep: vi.fn().mockRejectedValue(stopped),
+        })
+      ).rejects.toBe(stopped)
+
+      expect(clear).not.toHaveBeenCalled()
+    })
+  })
+
   describe('initialize', () => {
     it('displays error when no code and no favorite/date option', () => {
       const stock = new Stock('', { listed: Category.TSE })

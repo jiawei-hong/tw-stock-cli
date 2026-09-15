@@ -28,6 +28,7 @@ tw-stock stock [stock_code]
 | `-s, --search <query>`  | Find active stocks by code or company name         |
 | `-d, --date <date>`     | Search historical data (`YYYY-MM` or `YYYY-MM-DD`) |
 | `--details`             | Show detailed stock data (default: `true`)         |
+| `-w, --watch <seconds>` | Refresh live quotes every 5 seconds or more         |
 
 **Examples:**
 
@@ -49,6 +50,9 @@ tw-stock stock 2330 -d 2025-01
 
 # Search historical daily data
 tw-stock stock 2330 -d 2025-01-15
+
+# Refresh a live quote every five seconds
+tw-stock stock 2330 --watch 5
 ```
 
 Stock quote tables show the exchange trade date/time in Taipei time and a
@@ -177,6 +181,25 @@ tw-stock favorite delete <code> # Remove a stock code
 tw-stock completion           # Setup shell tab-completion
 tw-stock completion --cleanup # Remove completion from shell profile
 ```
+
+### `events` — Market events
+
+```sh
+tw-stock events 2330 --month 2026-09
+```
+
+Shows TWSE holidays, ex-dividend dates, and disposition securities. Omit the
+stock code to view market-wide events.
+
+### `fundamentals` — Company fundamentals
+
+```sh
+tw-stock fundamentals 2330
+```
+
+Shows TWSE valuation ratios, latest monthly revenue, year-over-year growth, and
+basic EPS. Each value includes its source period so differently timed datasets
+are not mistaken for live data.
 
 ## Screenshots
 

@@ -32,7 +32,13 @@ class RealtimeStock {
     if (this.options.favorite && !FilePath.favorite.exist()) {
       return displayFailed(FAVORITE_NOT_FOUND)
     }
-    this.execute().catch((err) => displayFailed(String(err)))
+    const operation = this.options.watch ? this.watch() : this.execute()
+    return operation.catch((err) => displayFailed(String(err)))
+  }
+
+  async watch(): Promise<void> {
+    const intervalMs = (this.options.watch ?? 5) * 1_000
+    return watchQuotes(() => this.execute(), intervalMs)
   }
 
   getStocks(): { stocks: string | string[]; listed?: Category } {
@@ -76,6 +82,33 @@ class RealtimeStock {
       ? ` on ${this.options.listed.toUpperCase()}`
       : ' on TSE or OTC'
     return `${reason} No current quote matched "${this.code}"${market}. Try tw-stock stock --search ${this.code} to verify the symbol or company name.`
+  }
+}
+
+type WatchOptions = {
+  clear?: () => void
+  isTTY?: boolean
+  sleep?: (delayMs: number) => Promise<void>
+}
+
+export async function watchQuotes(
+  refresh: () => Promise<unknown>,
+  intervalMs: number,
+  options: WatchOptions = {}
+): Promise<void> {
+  const clear = options.clear ?? console.clear
+  const isTTY = options.isTTY ?? Boolean(process.stdout.isTTY)
+  const sleep =
+    options.sleep ??
+    ((delayMs: number) =>
+      new Promise<void>((resolve) => setTimeout(resolve, delayMs)))
+  let firstRun = true
+
+  while (true) {
+    if (!firstRun && isTTY) clear()
+    await refresh()
+    firstRun = false
+    await sleep(intervalMs)
   }
 }
 
