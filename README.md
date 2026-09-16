@@ -19,15 +19,15 @@ npm install -g tw-stock
 tw-stock stock [stock_code]
 ```
 
-| Option                  | Description                                        |
-| ----------------------- | -------------------------------------------------- |
-| `-l, --listed <listed>` | Market type: `tse` (default) or `otc`              |
-| `-m, --multiple`        | Search multiple stock codes (hyphen-separated)     |
-| `-f, --favorite`        | Search stocks from favorite list                   |
+| Option                  | Description                                         |
+| ----------------------- | --------------------------------------------------- |
+| `-l, --listed <listed>` | Market type: `tse` (default) or `otc`               |
+| `-m, --multiple`        | Search multiple stock codes (hyphen-separated)      |
+| `-f, --favorite`        | Search stocks from favorite list                    |
 | `-o, --odd-lot`         | Search odd-lot trading data (`--oddLot` also works) |
-| `-s, --search <query>`  | Find active stocks by code or company name         |
-| `-d, --date <date>`     | Search historical data (`YYYY-MM` or `YYYY-MM-DD`) |
-| `--details`             | Show detailed stock data (default: `true`)         |
+| `-s, --search <query>`  | Find active stocks by code or company name          |
+| `-d, --date <date>`     | Search historical data (`YYYY-MM` or `YYYY-MM-DD`)  |
+| `--details`             | Show detailed stock data (default: `true`)          |
 | `-w, --watch <seconds>` | Refresh live quotes every 5 seconds or more         |
 
 **Examples:**
@@ -187,6 +187,25 @@ tw-stock favorite delete <code> # Remove a stock code
 tw-stock completion           # Setup shell tab-completion
 tw-stock completion --cleanup # Remove completion from shell profile
 ```
+
+### `config` — Persistent defaults
+
+Configuration is stored at `$XDG_CONFIG_HOME/tw-stock/config.json`, or
+`~/.config/tw-stock/config.json` when `XDG_CONFIG_HOME` is not set.
+
+```sh
+tw-stock config list
+tw-stock config path
+tw-stock config set default-market otc
+tw-stock config set watch-interval 10
+tw-stock config unset default-market
+tw-stock config reset
+```
+
+Command-line options override saved defaults. `default-market` applies to stock,
+rank, institutional, events, and fundamentals commands. Run `tw-stock stock 2330
+--watch` to use the saved `watch-interval`; an explicit value such as `--watch
+15` takes precedence. The minimum interval is five seconds.
 
 ### `events` — Market events
 

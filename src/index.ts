@@ -1,6 +1,7 @@
 import { InvalidArgumentError, program } from 'commander'
 
 import packageJson from '../package.json'
+import ConfigCommand from './commands/config/handler'
 import Events from './commands/events/handler'
 import Favorite from './commands/favorite/handler'
 import Fundamentals from './commands/fundamentals/handler'
@@ -9,6 +10,7 @@ import Institutional from './commands/institutional/handler'
 import Rank from './commands/rank/handler'
 import Stock from './commands/stock/handler'
 import completion from './completion'
+import { AppConfig, ConfigKey, readConfig } from './services/config'
 import { IndexOptionProps } from './types/indices'
 import { InstitutionalOptionProps } from './types/institutional'
 import { RankOptionProps } from './types/rank'
@@ -18,6 +20,19 @@ import { displayFailed, enableFailureExitCode } from './utils/text'
 function run() {
   enableFailureExitCode()
   completion.init()
+  let config: AppConfig
+  try {
+    config = readConfig()
+  } catch (error) {
+    const recoveryAction =
+      process.argv[2] === 'config' &&
+      ['path', 'reset'].includes(process.argv[3] ?? '')
+    if (!recoveryAction) {
+      displayFailed(String(error))
+      return
+    }
+    config = {}
+  }
 
   program.name('tw-stock').version(packageJson.version)
 
@@ -40,12 +55,12 @@ function run() {
     )
     .option('--details', 'show detailed stock data', true)
     .option(
-      '-w, --watch <seconds>',
-      'refresh realtime quotes every 5 seconds or more',
+      '-w, --watch [seconds]',
+      'refresh quotes; defaults to configured interval or 5 seconds',
       parseWatchInterval
     )
-    .action((code: string, options: StockOptionProps) =>
-      new Stock(code, options).initialize()
+    .action((code: string, options: RawStockOptions) =>
+      new Stock(code, resolveStockOptions(options, config)).initialize()
     )
 
   program
@@ -65,7 +80,12 @@ function run() {
       'search institutional investors buy/sell data (三大法人買賣超)'
     )
     .argument('[stock_code]', 'stock code')
-    .option('-l --listed <listed>', 'market type (tse or otc)', Category.TSE)
+    .option(
+      '-l --listed <listed>',
+      'market type (tse or otc)',
+      parseMarket,
+      config.defaultMarket ?? Category.TSE
+    )
     .option('-d --date <date>', 'search specific date (YYYY-MM-DD)')
     .option('-n --number <number>', 'number of results to show', parseInt)
     .action((code: string, options: InstitutionalOptionProps) =>
@@ -75,7 +95,12 @@ function run() {
   program
     .command('rank')
     .description('show daily stock ranking (當日漲跌幅排行)')
-    .option('-l --listed <listed>', 'market type (tse or otc)', Category.TSE)
+    .option(
+      '-l --listed <listed>',
+      'market type (tse or otc)',
+      parseMarket,
+      config.defaultMarket ?? Category.TSE
+    )
     .option('-d --date <date>', 'search specific date (YYYY-MM-DD)')
     .option('-n --number <number>', 'number of results to show', parseInt)
     .option('--losers', 'show top losers instead of gainers', false)
@@ -130,7 +155,7 @@ function run() {
       '-l, --listed <market>',
       'market (tse or otc)',
       parseMarket,
-      Category.TSE
+      config.defaultMarket ?? Category.TSE
     )
     .action(
       (
@@ -147,10 +172,47 @@ function run() {
       '-l, --listed <market>',
       'market (tse or otc)',
       parseMarket,
-      Category.TSE
+      config.defaultMarket ?? Category.TSE
     )
     .action((code: string, options: { listed: Category }) =>
       new Fundamentals(code, options.listed).initialize()
+    )
+
+  const configCommand = program
+    .command('config')
+    .description('manage persistent CLI defaults')
+    .action(() => new ConfigCommand('list').initialize())
+
+  configCommand
+    .command('list')
+    .description('show saved configuration')
+    .action(() => new ConfigCommand('list').initialize())
+
+  configCommand
+    .command('path')
+    .description('show the configuration file path')
+    .action(() => new ConfigCommand('path').initialize())
+
+  configCommand
+    .command('reset')
+    .description('replace invalid or saved configuration with empty defaults')
+    .action(() => new ConfigCommand('reset').initialize())
+
+  configCommand
+    .command('set')
+    .description('set a configuration value')
+    .argument('<key>', 'default-market or watch-interval')
+    .argument('<value>', 'value to save')
+    .action((key: string, value: string) =>
+      new ConfigCommand('set', parseConfigKey(key), value).initialize()
+    )
+
+  configCommand
+    .command('unset')
+    .description('remove a configuration value')
+    .argument('<key>', 'default-market or watch-interval')
+    .action((key: string) =>
+      new ConfigCommand('unset', parseConfigKey(key)).initialize()
     )
 
   program
@@ -166,9 +228,36 @@ function parseWatchInterval(value: string): number {
   return seconds
 }
 
+type RawStockOptions = Omit<StockOptionProps, 'watch'> & {
+  watch?: boolean | number
+}
+
+function resolveStockOptions(
+  options: RawStockOptions,
+  config: AppConfig
+): StockOptionProps {
+  return {
+    ...options,
+    listed: options.listed ?? config.defaultMarket,
+    watch:
+      options.watch === true
+        ? config.watchInterval ?? 5
+        : options.watch || undefined,
+  }
+}
+
 function parseMarket(value: string): Category {
   if (value !== Category.TSE && value !== Category.OTC) {
     throw new InvalidArgumentError('market must be tse or otc')
+  }
+  return value
+}
+
+function parseConfigKey(value: string): ConfigKey {
+  if (value !== 'default-market' && value !== 'watch-interval') {
+    throw new InvalidArgumentError(
+      'configuration key must be default-market or watch-interval'
+    )
   }
   return value
 }

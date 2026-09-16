@@ -48,6 +48,52 @@ describe.sequential('built CLI', () => {
     expect(run(['--version']).output.trim()).toBe('2.5.0')
   })
 
+  it('manages persistent defaults and applies the configured market', () => {
+    const configDirectory = path.join(workingDirectory, 'xdg-config')
+    const options = { xdgConfigHome: configDirectory }
+
+    expect(run(['config'], 'success', options).output.trim()).toBe('{}')
+    expect(
+      run(['config', 'set', 'default-market', 'otc'], 'success', options).output
+    ).toContain('Success:')
+    run(['config', 'set', 'watch-interval', '10'], 'success', options)
+
+    const listed = run(['config', 'list'], 'success', options)
+    expect(listed.output).toContain('"defaultMarket": "otc"')
+    expect(listed.output).toContain('"watchInterval": 10')
+    expect(run(['config', 'path'], 'success', options).output.trim()).toBe(
+      path.join(configDirectory, 'tw-stock', 'config.json')
+    )
+
+    const quote = run(['stock', '6547'], 'success', options)
+    expect(quote.output).toContain('Medigen')
+    expect(quote.requests[0]).toContain('otc_6547.tw')
+    expect(quote.requests[0]).not.toContain('tse_6547.tw')
+
+    run(['config', 'unset', 'default-market'], 'success', options)
+    expect(run(['config', 'list'], 'success', options).output).not.toContain(
+      'defaultMarket'
+    )
+  })
+
+  it('recovers from an invalid configuration file', () => {
+    const configDirectory = path.join(
+      workingDirectory,
+      'xdg-config',
+      'tw-stock'
+    )
+    mkdirSync(configDirectory, { recursive: true })
+    writeFileSync(path.join(configDirectory, 'config.json'), '{')
+
+    const failed = runAllowFailure(['stock', '2330'], 'success')
+    expect(failed.status).toBe(1)
+    expect(failed.output).toContain('Invalid config')
+    expect(failed.requests).toHaveLength(0)
+    expect(run(['config', 'path']).output).toContain('config.json')
+    expect(run(['config', 'reset']).output).toContain('Success:')
+    expect(run(['config', 'list']).output.trim()).toBe('{}')
+  })
+
   it('rejects watch intervals below five seconds', () => {
     const result = runAllowFailure(['stock', '2330', '--watch', '1'], 'success')
     expect(result.status).toBe(1)
@@ -56,15 +102,26 @@ describe.sequential('built CLI', () => {
   })
 
   it('polls repeatedly and exits cleanly on SIGINT without clearing piped output', async () => {
+    const configDirectory = path.join(
+      workingDirectory,
+      'xdg-config',
+      'tw-stock'
+    )
+    mkdirSync(configDirectory, { recursive: true })
+    writeFileSync(
+      path.join(configDirectory, 'config.json'),
+      JSON.stringify({ watchInterval: 5 })
+    )
     const child = spawn(
       process.execPath,
-      ['--require', preloadPath, cliPath, 'stock', '2330', '--watch', '5'],
+      ['--require', preloadPath, cliPath, 'stock', '2330', '--watch'],
       {
         cwd: workingDirectory,
         env: {
           ...process.env,
           TW_STOCK_E2E_REQUEST_LOG: requestLog,
           TW_STOCK_E2E_SCENARIO: 'success',
+          XDG_CONFIG_HOME: path.join(workingDirectory, 'xdg-config'),
         },
         stdio: ['ignore', 'pipe', 'pipe'],
       }
@@ -361,6 +418,7 @@ type RunOptions = {
   columns?: number
   home?: string
   shell?: string
+  xdgConfigHome?: string
 }
 
 function run(
@@ -385,6 +443,8 @@ function run(
           : { TW_STOCK_E2E_COLUMNS: String(options.columns) }),
         ...(options.home === undefined ? {} : { HOME: options.home }),
         ...(options.shell === undefined ? {} : { SHELL: options.shell }),
+        XDG_CONFIG_HOME:
+          options.xdgConfigHome ?? path.join(workingDirectory, 'xdg-config'),
       },
     }
   )
@@ -429,6 +489,7 @@ function runAllowFailure(args: string[], scenario: string): RunResult {
         ...process.env,
         TW_STOCK_E2E_REQUEST_LOG: requestLog,
         TW_STOCK_E2E_SCENARIO: scenario,
+        XDG_CONFIG_HOME: path.join(workingDirectory, 'xdg-config'),
       },
     }
   )
