@@ -1,11 +1,15 @@
 import * as fs from 'fs'
 import { dirname, join } from 'path'
 
+import { configPath } from '@/services/config'
+
 type FavoriteData = {
   stockCodes: string[]
 }
 
-const path = './favorite.json'
+function favoritePath(): string {
+  return join(dirname(configPath()), 'favorite.json')
+}
 
 function validateFavorite(data: unknown): asserts data is FavoriteData {
   if (
@@ -24,7 +28,7 @@ function validateFavorite(data: unknown): asserts data is FavoriteData {
   }
 }
 
-function readFavorite(): FavoriteData {
+function readFavorite(path = favoritePath()): FavoriteData {
   let contents: string
   try {
     contents = fs.readFileSync(path, 'utf-8')
@@ -49,12 +53,14 @@ function readFavorite(): FavoriteData {
 }
 
 function writeFavorite(data: unknown): void {
+  const path = favoritePath()
   let temporaryDirectory: string | undefined
   try {
     validateFavorite(data)
     const contents = JSON.stringify(data)
     validateFavorite(JSON.parse(contents))
     if (fs.existsSync(path)) readFavorite()
+    fs.mkdirSync(dirname(path), { recursive: true })
     temporaryDirectory = fs.mkdtempSync(join(dirname(path), '.favorite-'))
     const temporaryPath = join(temporaryDirectory, 'favorite.json')
     fs.writeFileSync(temporaryPath, contents, { encoding: 'utf-8', flag: 'wx' })
@@ -77,7 +83,20 @@ function writeFavorite(data: unknown): void {
 const FilePath = {
   favorite: {
     read: readFavorite,
-    exist: () => fs.existsSync(path),
+    path: favoritePath,
+    import: (source: string) => {
+      const incoming = readFavorite(source)
+      const existing = fs.existsSync(favoritePath())
+        ? readFavorite()
+        : { stockCodes: [] }
+      writeFavorite({
+        ...existing,
+        stockCodes: [
+          ...new Set([...existing.stockCodes, ...incoming.stockCodes]),
+        ],
+      })
+    },
+    exist: () => fs.existsSync(favoritePath()),
     write: writeFavorite,
   },
 }

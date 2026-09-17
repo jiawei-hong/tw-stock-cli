@@ -15,11 +15,14 @@ const originalContents = '{ "stockCodes": ["2330", "00632R"] }\n'
 beforeEach(() => {
   originalDirectory = process.cwd()
   directory = fs.mkdtempSync(join(tmpdir(), 'favorite-persistence-'))
-  process.chdir(directory)
+  vi.stubEnv('XDG_CONFIG_HOME', directory)
+  fs.mkdirSync(join(directory, 'tw-stock'))
+  process.chdir(join(directory, 'tw-stock'))
 })
 
 afterEach(() => {
   vi.restoreAllMocks()
+  vi.unstubAllEnvs()
   process.chdir(originalDirectory)
   fs.rmSync(directory, { recursive: true, force: true })
 })

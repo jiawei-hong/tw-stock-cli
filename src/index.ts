@@ -1,5 +1,7 @@
 import { InvalidArgumentError, program } from 'commander'
 
+import FilePath from '@/utils/file'
+
 import packageJson from '../package.json'
 import ConfigCommand from './commands/config/handler'
 import Events from './commands/events/handler'
@@ -111,6 +113,16 @@ function run() {
     .command('favorite')
     .description('manage favorite stocks')
     .action(() => new Favorite('list').initialize())
+
+  favorite
+    .command('path')
+    .description('show the saved favorites path')
+    .action(() => console.log(FilePath.favorite.path()))
+
+  favorite
+    .command('import [file]')
+    .description('merge a legacy favorite.json into saved favorites')
+    .action((file?: string) => new Favorite('import', file).initialize())
 
   favorite
     .command('create')

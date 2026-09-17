@@ -99,7 +99,11 @@ async function fetchMixedQuotes(): Promise<JsonRecord[]> {
 }
 
 async function runCli(cwd: string, args: string[]): Promise<string> {
-  const env: NodeJS.ProcessEnv = { ...process.env, TERM: 'dumb' }
+  const env: NodeJS.ProcessEnv = {
+    ...process.env,
+    TERM: 'dumb',
+    XDG_CONFIG_HOME: path.join(cwd, 'xdg-config'),
+  }
   delete env.NODE_OPTIONS
   delete env.NODE_PATH
   const result = await execFileAsync(process.execPath, [cliPath, ...args], {
@@ -181,7 +185,12 @@ describe('live MIS and built CLI workflows', () => {
 
   it('creates, adds, lists, quotes, and deletes mixed-market favorites', async () => {
     const quotes = await fetchMixedQuotes()
-    const favoritePath = path.join(cwd, 'favorite.json')
+    const favoritePath = path.join(
+      cwd,
+      'xdg-config',
+      'tw-stock',
+      'favorite.json'
+    )
     expect(await runCli(cwd, ['favorite', 'create'])).toContain(
       'Create favorite file is created!'
     )
@@ -211,6 +220,6 @@ describe('live MIS and built CLI workflows', () => {
     expect(JSON.parse(await readFile(favoritePath, 'utf8'))).toEqual({
       stockCodes: ['6547'],
     })
-    expect(await readdir(cwd)).toEqual(['favorite.json'])
+    expect(await readdir(cwd)).toEqual(['xdg-config'])
   }, 240_000)
 })

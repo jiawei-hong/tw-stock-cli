@@ -173,11 +173,21 @@ tw-stock rank -d 2025-01-15
 
 ### `favorite` — Manage favorite stocks
 
+Favorites are shared across working directories and saved in
+`~/.config/tw-stock/favorite.json` (or `$XDG_CONFIG_HOME/tw-stock/favorite.json`
+when set). No `favorite.json` is created in the working directory.
+Run `tw-stock favorite path` to see the storage location.
+
+To migrate an old file, run `tw-stock favorite import ./favorite.json`.
+The file argument defaults to `./favorite.json`. Import merges unique stock
+codes with existing favorites and preserves the source file. After verifying
+the imported list, you can delete the old file.
+
 ```sh
 tw-stock favorite              # List all favorite stocks (default)
 tw-stock favorite list         # List all favorite stocks
-tw-stock favorite create       # Create favorite file
-tw-stock favorite add <code>   # Add a stock code
+tw-stock favorite create       # Optional: initialize an empty favorites list
+tw-stock favorite add <code>   # Add a stock code (creates storage automatically)
 tw-stock favorite delete <code> # Remove a stock code
 ```
 

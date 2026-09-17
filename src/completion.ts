@@ -14,7 +14,7 @@ completion.tree({
   index: ['TAIEX', 'TWO', 'FRMSA', '--multiple', '--time', '--chart'],
   institutional: ['--listed', '--date', '--number'],
   rank: ['--listed', '--date', '--number', '--losers', '--volume'],
-  favorite: ['create', 'add', 'delete', 'list'],
+  favorite: ['create', 'add', 'delete', 'list', 'import', 'path'],
 })
 
 export default completion

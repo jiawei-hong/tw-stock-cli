@@ -13,7 +13,7 @@ import FilePath from '@/utils/file'
 import { responsiveTable } from '@/utils/table'
 import { displayFailed, displaySuccess, displayWarning } from '@/utils/text'
 
-type Action = 'create' | 'add' | 'delete' | 'list'
+type Action = 'create' | 'add' | 'delete' | 'list' | 'import'
 
 interface Favorite {
   action: Action
@@ -30,12 +30,10 @@ class Favorite {
   }
 
   async initialize() {
-    if (this.action !== 'create') {
-      if (FilePath.favorite.exist()) {
-        this.data = FilePath.favorite.read()?.stockCodes
-      }
-    }
     try {
+      if (this.action !== 'create' && FilePath.favorite.exist()) {
+        this.data = FilePath.favorite.read().stockCodes
+      }
       await this.execute()
     } catch (error) {
       displayFailed(String(error))
@@ -43,7 +41,13 @@ class Favorite {
   }
 
   async execute() {
-    if (!FilePath.favorite.exist() && this.action !== 'create') {
+    if (this.action === 'import') {
+      FilePath.favorite.import(this.code ?? './favorite.json')
+      displaySuccess('Favorites imported successfully; source file preserved.')
+    } else if (
+      !FilePath.favorite.exist() &&
+      !['create', 'add'].includes(this.action)
+    ) {
       displayFailed(FAVORITE_NOT_FOUND)
     } else if (this.action === 'create') {
       if (FilePath.favorite.exist()) {

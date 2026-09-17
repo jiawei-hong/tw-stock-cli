@@ -27,6 +27,9 @@ describe.sequential('built CLI', () => {
   beforeEach(() => {
     workingDirectory = mkdtempSync(path.join(tmpdir(), 'tw-stock-e2e-'))
     requestLog = path.join(workingDirectory, 'requests.log')
+    mkdirSync(path.join(workingDirectory, 'xdg-config', 'tw-stock'), {
+      recursive: true,
+    })
   })
 
   afterEach(() => {
@@ -270,16 +273,18 @@ describe.sequential('built CLI', () => {
   })
 
   it('supports the favorite lifecycle without stock.json', () => {
-    expect(run(['favorite', 'create']).output).toContain(
-      'Create favorite file is created!'
-    )
     expect(run(['favorite', 'add', '2330']).output).toContain(
       'added to the favorite list'
     )
     expect(run(['favorite', 'add', '6547']).output).toContain(
       'added to the favorite list'
     )
-    const favoritePath = path.join(workingDirectory, 'favorite.json')
+    const favoritePath = path.join(
+      workingDirectory,
+      'xdg-config',
+      'tw-stock',
+      'favorite.json'
+    )
     const favoriteBeforeUpdate = readFileSync(favoritePath)
     expect(readFileSync(favoritePath)).toEqual(favoriteBeforeUpdate)
     expect(run(['favorite', 'list']).output).toContain('TSMC')
@@ -287,8 +292,53 @@ describe.sequential('built CLI', () => {
     expect(run(['favorite', 'delete', '2330']).output).toContain(
       'removed from favorite list'
     )
-    expect(readJson('favorite.json')).toEqual({ stockCodes: ['6547'] })
+    expect(readJson('xdg-config/tw-stock/favorite.json')).toEqual({
+      stockCodes: ['6547'],
+    })
     expect(exists('stock.json')).toBe(false)
+    expect(exists('favorite.json')).toBe(false)
+  })
+
+  it('imports legacy favorites without requests and shares them across directories', () => {
+    const source = path.join(workingDirectory, 'favorite.json')
+    const contents = JSON.stringify({ stockCodes: ['0050', '2330', '0050'] })
+    writeFileSync(source, contents)
+    run(['favorite', 'add', '2330'])
+    const imported = run(['favorite', 'import'])
+    expect(imported.requests).toEqual([])
+    expect(readFileSync(source, 'utf8')).toBe(contents)
+    expect(readJson('xdg-config/tw-stock/favorite.json')).toEqual({
+      stockCodes: ['2330', '0050'],
+    })
+    const configHome = path.join(workingDirectory, 'xdg-config')
+    const result = spawnSync(process.execPath, [cliPath, 'favorite', 'path'], {
+      cwd: repositoryRoot,
+      encoding: 'utf8',
+      env: { ...process.env, XDG_CONFIG_HOME: configHome },
+    })
+    expect(result.status).toBe(0)
+    expect(result.stdout.trim()).toBe(
+      path.join(configHome, 'tw-stock', 'favorite.json')
+    )
+    const removed = spawnSync(
+      process.execPath,
+      [cliPath, 'favorite', 'delete', '2330'],
+      {
+        cwd: repositoryRoot,
+        encoding: 'utf8',
+        env: { ...process.env, XDG_CONFIG_HOME: configHome },
+      }
+    )
+    expect(removed.status).toBe(0)
+    expect(readJson('xdg-config/tw-stock/favorite.json')).toEqual({
+      stockCodes: ['0050'],
+    })
+    writeFileSync(source, '{')
+    const failed = runAllowFailure(['favorite', 'import'], 'success')
+    expect(failed.status).toBe(1)
+    expect(readJson('xdg-config/tw-stock/favorite.json')).toEqual({
+      stockCodes: ['0050'],
+    })
   })
 
   it('manages favorites without TDCC and accepts unavailable prices', () => {
@@ -299,7 +349,9 @@ describe.sequential('built CLI', () => {
     const listed = run(['favorite', 'list'], 'directory-failure')
     expect(listed.output).toContain('Taiwan Cement')
     expect(listed.requests).toHaveLength(1)
-    expect(readJson('favorite.json')).toEqual({ stockCodes: ['1101'] })
+    expect(readJson('xdg-config/tw-stock/favorite.json')).toEqual({
+      stockCodes: ['1101'],
+    })
   })
 
   it('routes mixed, favorite, and leading-zero symbols by their exchange', () => {
@@ -315,7 +367,7 @@ describe.sequential('built CLI', () => {
     )
 
     writeFileSync(
-      path.join(workingDirectory, 'favorite.json'),
+      path.join(workingDirectory, 'xdg-config', 'tw-stock', 'favorite.json'),
       JSON.stringify({ stockCodes: ['0050', '6547'] })
     )
     const favorites = run(['stock', '--favorite'])
@@ -374,7 +426,7 @@ describe.sequential('built CLI', () => {
 
   it('reports empty favorites without making network requests', () => {
     writeFileSync(
-      path.join(workingDirectory, 'favorite.json'),
+      path.join(workingDirectory, 'xdg-config', 'tw-stock', 'favorite.json'),
       JSON.stringify({ stockCodes: [] })
     )
     const result = runAllowFailure(['stock', '--favorite'], 'success')
