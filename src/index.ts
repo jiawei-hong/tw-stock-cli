@@ -9,7 +9,9 @@ import Favorite from './commands/favorite/handler'
 import Fundamentals from './commands/fundamentals/handler'
 import Indices from './commands/index/handler'
 import Institutional from './commands/institutional/handler'
+import Overview from './commands/overview/handler'
 import Rank from './commands/rank/handler'
+import Screen, { ScreenOptions } from './commands/screen/handler'
 import Stock from './commands/stock/handler'
 import completion from './completion'
 import { AppConfig, ConfigKey, readConfig } from './services/config'
@@ -55,6 +57,8 @@ function run() {
       '-d --date <date>',
       'search historical data (YYYY-MM or YYYY-MM-DD)'
     )
+    .option('--chart', 'draw historical daily closing prices')
+    .option('--range <range>', 'chart range: 1m (default), 3m, 6m, or 1y')
     .option('--details', 'show detailed stock data', true)
     .option(
       '-w, --watch [seconds]',
@@ -63,6 +67,22 @@ function run() {
     )
     .action((code: string, options: RawStockOptions) =>
       new Stock(code, resolveStockOptions(options, config)).initialize()
+    )
+
+  program
+    .command('overview')
+    .description(
+      'show a stock overview with quotes, fundamentals, institutional data, and events'
+    )
+    .argument('<stock_code>', 'stock code')
+    .option(
+      '-l, --listed <market>',
+      'market (tse or otc)',
+      parseMarket,
+      config.defaultMarket ?? Category.TSE
+    )
+    .action((code: string, options: { listed: Category }) =>
+      new Overview(code, options.listed).initialize()
     )
 
   program
@@ -108,6 +128,64 @@ function run() {
     .option('--losers', 'show top losers instead of gainers', false)
     .option('--volume', 'sort by volume', false)
     .action((options: RankOptionProps) => new Rank(options).initialize())
+
+  program
+    .command('screen')
+    .description(
+      'filter daily closing prices by price, volume in shares, and change percent'
+    )
+    .option(
+      '-l, --listed <market>',
+      'market (tse or otc)',
+      parseMarket,
+      config.defaultMarket ?? Category.TSE
+    )
+    .option(
+      '-d, --date <date>',
+      'report date (YYYY-MM-DD); defaults to latest available'
+    )
+    .option(
+      '--min-price <value>',
+      'minimum closing price (inclusive)',
+      parseScreenNumber
+    )
+    .option(
+      '--max-price <value>',
+      'maximum closing price (inclusive)',
+      parseScreenNumber
+    )
+    .option(
+      '--min-volume <shares>',
+      'minimum volume in shares (inclusive)',
+      parseScreenNumber
+    )
+    .option(
+      '--max-volume <shares>',
+      'maximum volume in shares (inclusive)',
+      parseScreenNumber
+    )
+    .option(
+      '--min-change <percent>',
+      'minimum price change percent (inclusive)',
+      parseScreenNumber
+    )
+    .option(
+      '--max-change <percent>',
+      'maximum price change percent (inclusive)',
+      parseScreenNumber
+    )
+    .option(
+      '--sort <field>',
+      'descending sort: volume, change, or price',
+      'volume'
+    )
+    .option(
+      '-n, --number <count>',
+      'maximum number of results',
+      parseScreenNumber,
+      20
+    )
+    .action((options: ScreenOptions) => new Screen(options).initialize())
 
   const favorite = program
     .command('favorite')
@@ -230,6 +308,16 @@ function run() {
   program
     .parseAsync(process.argv)
     .catch((error) => displayFailed(String(error)))
+}
+
+function parseScreenNumber(value: string): number {
+  if (
+    !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(value) ||
+    !Number.isFinite(Number(value))
+  ) {
+    throw new InvalidArgumentError('expected a finite decimal number')
+  }
+  return Number(value)
 }
 
 function parseWatchInterval(value: string): number {

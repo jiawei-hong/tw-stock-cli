@@ -13,6 +13,7 @@ if (Number.isFinite(terminalColumns) && terminalColumns > 0) {
 
 const stockRows = {
   2330: stock('2330', 'TSMC', 'tse', '1000.00'),
+  6488: stock('6488', 'GlobalWafers', 'otc', '400.00'),
   6547: stock('6547', 'Medigen', 'otc', '42.50'),
   '0050': stock('0050', 'ETF50', 'tse', '180.25'),
   '00679B': stock('00679B', 'USD Bond ETF', 'tse', '29.75'),
@@ -23,6 +24,13 @@ const stockRows = {
 globalThis.fetch = async (input) => {
   const url = decodeURIComponent(String(input))
   if (requestLog) fs.appendFileSync(requestLog, `${url}\n`)
+
+  if (
+    scenario === 'overview-all-failure' ||
+    (scenario === 'overview-quote-failure' && url.includes('getStockInfo.jsp'))
+  ) {
+    return new Response('Unavailable', { status: 400 })
+  }
 
   if (url.includes('/tpex_exright_prepost')) {
     return fixtureResponse({
@@ -126,6 +134,39 @@ globalThis.fetch = async (input) => {
             : row
         }),
       },
+    })
+  }
+
+  if (
+    (url.includes('/exchangeReport/STOCK_DAY') ||
+      url.includes('/afterTrading/tradingStock')) &&
+    scenario.startsWith('chart')
+  ) {
+    const parsed = new URL(url)
+    const date = parsed.searchParams.get('date').replaceAll('/', '')
+    const month = date.slice(0, 6)
+    if (scenario === 'chart-failure')
+      return new Response('Unavailable', { status: 400 })
+    const rows =
+      scenario === 'chart-empty'
+        ? []
+        : Array.from({ length: 20 }, (_, index) => [
+            `${Number(month.slice(0, 4)) - 1911}/${month.slice(4)}/${String(
+              index + 1
+            ).padStart(2, '0')}`,
+            '1000',
+            '100000',
+            '100',
+            '110',
+            '90',
+            String(100 + index),
+            '1',
+            '100',
+          ])
+    return fixtureResponse({
+      json: url.includes('tradingStock')
+        ? { stat: 'ok', tables: [{ data: rows }] }
+        : { stat: 'OK', data: rows },
     })
   }
 
@@ -272,10 +313,19 @@ globalThis.fetch = async (input) => {
     })
   }
 
+  if (
+    scenario === 'screen-failure' &&
+    (url.includes('/afterTrading/MI_INDEX') ||
+      url.includes('/afterTrading/dailyQuotes'))
+  ) {
+    return new Response('Unavailable', { status: 400 })
+  }
+
   if (url.includes('/afterTrading/MI_INDEX')) {
     return fixtureResponse({
       json: {
         stat: 'OK',
+        date: '20260907',
         tables: [
           {
             title: '每日收盤行情(全部)',
@@ -331,10 +381,14 @@ globalThis.fetch = async (input) => {
     return fixtureResponse({ json: institutionalRows('aaData') })
   }
 
-  if (url.includes('stk_quote_result.php')) {
+  if (
+    url.includes('stk_quote_result.php') ||
+    url.includes('/afterTrading/dailyQuotes')
+  ) {
     return fixtureResponse({
       json: {
-        stat: 'OK',
+        stat: 'ok',
+        date: '20260907',
         tables: [
           {
             data: [
@@ -375,6 +429,20 @@ function institutionalRows(key) {
   return {
     stat: 'OK',
     [key]: [
+      [
+        '6488',
+        'GlobalWafers',
+        '500',
+        '200',
+        '300',
+        '100',
+        '50',
+        '50',
+        '-20',
+        '0',
+        '0',
+        '330',
+      ],
       [
         '2330',
         'TSMC',

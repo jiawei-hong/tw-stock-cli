@@ -28,6 +28,8 @@ tw-stock stock [stock_code]
 | `-s, --search <query>`  | Find active stocks by code or company name          |
 | `-d, --date <date>`     | Search historical data (`YYYY-MM` or `YYYY-MM-DD`)  |
 | `--details`             | Show detailed stock data (default: `true`)          |
+| `--chart`             | Draw historical daily closing prices               |
+| `--range <range>`      | Chart lookback: `1m`, `3m`, `6m`, or `1y`             |
 | `-w, --watch <seconds>` | Refresh live quotes every 5 seconds or more         |
 
 **Examples:**
@@ -81,6 +83,87 @@ Favorite lists, rankings, and institutional summary/stock tables also adapt to
 terminal width: names wrap first, then rows become stacked cards if the other
 columns cannot fit. Every field is retained, including ranking metrics and
 institutional totals. Daily reports do not imply live quote freshness.
+
+### Individual stock history charts
+
+```sh
+tw-stock stock 2330 --chart --range 3m
+tw-stock stock 6488 --listed otc --chart --range 1y
+tw-stock stock 2330 --chart --date 2026-09
+```
+
+`--chart` defaults to a rolling one-month window ending on today's Taipei date.
+`--range` accepts `1m`, `3m`, `6m`, or `1y`; alternatively, `--date YYYY-MM`
+charts one calendar month. Market defaults to `tse` or your saved default;
+use `--listed otc` for OTC securities. Chart mode requires one stock code and
+cannot combine with watch, search, favorites, multiple stocks, or odd lots.
+`--range` requires `--chart` and cannot combine with `--date`.
+
+The chart uses **unadjusted daily closing prices**, not total returns. Its
+horizontal axis follows trading sessions, not elapsed calendar days. Missing
+closing prices are omitted. The actual first/last dates, full-data closing-price
+extremes, and first-to-last price change appear below the chart. Narrow terminals
+use evenly sampled points (including both endpoints), so visual detail can be
+omitted; summary statistics always use all valid data. No chart is shown if a
+monthly request fails, preventing incomplete downloads from appearing complete.
+
+Historical data sources: [TWSE daily stock data](https://www.twse.com.tw/en/trading/historical/stock-day.html)
+and [TPEx daily stock data](https://www.tpex.org.tw/zh-tw/mainboard/trading/info/stock-pricing.html).
+
+### `screen` — Filter daily market data
+
+```sh
+# Price <= 100 and at least 10,000 shares traded
+tw-stock screen --max-price 100 --min-volume 10000
+
+# Price gain of at least 2%; sort by percentage change
+tw-stock screen --min-change 2 --sort change -n 30
+
+# OTC decliners on a specific reporting date
+tw-stock screen --listed otc --date 2026-09-07 --max-change -2
+```
+
+Supports `--min-price`, `--max-price`, `--min-volume`, `--max-volume`,
+`--min-change`, and `--max-change`. All conditions apply together with inclusive
+bounds. Volume is **shares, not lots**; change bounds are percentage points
+(e.g. `2` means 2%). Missing change values display as `-` and cannot pass a
+change filter. Rows without a valid positive closing price or valid volume
+are excluded with a warning.
+
+`--sort volume|change|price` sorts descending (default: volume); `--number`
+limits displayed matches (default: 20). The report shows total matches before
+limiting. No matches is a successful empty result, distinct from a failed or
+unavailable data source. Without filters, it lists the highest-volume securities.
+The universe is the exchange's daily report, which may include ETFs and other
+listed securities, not just ordinary company shares.
+
+This is a **daily closing-data screen**, not a live intraday scanner. The source
+report date is always displayed. Omit `--date` to request the latest available
+report; specify `YYYY-MM-DD` for an exact date. A different returned date is
+reported as an error. `--listed tse|otc` overrides the saved default market.
+Valuation filters are not included in this version.
+
+### `overview` — Stock overview
+
+```sh
+tw-stock overview 2330
+tw-stock overview 6488 --listed otc
+```
+
+Combines a quote, valuation/revenue/cumulative EPS, institutional net buying,
+and this month's events in one report. Market defaults to `tse` or your saved
+`default-market`; `--listed` overrides it for all four sections.
+
+Quotes retain their trade timestamp and status; fundamentals retain each metric's
+source period. Institutional data is requested for today's Taipei date and may
+not be available before publication or on non-trading days; no earlier date is
+substituted. Events are filtered to the current Taipei month, including market
+calendar entries and periods overlapping that month. Empty event results do not
+prove there are no events.
+
+Sections render in order and continue after a source failure. A failed whole
+section produces exit code 1 while retaining the other sections; partial failures
+within fundamentals or events show warnings and keep available data.
 
 ### `index` — Search market indices
 
@@ -213,7 +296,7 @@ tw-stock config reset
 ```
 
 Command-line options override saved defaults. `default-market` applies to stock,
-rank, institutional, events, and fundamentals commands. Run `tw-stock stock 2330
+rank, institutional, events, fundamentals, overview, and screen commands. Run `tw-stock stock 2330
 --watch` to use the saved `watch-interval`; an explicit value such as `--watch
 15` takes precedence. The minimum interval is five seconds.
 

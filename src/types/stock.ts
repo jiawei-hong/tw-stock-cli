@@ -107,6 +107,8 @@ export type StockOptionProps = {
   type?: string
   details?: boolean
   watch?: number
+  chart?: boolean
+  range?: string
 }
 
 export enum StockMode {

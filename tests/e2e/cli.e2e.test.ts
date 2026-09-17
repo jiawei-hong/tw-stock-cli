@@ -161,6 +161,223 @@ describe.sequential('built CLI', () => {
     expect(result.requests).toHaveLength(0)
   })
 
+  it('draws a calendar-month closing chart and preserves its data summary', () => {
+    const result = run(
+      ['stock', '2330', '--chart', '--date', '2026-09'],
+      'chart-success'
+    )
+    expect(result.output).toContain('2026-09-01')
+    expect(result.output).toContain('2026-09-20')
+    expect(result.output).toContain('119.00')
+    expect(result.output).toContain('19.00%')
+    expect(result.output).toContain('未還原權息')
+    expect(result.requests).toHaveLength(1)
+    expect(result.requests[0]).toContain('date=20260901')
+    expect(result.output).not.toContain('報價狀態')
+  })
+
+  it('draws rolling multi-month history through the configured OTC market', () => {
+    run(['config', 'set', 'default-market', 'otc'])
+    const result = run(
+      ['stock', '6488', '--chart', '--range', '3m'],
+      'chart-success',
+      { columns: 40 }
+    )
+    expect(result.output).toContain('6488 OTC')
+    expect(result.requests).toHaveLength(4)
+    for (const url of result.requests) {
+      expect(url).toContain('/afterTrading/tradingStock')
+      expect(url).toContain('code=6488')
+    }
+    for (const line of result.output.split('\n'))
+      expect(stringWidth(line)).toBeLessThanOrEqual(40)
+  })
+
+  it('reports empty or failed chart downloads without a misleading graph', () => {
+    for (const scenario of ['chart-empty', 'chart-failure']) {
+      const result = runAllowFailure(
+        ['stock', '2330', '--chart', '--date', '2026-09'],
+        scenario
+      )
+      expect(result.status).toBe(1)
+      expect(result.output).toContain('Failure:')
+      expect(result.output).not.toContain('區間漲跌幅')
+    }
+  })
+
+  it('rejects invalid chart modes before requesting history', () => {
+    for (const args of [
+      ['--range', '3m'],
+      ['--chart', '--range', '2m'],
+      ['--chart', '--watch', '5'],
+      ['--chart', '--favorite'],
+      ['--chart', '--date', '2026-09-07'],
+      ['--chart', '--range', '3m', '--date', '2026-09'],
+    ]) {
+      const result = runAllowFailure(
+        ['stock', '2330', ...args],
+        'chart-success'
+      )
+      expect(result.status).toBe(1)
+      expect(result.requests).toEqual([])
+    }
+  })
+
+  it('screens daily data with combined inclusive bounds and exact reporting dates', () => {
+    const result = run([
+      'screen',
+      '--date',
+      '2026-09-07',
+      '--min-price',
+      '40',
+      '--max-price',
+      '40',
+      '--min-volume',
+      '8000',
+      '--max-change',
+      '-2',
+    ])
+    expect(result.output).toContain('Taiwan Cement')
+    expect(result.output).not.toContain('TSMC')
+    expect(result.output).toContain('2026-09-07')
+    expect(result.output).toContain('成交股數')
+    expect(result.output).toContain('符合 1 筆')
+    expect(result.requests).toHaveLength(1)
+    expect(result.requests[0]).toContain('date=20260907')
+  })
+
+  it('shows total matches before applying the screen result limit', () => {
+    const result = run(['screen', '--sort', 'price', '-n', '1'])
+    expect(result.output).toContain('符合 2 筆，顯示 1 筆')
+    expect(result.output).toContain('TSMC')
+    expect(result.output).not.toContain('Taiwan Cement')
+    const empty = run(['screen', '--min-price', '99999'])
+    expect(empty.output).toContain('沒有符合條件')
+  })
+
+  it('screens OTC reports with the modern endpoint and wraps narrow tables', () => {
+    run(['config', 'set', 'default-market', 'otc'])
+    const result = run(
+      ['screen', '--date', '2026-09-07', '--min-volume', '5000'],
+      'success',
+      { columns: 40 }
+    )
+    expect(result.output).toContain('Medigen')
+    expect(result.output).toContain('OTC')
+    expect(result.requests[0]).toContain('/afterTrading/dailyQuotes')
+    expect(result.requests[0]).toContain('date=2026/09/07')
+    for (const line of result.output.split('\n'))
+      expect(stringWidth(line)).toBeLessThanOrEqual(40)
+  })
+
+  it('distinguishes screen data failures and mismatched dates from zero matches', () => {
+    const failed = runAllowFailure(['screen'], 'screen-failure')
+    expect(failed.status).toBe(1)
+    expect(failed.output).not.toContain('沒有符合條件')
+    const mismatch = runAllowFailure(
+      ['screen', '--date', '2026-09-08'],
+      'success'
+    )
+    expect(mismatch.status).toBe(1)
+    expect(mismatch.output).toContain('source returned 2026-09-07')
+  })
+
+  it('validates screen bounds and dates before making requests', () => {
+    for (const args of [
+      ['--min-price', '50', '--max-price', '10'],
+      ['--min-volume', '-1'],
+      ['--min-volume', '1.5'],
+      ['--min-change', 'NaN'],
+      ['--max-price', 'Infinity'],
+      ['--number', '2junk'],
+      ['--number', '0'],
+      ['--sort', 'unknown'],
+      ['--date', '2026-02-30'],
+    ]) {
+      const result = runAllowFailure(['screen', ...args], 'success')
+      expect(result.status).toBe(1)
+      expect(result.requests).toEqual([])
+    }
+  })
+
+  it('combines all four overview sections with source periods', () => {
+    const result = run(['overview', '2330'])
+    for (const text of [
+      '2330 TSE 個股摘要',
+      '報價狀態',
+      '基本面',
+      '基本 EPS (YTD)',
+      '三大法人',
+      '1,700',
+      '本月事件',
+    ]) {
+      expect(result.output).toContain(text)
+    }
+    expect(result.output.indexOf('基本面')).toBeLessThan(
+      result.output.indexOf('三大法人')
+    )
+    expect(
+      result.requests.filter((url) => url.includes('getStockInfo.jsp'))
+    ).toHaveLength(1)
+    expect(
+      result.requests.some(
+        (url) => /date=\d{8}/.test(url) && url.includes('/fund/T86')
+      )
+    ).toBe(true)
+  })
+
+  it('uses the configured overview market and accepts an explicit override', () => {
+    run(['config', 'set', 'default-market', 'otc'])
+    const otc = run(['overview', '6488'])
+    expect(otc.output).toContain('6488 OTC 個股摘要')
+    expect(otc.output).toContain('GlobalWafers')
+    expect(
+      otc.requests.some((url) =>
+        url.includes('tpex_mainboard_peratio_analysis')
+      )
+    ).toBe(true)
+    expect(
+      otc.requests.some((url) => url.includes('3itrade_hedge_result'))
+    ).toBe(true)
+    const tse = run(['overview', '2330', '--listed', 'tse'])
+    expect(tse.output).toContain('2330 TSE 個股摘要')
+    expect(tse.requests.some((url) => url.includes('tpex.org.tw'))).toBe(false)
+  })
+
+  it('keeps remaining overview sections after a quote source failure', () => {
+    const result = runAllowFailure(
+      ['overview', '2330'],
+      'overview-quote-failure'
+    )
+    expect(result.status).toBe(1)
+    expect(result.output).toContain('Failure:')
+    expect(result.output).toContain('基本 EPS (YTD)')
+    expect(result.output).toContain('1,700')
+    expect(result.output).toContain('本月事件')
+  })
+
+  it('reports total overview failure and rejects bad inputs before requests', () => {
+    const result = runAllowFailure(['overview', '2330'], 'overview-all-failure')
+    expect(result.status).toBe(1)
+    expect(result.output).toContain('all events datasets unavailable')
+    for (const args of [
+      ['overview'],
+      ['overview', '2330-0050'],
+      ['overview', '2330', '--listed', 'invalid'],
+    ]) {
+      const invalid = runAllowFailure(args, 'success')
+      expect(invalid.status).toBe(1)
+      expect(invalid.requests).toEqual([])
+    }
+  })
+
+  it('fits overview tables into a narrow terminal', () => {
+    const result = run(['overview', '2330'], 'success', { columns: 40 })
+    for (const line of result.output.split('\n')) {
+      expect(stringWidth(line)).toBeLessThanOrEqual(40)
+    }
+  })
+
   it('shows market events from TWSE OpenAPI', () => {
     const result = run(['events', '2330', '--month', '2026-09'])
     expect(result.output).toContain('Mid-Autumn Festival')
