@@ -182,6 +182,41 @@ function holidayContent(item: Holiday): string {
   return description ? `${item.Name} ${description}` : item.Name
 }
 
+/**
+ * TPEx's halt history stores a suspension and its resumption as separate rows
+ * (verified 2026-11-15: none of 365 rows has both dates). Merge each
+ * suspension with the next resumption for the same code into one record;
+ * a suspension with no later resumption is still in effect.
+ */
+export function pairTpexHalts(halts: TpexHalt[]): TpexHalt[] {
+  const start = (item: TpexHalt) =>
+    (item.DateOfSuspendedTrading || item.DateOfResumedTrading).replaceAll(
+      '/',
+      ''
+    )
+  const paired: TpexHalt[] = []
+  const open = new Map<string, TpexHalt>()
+  for (const item of [...halts].sort((left, right) =>
+    start(left).localeCompare(start(right))
+  )) {
+    const key = item.SecuritiesCompanyCode.trim().toUpperCase()
+    if (item.DateOfSuspendedTrading && !item.DateOfResumedTrading) {
+      const halt = { ...item }
+      open.set(key, halt)
+      paired.push(halt)
+      continue
+    }
+    const pending = open.get(key)
+    if (!item.DateOfSuspendedTrading && pending) {
+      pending.DateOfResumedTrading = item.DateOfResumedTrading
+      open.delete(key)
+      continue
+    }
+    paired.push(item)
+  }
+  return paired
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
@@ -348,7 +383,7 @@ class Events {
     const dividends = (data[1] ?? []) as TpexDividend[]
     const dispositions = (data[2] ?? []) as TpexDisposition[]
     const notices = (data[3] ?? []) as TpexNotice[]
-    const halts = (data[4] ?? []) as TpexHalt[]
+    const halts = pairTpexHalts((data[4] ?? []) as TpexHalt[])
     return [
       ...dividends
         .filter(

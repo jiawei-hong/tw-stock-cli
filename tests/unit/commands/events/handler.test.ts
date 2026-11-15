@@ -1,5 +1,7 @@
-import Events from '@/commands/events/handler'
+import { getTpexOpenData } from '@/commands/events/api'
+import Events, { pairTpexHalts } from '@/commands/events/handler'
 import { getTwseOpenData } from '@/services/twse-openapi'
+import { Category } from '@/types/stock'
 
 vi.mock('@/services/twse-openapi', async (loadOriginal) => ({
   ...(await loadOriginal<typeof import('@/services/twse-openapi')>()),
@@ -81,6 +83,68 @@ it('includes ranges overlapping the requested month and month end dates', async 
     ])
   await new Events('2330', '2026-10').execute()
   expect(log).toHaveBeenCalledWith(expect.stringContaining('2026-10-31'))
+  log.mockRestore()
+})
+
+// Real TPEx tpex_spendi_history rows (2026-11-15): one row per state change.
+const tpexHalts = [
+  {
+    SecuritiesCompanyCode: '3226',
+    CompanyName: '龍鋒',
+    DateOfSuspendedTrading: '1150109',
+    DateOfResumedTrading: '',
+  },
+  {
+    SecuritiesCompanyCode: '3226',
+    CompanyName: '龍鋒',
+    DateOfSuspendedTrading: '',
+    DateOfResumedTrading: '1150112',
+  },
+  {
+    SecuritiesCompanyCode: '1788',
+    CompanyName: '杏昌',
+    DateOfSuspendedTrading: '1150618',
+    DateOfResumedTrading: '',
+  },
+  {
+    SecuritiesCompanyCode: '9960',
+    CompanyName: '邁達康',
+    DateOfSuspendedTrading: '',
+    DateOfResumedTrading: '1150429',
+  },
+]
+
+it('pairs TPEx suspension and resumption rows', () => {
+  expect(
+    pairTpexHalts(tpexHalts).map((item) => [
+      item.SecuritiesCompanyCode,
+      item.DateOfSuspendedTrading,
+      item.DateOfResumedTrading,
+    ])
+  ).toEqual([
+    ['3226', '1150109', '1150112'],
+    // Resumed without a suspension row in this year's history.
+    ['9960', '', '1150429'],
+    // Still suspended.
+    ['1788', '1150618', ''],
+  ])
+})
+
+it('shows a TPEx halt and its resumption as one event', async () => {
+  vi.mocked(getTwseOpenData).mockResolvedValueOnce([])
+  vi.mocked(getTpexOpenData)
+    .mockResolvedValueOnce([])
+    .mockResolvedValueOnce([])
+    .mockResolvedValueOnce([])
+    .mockResolvedValueOnce(tpexHalts)
+  const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+  await new Events('3226', '2026-01', Category.OTC).execute()
+
+  const output = String(log.mock.calls.at(-1)?.[0])
+  expect(output).toContain('2026-01-09～2026-01-12')
+  expect(output).not.toContain('-～2026-01-12')
+  expect(output).not.toContain('2026-01-09～-')
   log.mockRestore()
 })
 
