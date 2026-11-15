@@ -6,6 +6,7 @@ import {
   resetSecurityDirectoryCache,
   searchSecurityDirectory,
   SECURITY_DIRECTORY_CACHE_TTL_MS,
+  securityTypePriority,
   TDCC_TIMEOUT_MS,
 } from '@/services/security-directory'
 import { Category } from '@/types/stock'
@@ -200,6 +201,52 @@ describe('getSecurityDirectory', () => {
       expect.objectContaining({ code: '2331' }),
       expect.objectContaining({ code: '1233' }),
     ])
+  })
+
+  it('ranks stocks and ETFs ahead of warrants with an equally good match', async () => {
+    const record = (code: string, name: string, market = '上市') => ({
+      證券代號: code,
+      證券名稱: name,
+      市場別: market,
+      證券狀態: '正常',
+    })
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => [
+        record('03011T', '台積電凱基67售14'),
+        record('030156', '台積電永豐64購15'),
+        record('700709', '台積電統一5C購02', '上櫃'),
+        record('23301', '台積電一'),
+        record('00923', '台積電ETF'),
+        record('2330', '台積電'),
+      ],
+    })
+
+    const results = await searchSecurityDirectory('台積')
+    expect(results.map((security) => security.code)).toEqual([
+      '2330',
+      '00923',
+      '23301',
+      '03011T',
+      '030156',
+      '700709',
+    ])
+  })
+
+  it.each([
+    ['2330', 0],
+    ['0050', 1],
+    ['00878', 1],
+    ['00631L', 1],
+    ['2881A', 2],
+    ['020000', 3],
+    ['01001T', 4],
+    ['23301', 5],
+    ['030156', 6],
+    ['03011T', 6],
+    ['700709', 6],
+  ])('orders %s with priority %i', (code, priority) => {
+    expect(securityTypePriority(code)).toBe(priority)
   })
 
   it('returns no matches for an empty or unknown query', async () => {

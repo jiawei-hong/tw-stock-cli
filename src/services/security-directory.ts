@@ -130,6 +130,22 @@ export function getSecurityRecords(
   return directoryRequest
 }
 
+/**
+ * Search order for security types, inferred from Taiwan's code conventions
+ * because the TDCC feed has no type column: stocks (2330), ETFs (0050, 00878,
+ * 00631L), preferred shares (2881A), ETNs (020000), others such as REITs,
+ * convertible bonds (23301), then warrants (030156, 7xxxxx).
+ */
+export function securityTypePriority(code: string): number {
+  if (/^[1-9]\d{3}$/.test(code)) return 0
+  if (/^00\d{2,4}[A-Z]?$/.test(code)) return 1
+  if (/^[1-9]\d{3}[A-Z]$/.test(code)) return 2
+  if (/^020\d{3}$/.test(code)) return 3
+  if (/^(0[3-8]\d{3}|7\d{4})[0-9A-Z]$/.test(code)) return 6
+  if (/^[1-9]\d{4}$/.test(code)) return 5
+  return 4
+}
+
 export async function searchSecurityDirectory(
   query: string,
   category?: Category
@@ -157,6 +173,11 @@ export async function searchSecurityDirectory(
   return matches.sort((left, right) => {
     const rankDifference = rank(left) - rank(right)
     if (rankDifference) return rankDifference
+    // Warrants are ~95% of the directory; without this, "台積" lists only
+    // 台積電 warrants (03xxxx sorts before 2330) and 2330 misses the top 20.
+    const typeDifference =
+      securityTypePriority(left.code) - securityTypePriority(right.code)
+    if (typeDifference) return typeDifference
     const codeDifference = left.code.localeCompare(right.code, 'en')
     if (codeDifference) return codeDifference
     const categoryDifference =
