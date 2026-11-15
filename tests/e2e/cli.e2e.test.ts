@@ -48,7 +48,7 @@ describe.sequential('built CLI', () => {
   })
 
   it('reports the package version', () => {
-    expect(run(['--version']).output.trim()).toBe('2.6.0')
+    expect(run(['--version']).output.trim()).toBe('2.6.1')
   })
 
   it('manages persistent defaults and applies the configured market', () => {
