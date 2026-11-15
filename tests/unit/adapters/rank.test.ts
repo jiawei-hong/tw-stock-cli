@@ -156,5 +156,32 @@ describe('adaptRankResponse', () => {
       const result = adaptRankResponse(data as any, Category.OTC)
       expect(result).toEqual([])
     })
+
+    it('excludes TPEx warrants but keeps stocks, ETFs and ETNs', () => {
+      const row = (code: string) => [
+        code,
+        code,
+        '10.00',
+        '1.00',
+        '',
+        '',
+        '',
+        '',
+        '1,000',
+      ]
+      const data = {
+        tables: [
+          {
+            data: ['700709', '70070P', '6488', '006201', '020001'].map(row),
+          },
+        ],
+      }
+      const result = adaptRankResponse(data as any, Category.OTC)
+      expect(result!.map((entry) => entry.code)).toEqual([
+        '6488',
+        '006201',
+        '020001',
+      ])
+    })
   })
 })

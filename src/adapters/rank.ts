@@ -11,6 +11,9 @@ import {
   parseTseChange,
 } from '@/utils/number'
 
+/** TPEx call/put warrant codes, e.g. 700709 神盾統一5C購02. */
+const TPEX_WARRANT = /^7\d{4}[0-9A-Z]$/
+
 function adaptTseResponse(data: RankTseResponse): RankRow[] | null {
   if (!data || data.stat !== 'OK' || !data.tables) {
     return null
@@ -61,6 +64,9 @@ function adaptOtcResponse(data: RankOtcResponse): RankRow[] | null {
       const volume = parseNumber(row[8])
 
       if (!code || !name || close === 0) return null
+      // TPEx returns warrants (7xxxxx, ~93% of rows) with the stocks; exclude
+      // them as TWSE's type=ALLBUT0999 does, or they dominate every ranking.
+      if (TPEX_WARRANT.test(code)) return null
 
       return {
         code,

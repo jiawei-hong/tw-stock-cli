@@ -48,6 +48,44 @@ describe('fetchRankData', () => {
     expect(mockFetch).toHaveBeenCalledTimes(2)
   })
 
+  it('accepts the real TWSE shape, which ends with an empty table', async () => {
+    const mockData = {
+      stat: 'OK',
+      tables: [
+        { title: '價格指數', fields: [], data: [] },
+        { title: '每日收盤行情', fields: [], data: [] },
+        {},
+      ],
+    }
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockData),
+    })
+
+    await expect(fetchRankData('https://test.com')).resolves.toEqual(mockData)
+  })
+
+  it('passes a no-trading-day answer through so it is reported as not found', async () => {
+    const mockData = { stat: '很抱歉，沒有符合條件的資料!', type: 'ALLBUT0999' }
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockData),
+    })
+
+    await expect(fetchRankData('https://test.com')).resolves.toEqual(mockData)
+  })
+
+  it('rejects an OK payload whose tables have no data', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ stat: 'OK', tables: [{}, {}] }),
+    })
+
+    await expect(
+      fetchRankData('https://test.com', { maxRetries: 0 })
+    ).rejects.toThrow('Invalid rank response payload')
+  })
+
   it('rejects malformed payloads without retrying', async () => {
     mockFetch.mockResolvedValue({
       ok: true,

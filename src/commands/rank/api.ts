@@ -10,10 +10,15 @@ function isRankTable(value: unknown): boolean {
 function isRankResponse(value: unknown): boolean {
   if (typeof value !== 'object' || value === null) return false
   const response = value as { stat?: unknown; tables?: unknown }
+  if (typeof response.stat !== 'string') return false
+  // No trading data: TWSE answers {"stat":"很抱歉，沒有符合條件的資料!"} without
+  // tables. Let the adapter report "not found" instead of a payload error.
+  if (response.stat.toLowerCase() !== 'ok') return response.tables === undefined
+  // TWSE MI_INDEX ends with an empty {} table, so require at least one table
+  // with data rather than every table. An empty list simply has no rows.
   return (
-    typeof response.stat === 'string' &&
     Array.isArray(response.tables) &&
-    response.tables.every(isRankTable)
+    (response.tables.length === 0 || response.tables.some(isRankTable))
   )
 }
 
