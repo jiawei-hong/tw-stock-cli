@@ -38,8 +38,13 @@ export type InstitutionalTseResponse = {
 export type InstitutionalOtcRow = string[]
 
 export type InstitutionalOtcResponse = {
-  reportDate: string
-  reportTitle: string
-  totalCount: number
-  aaData: string[][]
+  stat?: string
+  date?: string
+  /** Current TPEx format. */
+  tables?: { title?: string; fields?: string[]; data: string[][] }[]
+  /** Legacy TPEx format. */
+  reportDate?: string
+  reportTitle?: string
+  totalCount?: number
+  aaData?: string[][]
 }

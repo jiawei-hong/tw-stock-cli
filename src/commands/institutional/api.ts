@@ -10,11 +10,17 @@ function isInstitutionalResponse(value: unknown): boolean {
     stat?: unknown
     data?: unknown
     aaData?: unknown
+    tables?: unknown
   }
   const hasTseData =
     typeof response.stat === 'string' && Array.isArray(response.data)
+  // TPEx now returns rows in tables[0].data; older responses used aaData.
+  const hasOtcTables =
+    Array.isArray(response.tables) &&
+    response.tables.length > 0 &&
+    Array.isArray((response.tables[0] as { data?: unknown })?.data)
   const hasOtcData = Array.isArray(response.aaData)
-  return hasTseData || hasOtcData
+  return hasTseData || hasOtcTables || hasOtcData
 }
 
 function fetchInstitutionalData<

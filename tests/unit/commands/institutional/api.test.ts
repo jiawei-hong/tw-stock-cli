@@ -48,6 +48,18 @@ describe('fetchInstitutionalData', () => {
     expect(mockFetch).toHaveBeenCalledTimes(2)
   })
 
+  it('accepts the current TPEx tables payload', async () => {
+    const mockData = { stat: 'ok', tables: [{ data: [] }] }
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockData),
+    })
+
+    await expect(fetchInstitutionalData('https://test.com')).resolves.toEqual(
+      mockData
+    )
+  })
+
   it('rejects malformed payloads without retrying', async () => {
     mockFetch.mockResolvedValue({
       ok: true,

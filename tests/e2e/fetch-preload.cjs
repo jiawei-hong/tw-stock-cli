@@ -365,7 +365,7 @@ globalThis.fetch = async (input) => {
   }
 
   if (url.includes('/fund/T86')) {
-    return fixtureResponse({ json: institutionalRows('data') })
+    return fixtureResponse({ json: twseInstitutionalRows() })
   }
 
   if (url.includes('/fund/BFI82U')) {
@@ -378,7 +378,7 @@ globalThis.fetch = async (input) => {
   }
 
   if (url.includes('3itrade_hedge_result.php')) {
-    return fixtureResponse({ json: institutionalRows('aaData') })
+    return fixtureResponse({ json: tpexInstitutionalRows() })
   }
 
   if (
@@ -425,52 +425,80 @@ function stock(code, name, exchange, price) {
   }
 }
 
-function institutionalRows(key) {
+const INSTITUTIONAL_STOCKS = [
+  // code, name, foreign net, trust net, dealer net (total = sum)
+  ['6488', 'GlobalWafers', 300, 50, -20],
+  ['2330', 'TSMC', 1000, 500, 200],
+  ['6547', 'Medigen', 300, 50, -20],
+]
+
+const shares = (value) => value.toLocaleString('en-US')
+
+// TWSE T86 layout: 19 columns, foreign 2-4, foreign dealer 5-7, trust 8-10,
+// dealer 11 (proprietary 12-14, hedge 15-17), total 18.
+function twseInstitutionalRows() {
   return {
     stat: 'OK',
-    [key]: [
-      [
-        '6488',
-        'GlobalWafers',
-        '500',
-        '200',
-        '300',
-        '100',
-        '50',
-        '50',
-        '-20',
-        '0',
-        '0',
-        '330',
-      ],
-      [
-        '2330',
-        'TSMC',
-        '2,000',
-        '1,000',
-        '1,000',
-        '800',
-        '300',
-        '500',
-        '200',
-        '0',
-        '0',
-        '1,700',
-      ],
-      [
-        '6547',
-        'Medigen',
-        '500',
-        '200',
-        '300',
-        '100',
-        '50',
-        '50',
-        '-20',
-        '0',
-        '0',
-        '330',
-      ],
+    data: INSTITUTIONAL_STOCKS.map(([code, name, foreign, trust, dealer]) => [
+      code,
+      name,
+      '0',
+      '0',
+      shares(foreign),
+      '0',
+      '0',
+      '0',
+      '0',
+      '0',
+      shares(trust),
+      shares(dealer),
+      '0',
+      '0',
+      shares(dealer),
+      '0',
+      '0',
+      '0',
+      shares(foreign + trust + dealer),
+    ]),
+  }
+}
+
+// TPEx 3itrade_hedge_result layout: 24 columns in tables[0].data, foreign
+// total 8-10, trust 11-13, dealer total 20-22, total 23.
+function tpexInstitutionalRows() {
+  return {
+    stat: 'ok',
+    tables: [
+      {
+        data: INSTITUTIONAL_STOCKS.map(
+          ([code, name, foreign, trust, dealer]) => [
+            code,
+            name,
+            '0',
+            '0',
+            shares(foreign),
+            '0',
+            '0',
+            '0',
+            '0',
+            '0',
+            shares(foreign),
+            '0',
+            '0',
+            shares(trust),
+            '0',
+            '0',
+            shares(dealer),
+            '0',
+            '0',
+            '0',
+            '0',
+            '0',
+            shares(dealer),
+            shares(foreign + trust + dealer),
+          ]
+        ),
+      },
     ],
   }
 }
