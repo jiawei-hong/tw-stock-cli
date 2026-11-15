@@ -13,6 +13,7 @@ import {
 } from '@/types/institutional'
 import { Category } from '@/types/stock'
 import { getFormattedDate } from '@/utils/date'
+import { marketDate } from '@/utils/market-date'
 import { parseNumber } from '@/utils/number'
 import { getTableHeader, responsiveTable } from '@/utils/table'
 import { displayFailed } from '@/utils/text'
@@ -74,10 +75,15 @@ class Institutional extends BaseHandler<
     return fetchInstitutionalData(url)
   }
 
+  /** The trading date the exchange actually returned (YYYY-MM-DD). */
+  private dataDate: string | undefined
+
   protected parseData(
     data: unknown,
     category: Category
   ): InstitutionalStockRow[] | null {
+    // Without --date the exchanges return the latest trading day; remember which.
+    this.dataDate = marketDate((data as { date?: unknown } | null)?.date)
     return adaptInstitutionalResponse(
       data as InstitutionalTseResponse | InstitutionalOtcResponse,
       category
@@ -89,6 +95,9 @@ class Institutional extends BaseHandler<
   }
 
   protected display(rows: InstitutionalStockRow[]): void {
+    if (!this.options.date && this.dataDate) {
+      console.log(`資料日期：${this.dataDate}`)
+    }
     console.log(
       responsiveTable(
         [

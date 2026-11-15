@@ -40,8 +40,10 @@ class Overview {
       ],
       ['基本面', () => new Fundamentals(code, this.market).execute()],
       [
-        `三大法人（查詢日 ${date}）`,
-        () => new Institutional(code, { listed: this.market, date }).execute(),
+        // No date: the exchanges return the latest trading day, so weekends,
+        // holidays and the hours before publication still show data.
+        '三大法人（最近交易日）',
+        () => new Institutional(code, { listed: this.market }).execute(),
       ],
       [
         `本月事件（${month}）`,

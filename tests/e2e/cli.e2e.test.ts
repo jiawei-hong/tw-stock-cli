@@ -319,9 +319,10 @@ describe.sequential('built CLI', () => {
     expect(
       result.requests.filter((url) => url.includes('getStockInfo.jsp'))
     ).toHaveLength(1)
+    // An empty date asks the exchange for the latest trading day.
     expect(
       result.requests.some(
-        (url) => /date=\d{8}/.test(url) && url.includes('/fund/T86')
+        (url) => /date=(&|$)/.test(url) && url.includes('/fund/T86')
       )
     ).toBe(true)
   })

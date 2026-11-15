@@ -26,9 +26,9 @@ it('uses the Taipei date and market consistently across all sections', async () 
   await new Overview(' 00679b ', Category.OTC).execute()
   expect(RealtimeStock).toHaveBeenCalledWith('00679B', { listed: Category.OTC })
   expect(Fundamentals).toHaveBeenCalledWith('00679B', Category.OTC)
+  // Institutional data uses the latest trading day, not today's calendar date.
   expect(Institutional).toHaveBeenCalledWith('00679B', {
     listed: Category.OTC,
-    date: '2026-10-01',
   })
   expect(Events).toHaveBeenCalledWith('00679B', '2026-10', Category.OTC)
 })

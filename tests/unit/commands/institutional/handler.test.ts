@@ -146,6 +146,26 @@ describe('Institutional handler', () => {
       expect(output).not.toContain('Failure:')
     })
 
+    it('shows which trading day the exchange returned when no date is given', async () => {
+      vi.mocked(fetchInstitutionalData).mockResolvedValue({
+        date: '20261113',
+      } as any)
+      vi.mocked(adaptInstitutionalResponse).mockReturnValue([
+        { code: '2330', name: 'TSMC', totalNet: 1 } as any,
+      ])
+
+      await new Institutional('2330', {}).execute()
+      expect(consoleSpy.mock.calls[0][0]).toBe('資料日期：2026-11-13')
+
+      consoleSpy.mockClear()
+      await new Institutional('2330', { date: '2026-11-13' }).execute()
+      expect(
+        consoleSpy.mock.calls.some(([line]: unknown[]) =>
+          String(line).includes('資料日期')
+        )
+      ).toBe(false)
+    })
+
     it('displays failure when stock code not found in data', async () => {
       vi.mocked(fetchInstitutionalData).mockResolvedValue({} as any)
       vi.mocked(adaptInstitutionalResponse).mockReturnValue([
